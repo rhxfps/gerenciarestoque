@@ -36,7 +36,7 @@
 <!-- APLICATIVO PRINCIPAL (oculto por padrão) -->
 <div class="app" id="app-container" style="display:none">
   <aside class="sidebar">
-    <div class="logo">Estoque<span>Controle interno</span></div>
+    <div class="logo">Estoque</div>
     <nav id="nav">
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
@@ -63,6 +63,35 @@
       </button>
     </div>
   </aside>
+
+  <!-- Menu hambúrguer para celular -->
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+    <i class="ti ti-menu-2"></i>
+  </button>
+
+  <!-- Overlay para fechar o menu ao clicar fora -->
+  <div class="menu-overlay" id="menuOverlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- Menu dropdown para celular -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+      <h3>Menu</h3>
+      <button onclick="toggleMobileMenu()" class="close-menu-btn">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav" id="mobileNav">
+      <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
+      <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
+      <div class="mobile-nav-item" data-screen="produtos"><i class="ti ti-box"></i> Produtos</div>
+      <div class="mobile-nav-item" data-screen="entradas"><i class="ti ti-arrow-bar-to-down"></i> Entradas</div>
+      <div class="mobile-nav-item" data-screen="saidas"><i class="ti ti-arrow-bar-up"></i> Saídas</div>
+      <div class="mobile-nav-item" data-screen="historico"><i class="ti ti-history"></i> Histórico</div>
+      <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
+      <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
+      <div class="mobile-nav-item" data-screen="usuarios"><i class="ti ti-users"></i> Usuários</div>
+    </nav>
+  </div>
 
   <main class="main">
     <div class="topbar">

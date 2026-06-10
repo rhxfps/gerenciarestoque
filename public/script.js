@@ -217,6 +217,7 @@ function nav(screen) {
   }
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen));
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen)); // Atualiza menu móvel
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === `screen-${screen}`));
   document.getElementById('topbar-title').textContent = titles[screen];
   
@@ -255,6 +256,29 @@ function nav(screen) {
 document.getElementById('nav').addEventListener('click', e => {
   const item = e.target.closest('.nav-item');
   if (item) nav(item.dataset.screen);
+});
+
+// Função para abrir/fechar menu móvel
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const overlay = document.getElementById('menuOverlay');
+  
+  if (menu.style.display === 'block') {
+    menu.style.display = 'none';
+    overlay.style.display = 'none';
+  } else {
+    menu.style.display = 'block';
+    overlay.style.display = 'block';
+  }
+}
+
+// Event listener para os itens do menu móvel
+document.getElementById('mobileNav').addEventListener('click', e => {
+  const item = e.target.closest('.mobile-nav-item');
+  if (item) {
+    toggleMobileMenu(); // Fecha o menu ao selecionar
+    nav(item.dataset.screen);
+  }
 });
 
 // ==================== PRODUTOS ====================
