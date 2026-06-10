@@ -26,139 +26,180 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen.active{display:block}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
-@media(max-width:1000px){
-  .grid4{grid-template-columns:1fr 1fr}
-  .grid2{grid-template-columns:1fr}
+@media only screen and (max-width:1000px){
+  .grid4{grid-template-columns:1fr 1fr !important}
+  .grid2{grid-template-columns:1fr !important}
 }
-@media(max-width:700px){
-  /* Layout geral para celular */
-  body{font-size:15px}
-  .app{flex-direction:column}
-  
-  /* Sidebar horizontal no topo */
-  .sidebar{
-    width:100%;
-    height:auto;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    flex-direction:row;
-    overflow-x:auto;
-    padding:8px 12px;
-    gap:8px;
-    border-right:none;
-    border-bottom:1px solid var(--border);
-    -webkit-overflow-scrolling:touch
+@media only screen and (max-width:768px){
+  /* LAYOUT CELULAR - PRIORIDADE MÁXIMA */
+  html, body {
+    font-size: 15px !important;
   }
-  .sidebar::-webkit-scrollbar{display:none}
-  .sidebar-footer{display:none}
-  
-  .logo{
-    padding:10px 14px;
-    border-bottom:none;
-    border-right:1px solid var(--border);
-    margin-bottom:0;
-    flex-shrink:0;
-    font-size:15px
+  .app {
+    flex-direction: column !important;
   }
-  .logo span{display:none}
   
-  .nav-item{
-    padding:12px 16px;
-    flex-shrink:0;
-    font-size:14px;
-    gap:8px;
-    border-radius:8px
+  /* SIDEBAR HORIZONTAL NO TOPO */
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    -webkit-overflow-scrolling: touch !important;
   }
-  .nav-item.active{
-    border-left:none;
-    border-bottom:3px solid var(--blue);
-    background:var(--bg-secondary)
+  .sidebar::-webkit-scrollbar { display: none !important; }
+  .sidebar-footer { display: none !important; }
+  
+  .logo {
+    padding: 10px 14px !important;
+    border-bottom: none !important;
+    border-right: 1px solid var(--border) !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+    font-size: 15px !important;
   }
-  .nav-item span{display:block}
-  .nav-item i{font-size:20px}
+  .logo span { display: none !important; }
   
-  /* Conteúdo */
-  .content{padding:1rem}
-  .topbar{padding:14px 16px}
-  .topbar h1{font-size:18px}
-  
-  /* Grid em 1 coluna */
-  .grid4{grid-template-columns:1fr}
-  .grid2{grid-template-columns:1fr}
-  
-  /* Formulários */
-  .form-row{grid-template-columns:1fr}
-  .form-row-2{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr !important}
-  
-  /* Botões e inputs grandes para toque */
-  .btn{
-    padding:14px 20px;
-    font-size:16px;
-    border-radius:10px;
-    min-height:48px
+  .nav-item {
+    padding: 12px 16px !important;
+    flex-shrink: 0 !important;
+    font-size: 14px !important;
+    gap: 8px !important;
+    border-radius: 8px !important;
   }
-  .btn-primary{padding:16px 20px}
-  .btn-sm{padding:10px 16px;font-size:15px}
-  input,select,textarea{
-    padding:14px 16px;
-    font-size:16px;
-    border-radius:10px;
-    min-height:48px
+  .nav-item.active {
+    border-left: none !important;
+    border-bottom: 3px solid var(--blue) !important;
+    background: var(--bg-secondary) !important;
   }
-  .form-group label{font-size:15px;margin-bottom:8px}
+  .nav-item span { display: block !important; }
+  .nav-item i { font-size: 20px !important; }
   
-  /* Cards */
-  .card{padding:1.25rem;border-radius:14px}
-  .metric-card{padding:1.25rem;border-radius:10px}
-  .metric-value{font-size:32px}
-  
-  /* Tabelas com scroll horizontal */
-  table{display:block;overflow-x:auto;font-size:14px;border-radius:8px}
-  th,td{padding:14px 16px;white-space:nowrap;font-size:14px}
-  
-  /* Página de Vendas - MELHORADA */
-  .add-item-section{padding:1.5rem;border-radius:14px}
-  .payment-options,.sale-type-options{
-    flex-direction:row;
-    gap:10px
+  /* CONTEÚDO */
+  .content { padding: 1rem !important; }
+  .topbar {
+    padding: 14px 16px !important;
   }
-  .payment-option,.sale-type-option{
-    flex:1;
-    padding:16px 12px;
-    border-radius:12px;
-    text-align:center;
-    flex-direction:column;
-    gap:6px
+  .topbar h1 { font-size: 18px !important; }
+  
+  /* GRID EM 1 COLUNA */
+  .grid4 { grid-template-columns: 1fr !important; }
+  .grid2 { grid-template-columns: 1fr !important; }
+  
+  /* FORMULÁRIOS */
+  .form-row { grid-template-columns: 1fr !important; }
+  .form-row-2 { grid-template-columns: 1fr !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  
+  /* BOTÕES E INPUTS GRANDES PARA TOQUE */
+  .btn {
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    min-height: 48px !important;
   }
-  .payment-option i,.sale-type-option i{font-size:24px}
-  .payment-option span,.sale-type-option span{font-size:14px}
-  
-  /* Itens da venda */
-  .venda-item-card{
-    padding:1.25rem;
-    border-radius:12px;
-    gap:16px
+  .btn-primary { padding: 16px 20px !important; }
+  .btn-sm { padding: 10px 16px !important; font-size: 15px !important; }
+  input, select, textarea {
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    min-height: 48px !important;
   }
-  .venda-item-name{font-size:18px;font-weight:700}
-  .venda-item-meta{gap:14px;font-size:15px}
-  .venda-item-total{font-size:22px;font-weight:800}
-  .venda-item-remove{padding:14px;border-radius:10px}
-  .venda-item-remove i{font-size:22px}
+  .form-group label {
+    font-size: 15px !important;
+    margin-bottom: 8px !important;
+  }
   
-  /* Total da venda */
-  .total-section{padding:1.5rem;border-radius:14px}
-  .total-value{font-size:40px}
+  /* CARDS */
+  .card { padding: 1.25rem !important; border-radius: 14px !important; }
+  .metric-card { padding: 1.25rem !important; border-radius: 10px !important; }
+  .metric-value { font-size: 32px !important; }
   
-  /* Empty state */
-  .empty{padding:3rem 1rem;font-size:16px}
-  .empty i{font-size:48px;margin-bottom:12px}
+  /* TABELAS COM SCROLL HORIZONTAL */
+  table {
+    display: block !important;
+    overflow-x: auto !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+  th, td {
+    padding: 14px 16px !important;
+    white-space: nowrap !important;
+    font-size: 14px !important;
+  }
   
-  /* Aumenta target de toque em tudo */
-  *{-webkit-tap-highlight-color: transparent}
-  button, .nav-item, .autocomplete-item {
-    touch-action: manipulation
+  /* PÁGINA DE VENDAS */
+  .add-item-section { padding: 1.5rem !important; border-radius: 14px !important; }
+  .payment-options, .sale-type-options {
+    flex-direction: row !important;
+    gap: 10px !important;
+  }
+  .payment-option, .sale-type-option {
+    flex: 1 1 0 !important;
+    padding: 16px 12px !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .payment-option i, .sale-type-option i {
+    font-size: 24px !important;
+  }
+  .payment-option span, .sale-type-option span {
+    font-size: 14px !important;
+  }
+  
+  /* ITENS DA VENDA */
+  .venda-item-card {
+    padding: 1.25rem !important;
+    border-radius: 12px !important;
+    gap: 16px !important;
+  }
+  .venda-item-name {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+  }
+  .venda-item-meta {
+    gap: 14px !important;
+    font-size: 15px !important;
+  }
+  .venda-item-total {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+  }
+  .venda-item-remove {
+    padding: 14px !important;
+    border-radius: 10px !important;
+  }
+  .venda-item-remove i {
+    font-size: 22px !important;
+  }
+  
+  /* TOTAL DA VENDA */
+  .total-section {
+    padding: 1.5rem !important;
+    border-radius: 14px !important;
+  }
+  .total-value {
+    font-size: 40px !important;
+  }
+  
+  /* EMPTY STATE */
+  .empty {
+    padding: 3rem 1rem !important;
+    font-size: 16px !important;
+  }
+  .empty i {
+    font-size: 48px !important;
+    margin-bottom: 12px !important;
   }
 }
 .card{background:var(--bg-primary);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem}
