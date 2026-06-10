@@ -28,6 +28,7 @@ app.get('/', (req, res) => {
 
 // ==================== USUÁRIOS / AUTENTICAÇÃO ====================
 app.post('/api/auth/login', async (req, res) => {
+  console.log('Login attempt:', req.body);
   const { usuario, senha } = req.body;
   if (!usuario || !senha) {
     return res.status(400).json({ error: 'Informe usuário e senha' });
@@ -40,11 +41,20 @@ app.post('/api/auth/login', async (req, res) => {
       .eq('usuario', usuario)
       .single();
 
-    if (error || !data) {
+    console.log('Supabase response:', { data, error });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor', details: error });
+    }
+
+    if (!data) {
+      console.log('User not found');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
     const senhaValida = await bcrypt.compare(senha, data.senha);
+    console.log('Password valid:', senhaValida);
     if (!senhaValida) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
@@ -52,8 +62,8 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ id: data.id, usuario: data.usuario, role: data.role }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, usuario: { id: data.id, nome: data.nome, usuario: data.usuario, role: data.role } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
   }
 });
 
