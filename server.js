@@ -6,6 +6,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const OneSignal = require('onesignal-node');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-jwt-muito-seguro-123';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'SEU_SUPABASE_URL';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'SEU_SUPABASE_SERVICE_KEY';
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// Configurar OneSignal
+const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID;
+const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY;
+const oneSignalClient = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
 
 // Middleware
 app.use(cors());
@@ -338,6 +344,28 @@ app.post('/api/vendas', autenticar, async (req, res) => {
       await supabase
         .from('movimentacoes')
         .insert([{ tipo: 'saida', produto_id: item.produtoId, produto_nome: item.produtoNome, qtd: item.qtd, obs: `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}` }]);
+    }
+
+    // ENVIAR NOTIFICAÇÃO PUSH!
+    try {
+      const itensTexto = itens.map(i => `${i.qtd}x ${i.produtoNome}`).join(', ');
+      const mensagem = `Nova venda registrada! Total: R$ ${total.toFixed(2).replace('.', ',')} - ${delivery ? `(${plataforma || 'Delivery')` : 'Balcão'} via ${pagamento}. Itens: ${itensTexto}`;
+      
+      const notification = {
+        contents: { en: mensagem },
+        headings: { en: 'Pastel de Rei - Venda Nova' },
+        included_segments: ['All'], // Envia para todos os usuários inscritos (dono!)
+        ios_badgeType: 'Increase',
+        ios_badgeCount: 1,
+        small_icon: 'logo.png', // Usando sua logo!
+        large_icon: 'logo.png',
+        android_small_icon: 'logo.png'
+      };
+      
+      await oneSignalClient.createNotification(notification);
+      console.log('Notificação push enviada com sucesso!');
+    } catch (notifError) {
+      console.error('Erro ao enviar notificação:', notifError);
     }
 
     res.json({ ...venda, itens });
