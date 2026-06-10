@@ -352,6 +352,32 @@ function autenticar(req, res, next) {
   });
 }
 
+const criarUsuarioPadrao = async () => {
+  try {
+    // Verificar se o usuário admin já existe
+    const { data: usuarioExistente, error } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('usuario', 'admin')
+      .single();
+
+    if (!usuarioExistente) {
+      const senhaHash = await bcrypt.hash('admin123', 10);
+      await supabase.from('usuarios').insert([{
+        nome: 'Administrador',
+        usuario: 'admin',
+        senha: senhaHash,
+        role: 'dono'
+      }]);
+      console.log('Usuário admin criado com sucesso!');
+    }
+  } catch (err) {
+    console.error('Erro ao criar usuário padrão:', err);
+  }
+};
+
+criarUsuarioPadrao();
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Acesse o site em http://localhost:${PORT}`);
