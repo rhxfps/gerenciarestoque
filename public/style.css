@@ -784,7 +784,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* MEDIA QUERIES NO FIM DO ARQUIVO - PRIORIDADE MÁXIMA */
-@media only screen and (max-width: 1000px) {
+@media only screen and (max-width: 800px) {
   .grid4 {
     grid-template-columns: 1fr 1fr !important;
   }
@@ -793,7 +793,7 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 650px) {
   /* LAYOUT CELULAR - PRIORIDADE MÁXIMA */
   html, body {
     font-size: 15px !important;
