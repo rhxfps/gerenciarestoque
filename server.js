@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, '.')));
 
 // Serve the HTML file as the default route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'controle_estoque.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Conectar ao banco de dados SQLite
