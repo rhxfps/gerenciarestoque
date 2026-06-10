@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Estoque</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div class="login-container" id="login-container">
+  <div class="login-box">
+    <h1>Controle de Estoque</h1>
+    <p>Entre com suas credenciais</p>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input type="text" id="login-email" placeholder="seu_usuario">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="password" id="login-senha" placeholder="********" style="flex: 1;">
+        <button class="btn" id="btn-toggle-senha" style="padding: 8px 12px;" onclick="toggleLoginSenha()">
+          <i class="ti ti-eye" id="login-icone-senha"></i>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="login()" id="btn-login">
+      <i class="ti ti-login"></i> Entrar
+    </button>
+  </div>
+</div>
+
+<!-- APLICATIVO PRINCIPAL (oculto por padrão) -->
+<div class="app" id="app-container" style="display:none">
+  <aside class="sidebar">
+    <div class="logo">Estoque<span>Controle interno</span></div>
+    <nav id="nav">
+      <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
+      <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
+      <div class="nav-item" data-screen="produtos" id="nav-produtos"><i class="ti ti-box"></i> <span>Produtos</span></div>
+      <div class="nav-item" data-screen="entradas" id="nav-entradas"><i class="ti ti-arrow-bar-to-down"></i> <span>Entradas</span></div>
+      <div class="nav-item" data-screen="saidas" id="nav-saidas"><i class="ti ti-arrow-bar-up"></i> <span>Saídas</span></div>
+      <div class="nav-item" data-screen="historico" id="nav-historico"><i class="ti ti-history"></i> <span>Histórico</span></div>
+      <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
+      <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
+      <div class="nav-item" data-screen="usuarios" id="nav-usuarios"><i class="ti ti-users"></i> <span>Usuários</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" id="user-info">
+        <div class="user-avatar">
+          <i class="ti ti-user-circle"></i>
+        </div>
+        <div class="user-details">
+          <span id="user-name" class="user-name">Usuário</span>
+          <span id="user-role" class="user-role">Funcionário</span>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()" style="width:100%;margin-top:12px">
+        <i class="ti ti-logout"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h1 id="topbar-title">Dashboard</h1>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD PROFISSIONAL DE VENDAS -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="grid4" style="margin-bottom: 1.5rem">
+          <div class="metric-card" style="border-left: 4px solid var(--blue);">
+            <div class="metric-label"><i class="ti ti-shopping-cart"></i> Vendas Hoje</div>
+            <div class="metric-value text-blue" id="dash-vendas-hoje">0</div>
+            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+              <i class="ti ti-clock"></i> Hoje
+            </div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--green);">
+            <div class="metric-label"><i class="ti ti-currency-dollar"></i> Valor Hoje</div>
+            <div class="metric-value text-green" id="dash-valor-hoje">R$ 0,00</div>
+            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+              <i class="ti ti-clock"></i> Vendas de hoje
+            </div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--amber);">
+            <div class="metric-label"><i class="ti ti-shopping-cart"></i> Vendas do Mês</div>
+            <div class="metric-value text-amber" id="dash-vendas-mes">0</div>
+            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+              <i class="ti ti-calendar-month"></i> Vendas em <span id="dash-mes-atual"></span>
+            </div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--blue);">
+            <div class="metric-label"><i class="ti ti-currency-dollar"></i> Valor do Mês</div>
+            <div class="metric-value text-blue" id="dash-valor-mes">R$ 0,00</div>
+            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+              <i class="ti ti-history"></i> Total do período
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-bottom: 1.5rem">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos Mais Vendidos</div>
+            <div id="dash-top-produtos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="dash-pagamentos"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i class="ti ti-history"></i> Últimas Vendas</div>
+          <table>
+            <thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Pagamento</th><th>Delivery</th></tr></thead>
+            <tbody id="dash-ultimas-vendas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ESTOQUE (MELHORADO) -->
+      <div class="screen" id="screen-estoque">
+        <div class="grid4" style="margin-bottom: 1.5rem">
+          <div class="metric-card" style="border-left: 4px solid var(--blue);">
+            <div class="metric-label"><i class="ti ti-box"></i> Total de Produtos</div>
+            <div class="metric-value text-blue" id="estoque-total-produtos">0</div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--green);">
+            <div class="metric-label"><i class="ti ti-arrow-bar-to-down"></i> Entradas (Semana)</div>
+            <div class="metric-value text-green" id="estoque-entradas">0</div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--red);">
+            <div class="metric-label"><i class="ti ti-arrow-bar-up"></i> Saídas (Semana)</div>
+            <div class="metric-value text-red" id="estoque-saidas">0</div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--amber);">
+            <div class="metric-label"><i class="ti ti-alert-triangle"></i> Produtos Baixos</div>
+            <div class="metric-value text-amber" id="estoque-baixo">0</div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-bottom: 1.5rem">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-alert-triangle"></i> Produtos com Estoque Baixo</div>
+            <div id="estoque-alertas"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-history"></i> Últimas Movimentações</div>
+            <table>
+              <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Data</th></tr></thead>
+              <tbody id="estoque-movimentos"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i class="ti ti-package"></i> Estoque Atual</div>
+          <table>
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd</th><th>Status</th></tr></thead>
+            <tbody id="estoque-produtos-quantidades"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PRODUTOS -->
+      <div class="screen" id="screen-produtos">
+        <div class="card">
+          <div class="section-header">
+            <h2>Produtos cadastrados</h2>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span id="p-count" style="font-size:12px;color:var(--text-secondary)"></span>
+              <button class="btn btn-primary" onclick="toggleFormProduto()" id="btn-toggle-form">
+                <i class="ti ti-plus"></i> Novo produto
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd atual</th><th>Qtd mínima</th><th>Valor de venda</th><th>Status</th><th></th></tr></thead>
+            <tbody id="tabela-produtos"></tbody>
+          </table>
+          </div>
+          <div id="produtos-empty" class="empty" style="display:none"><i class="ti ti-box"></i>Nenhum produto cadastrado ainda.<br>Clique no botão "Novo produto" acima para começar.</div>
+        </div>
+        
+        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-produto">
+          <div class="card-title"><i class="ti ti-plus"></i> Novo produto</div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Nome do produto</label><input type="text" id="p-nome" placeholder="Ex: Papel A4"></div>
+            <div class="form-group"><label>Categoria</label><input type="text" id="p-cat" placeholder="Ex: Papelaria"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Quantidade atual</label><input type="number" id="p-qty" placeholder="0" min="0"></div>
+            <div class="form-group"><label>Quantidade mínima</label><input type="number" id="p-min" placeholder="0" min="0"></div>
+            <div class="form-group"><label>Valor de venda</label><input type="number" id="p-preco" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="addProduto()"><i class="ti ti-check"></i> Cadastrar produto</button>
+            <button class="btn" onclick="toggleFormProduto()"><i class="ti ti-x"></i> Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENTRADAS -->
+      <div class="screen" id="screen-entradas">
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-title"><i class="ti ti-arrow-bar-to-down"></i> Registrar entrada</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><select id="e-produto"><option value="">Selecione um produto</option></select></div>
+            <div class="form-group"><label>Quantidade</label><input type="number" id="e-qty" placeholder="0" min="1"></div>
+          </div>
+          <div class="form-group"><label>Observação (opcional)</label><input type="text" id="e-obs" placeholder="Ex: Reposição mensal"></div>
+          <button class="btn btn-primary" onclick="addEntrada()"><i class="ti ti-check"></i> Confirmar entrada</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-history"></i> Entradas recentes</div>
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
+            <tbody id="tabela-entradas"></tbody>
+          </table>
+          </div>
+          <div id="entradas-empty" class="empty" style="display:none"><i class="ti ti-arrow-bar-to-down"></i>Nenhuma entrada registrada.</div>
+        </div>
+      </div>
+
+      <!-- SAÍDAS -->
+      <div class="screen" id="screen-saidas">
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-title"><i class="ti ti-arrow-bar-up"></i> Registrar saída</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><select id="s-produto"><option value="">Selecione um produto</option></select></div>
+            <div class="form-group"><label>Quantidade</label><input type="number" id="s-qty" placeholder="0" min="1"></div>
+          </div>
+          <div class="form-group"><label>Observação (opcional)</label><input type="text" id="s-obs" placeholder="Ex: Requisição do setor X"></div>
+          <button class="btn btn-primary" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-history"></i> Saídas recentes</div>
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
+            <tbody id="tabela-saidas"></tbody>
+          </table>
+          </div>
+          <div id="saidas-empty" class="empty" style="display:none"><i class="ti ti-arrow-bar-up"></i>Nenhuma saída registrada.</div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div class="screen" id="screen-historico">
+        <div class="card" style="margin-bottom:1rem">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <select id="h-filtro-tipo" onchange="renderHistorico()" style="width:160px">
+              <option value="">Todos os tipos</option>
+              <option value="entrada">Entradas</option>
+              <option value="saida">Saídas</option>
+            </select>
+            <select id="h-filtro-prod" onchange="renderHistorico()" style="width:200px">
+              <option value="">Todos os produtos</option>
+            </select>
+            <span id="h-count" style="font-size:13px;color:var(--text-secondary);margin-left:auto"></span>
+          </div>
+        </div>
+        <div class="card">
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Data/hora</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th></tr></thead>
+            <tbody id="tabela-historico"></tbody>
+          </table>
+          </div>
+          <div id="historico-empty" class="empty" style="display:none"><i class="ti ti-history"></i>Nenhuma movimentação registrada ainda.</div>
+        </div>
+      </div>
+
+      <!-- RELATÓRIO SEMANAL -->
+      <div class="screen" id="screen-relatorio">
+        <div class="grid2" style="margin-bottom:1.5rem">
+          <div class="report-block">
+            <div class="report-block-title"><i class="ti ti-arrow-bar-to-down"></i> Entradas da semana</div>
+            <div style="font-size:24px;font-weight:600;margin-bottom:8px;color:var(--green)" id="r-ent">0 un.</div>
+            <div class="progress-bar"><div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div></div>
+          </div>
+          <div class="report-block">
+            <div class="report-block-title"><i class="ti ti-arrow-bar-up"></i> Saídas da semana</div>
+            <div style="font-size:24px;font-weight:600;margin-bottom:8px;color:var(--red)" id="r-sai">0 un.</div>
+            <div class="progress-bar"><div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-title"><i class="ti ti-chart-line"></i> Balanço semanal</div>
+          <div style="font-size:28px;font-weight:700;text-align:center" id="r-saldo">0 un.</div>
+        </div>
+        <div class="grid2" style="margin-bottom:1.5rem">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos com mais movimentações</div>
+            <div id="r-ranking"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-shopping-cart"></i> Produtos mais vendidos</div>
+            <div id="r-ranking-vendas"></div>
+          </div>
+        </div>
+        <div class="grid2" style="margin-bottom:1.5rem">
+          <div class="report-block">
+            <div class="report-block-title"><i class="ti ti-delivery"></i> Vendas Delivery (Semana)</div>
+            <div style="font-size:24px;font-weight:600;color:var(--amber)" id="r-delivery">0</div>
+          </div>
+          <div class="report-block">
+            <div class="report-block-title"><i class="ti ti-shopping-bag"></i> Vendas Balcão (Semana)</div>
+            <div style="font-size:24px;font-weight:600;color:var(--blue)" id="r-balcao">0</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-package"></i> Estoque atual completo</div>
+          <div style="overflow-x:auto">
+          <table id="r-tabela"></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENDAS (CLEAN) -->
+      <div class="screen" id="screen-vendas">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-cash-register"></i> Nova Venda</div>
+          
+          <!-- Adicionar Item (Cleaner & Mobile-Friendly) -->
+          <div class="add-item-section">
+            <div class="form-group">
+              <label>Produto</label>
+              <div class="search-wrapper">
+                <input type="text" id="v-produto-search" placeholder="Buscar produto..." oninput="filterProdutos()" onfocus="filterProdutos()">
+                <div id="v-produto-dropdown" class="autocomplete-dropdown"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Quantidade</label>
+              <input type="number" id="v-qty" placeholder="1" min="1" value="1">
+            </div>
+            <button class="btn btn-primary" onclick="addItemToVenda()" style="width:100%;padding:1rem;font-size:1.1rem;">
+              <i class="ti ti-plus"></i> Adicionar Item
+            </button>
+          </div>
+
+          <!-- Itens da Venda (Cleaner & More Visible) -->
+          <div class="items-section">
+            <div class="items-header">
+              <h3><i class="ti ti-list"></i> Itens da Venda</h3>
+            </div>
+            <div id="v-itens-empty" class="empty">Nenhum item adicionado</div>
+            <div id="v-itens-container"></div>
+          </div>
+
+          <!-- Pagamento e Tipo de Venda (Cleaner) -->
+          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <div class="form-group">
+              <label>Forma de Pagamento</label>
+              <div class="payment-options">
+                <div class="payment-option active" id="label-dinheiro" onclick="selectPayment('dinheiro')">
+                  <i class="ti ti-cash"></i>
+                  <span>Dinheiro</span>
+                </div>
+                <div class="payment-option" id="label-cartao" onclick="selectPayment('cartao')">
+                  <i class="ti ti-credit-card"></i>
+                  <span>Cartão</span>
+                </div>
+              </div>
+              <input type="hidden" name="v-pagamento" id="v-pagamento-hidden" value="dinheiro">
+            </div>
+
+            <div class="form-group">
+              <label>Tipo de Venda</label>
+              <div class="sale-type-options">
+                <div class="sale-type-option active" id="label-balcao" onclick="selectSaleType('balcao')">
+                  <i class="ti ti-shopping-bag"></i>
+                  <span>Balcão</span>
+                </div>
+                <div class="sale-type-option" id="label-delivery" onclick="selectSaleType('delivery')">
+                  <i class="ti ti-delivery"></i>
+                  <span>Delivery</span>
+                </div>
+              </div>
+              <input type="hidden" name="v-tipo-venda" id="v-tipo-venda-hidden" value="balcao">
+            </div>
+          </div>
+
+          <!-- Plataforma (Delivery Only) -->
+          <div class="form-group" id="v-plataforma-container" style="display:none">
+            <label>Plataforma</label>
+            <select id="v-plataforma">
+              <option value="">Selecione uma plataforma</option>
+              <option value="99">99</option>
+              <option value="ifood">iFood</option>
+            </select>
+          </div>
+
+          <!-- Observação -->
+          <div class="form-group">
+            <label>Observação (opcional)</label>
+            <input type="text" id="v-obs" placeholder="Ex: Sem cebola, Sem açúcar...">
+          </div>
+          
+          <!-- Total da Venda (Cleaner) -->
+          <div class="total-section" style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:1.5rem;margin-bottom:1.5rem;text-align:center">
+            <div class="total-label" style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">Total da Venda</div>
+            <div class="total-value" style="font-size:36px;font-weight:700;color:var(--green)" id="v-total-preview">R$ 0,00</div>
+          </div>
+          
+          <!-- Botão de Registrar Venda -->
+          <button class="btn btn-primary" onclick="addVenda()" style="width:100%;padding:16px;font-size:18px;font-weight:600">
+            <i class="ti ti-check"></i> Registrar Venda
+          </button>
+        </div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div class="screen" id="screen-usuarios">
+        <div class="card">
+          <div class="section-header">
+            <h2>Usuários do sistema</h2>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span id="u-count" style="font-size:12px;color:var(--text-secondary)"></span>
+              <button class="btn btn-primary" onclick="toggleFormUsuario()" id="btn-toggle-form-usuario">
+                <i class="ti ti-plus"></i> Novo usuário
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Nome</th><th>Usuário</th><th>Role</th><th></th></tr></thead>
+            <tbody id="tabela-usuarios"></tbody>
+          </table>
+          </div>
+          <div id="usuarios-empty" class="empty" style="display:none"><i class="ti ti-users"></i>Nenhum usuário cadastrado.</div>
+        </div>
+        
+        <!-- Formulário de Novo Usuário -->
+        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-usuario">
+          <div class="card-title"><i class="ti ti-plus"></i> Novo usuário</div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Nome</label><input type="text" id="u-nome" placeholder="Nome completo"></div>
+            <div class="form-group"><label>Usuário</label><input type="text" id="u-email" placeholder="nome_de_usuario"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Senha</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="password" id="u-senha" placeholder="********" style="flex: 1;">
+                <button class="btn" onclick="toggleUsuarioSenha('u-senha', 'u-icone-senha')">
+                  <i class="ti ti-eye" id="u-icone-senha"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group"><label>Role</label><select id="u-role">
+              <option value="funcionario">Funcionário</option>
+              <option value="dono">Dono</option>
+            </select></div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="addUsuario()"><i class="ti ti-check"></i> Cadastrar usuário</button>
+            <button class="btn" onclick="toggleFormUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Formulário de Edição de Usuário -->
+        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-editar-usuario">
+          <div class="card-title"><i class="ti ti-edit"></i> Editar usuário</div>
+          <input type="hidden" id="editar-u-id">
+          <div class="form-row-2">
+            <div class="form-group"><label>Nome</label><input type="text" id="editar-u-nome" placeholder="Nome completo"></div>
+            <div class="form-group"><label>Usuário</label><input type="text" id="editar-u-usuario" placeholder="nome_de_usuario"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Senha</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="password" id="editar-u-senha" placeholder="Deixe vazio para manter a mesma senha" style="flex: 1;">
+                <button class="btn" onclick="toggleUsuarioSenha('editar-u-senha', 'editar-u-icone-senha')">
+                  <i class="ti ti-eye" id="editar-u-icone-senha"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group"><label>Role</label><select id="editar-u-role">
+              <option value="funcionario">Funcionário</option>
+              <option value="dono">Dono</option>
+            </select></div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="editarUsuario()"><i class="ti ti-check"></i> Salvar alterações</button>
+            <button class="btn" onclick="cancelarEdicaoUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
