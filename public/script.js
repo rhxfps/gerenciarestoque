@@ -1247,41 +1247,7 @@ async function renderCaixa() {
       caixaFechadoDiv.style.display = 'block';
     }
 
-    if (historico.length) {
-      historicoDiv.innerHTML = historico.map(c => {
-        const dataAbertura = fmt(c.data_abertura);
-        const dataFechamento = c.data_fechamento ? fmt(c.data_fechamento) : '-';
-        const trocoInicial = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.troco_inicial || 0);
-        const totalVendas = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.total_vendas_dinheiro || 0);
-        const valorFinal = c.valor_final ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.valor_final) : '-';
-        const diferenca = c.valor_final ? 
-          (c.valor_final - (c.troco_inicial + c.total_vendas_dinheiro)) : 0;
-        const diferencaColor = diferenca >= 0 ? 'green' : 'red';
-        const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
-        
-        const usuarioAbertura = c.usuario_abertura?.nome || 'Desconhecido';
-        const usuarioFechamento = c.usuario_fechamento?.nome || 'Desconhecido';
-        
-        return `
-          <div class="card" style="margin-bottom:12px;padding:1rem">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <strong>Aberto: ${dataAbertura}</strong>
-              <strong>Fechado: ${dataFechamento}</strong>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-              <div>Troco Inicial: <strong>${trocoInicial}</strong></div>
-              <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
-              <div>Valor Final: <strong>${valorFinal}</strong></div>
-              <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
-              <div>Aberto por: <strong>${usuarioAbertura}</strong></div>
-              <div>Fechado por: <strong>${usuarioFechamento}</strong></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    } else {
-      historicoDiv.innerHTML = '<div class="empty">Nenhum caixa fechado ainda</div>';
-    }
+    // O histórico dos caixas é exibido apenas na tela de Relatórios
   } catch (error) {
     toast(error.message || 'Erro ao carregar caixa!', false);
     console.error(error);
