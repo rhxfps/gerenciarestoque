@@ -697,8 +697,18 @@ function renderRelatorio() {
   const totalVendasReais = vendasSemana.reduce((acumulador, venda) => {
     return acumulador + (venda.total || 0);
   }, 0);
+  
+  const totalDinheiro = vendasSemana.filter(v => v.pagamento === 'dinheiro').reduce((acumulador, venda) => {
+    return acumulador + (venda.total || 0);
+  }, 0);
+  const totalCartao = vendasSemana.filter(v => v.pagamento === 'cartao').reduce((acumulador, venda) => {
+    return acumulador + (venda.total || 0);
+  }, 0);
+  
   document.getElementById('r-vendas-qtd').textContent = totalVendas;
-  document.getElementById('r-vendas-total').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalVendasReais);
+  document.getElementById('r-total-dinheiro').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDinheiro);
+  document.getElementById('r-total-cartao').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalCartao);
+  document.getElementById('r-total-geral').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalVendasReais);
 
   const rankVendas = {};
   vendasSemana.forEach(venda => {
