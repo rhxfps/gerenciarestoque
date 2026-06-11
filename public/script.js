@@ -786,6 +786,8 @@ function renderRelatorio() {
         (c.valor_final - (c.troco_inicial + c.total_vendas_dinheiro)) : 0;
       const diferencaColor = diferenca >= 0 ? 'green' : 'red';
       const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
+      const usuarioAbertura = c.usuario_abertura?.nome || 'Desconhecido';
+      const usuarioFechamento = c.usuario_fechamento?.nome || 'Desconhecido';
       
       return `
         <div class="card" style="margin-bottom:12px;padding:1rem">
@@ -798,6 +800,8 @@ function renderRelatorio() {
             <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
             <div>Valor Final: <strong>${valorFinal}</strong></div>
             <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
+            <div>Aberto por: <strong>${usuarioAbertura}</strong></div>
+            <div>Fechado por: <strong>${usuarioFechamento}</strong></div>
           </div>
         </div>
       `;
@@ -1255,6 +1259,9 @@ async function renderCaixa() {
         const diferencaColor = diferenca >= 0 ? 'green' : 'red';
         const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
         
+        const usuarioAbertura = c.usuario_abertura?.nome || 'Desconhecido';
+        const usuarioFechamento = c.usuario_fechamento?.nome || 'Desconhecido';
+        
         return `
           <div class="card" style="margin-bottom:12px;padding:1rem">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1266,6 +1273,8 @@ async function renderCaixa() {
               <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
               <div>Valor Final: <strong>${valorFinal}</strong></div>
               <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
+              <div>Aberto por: <strong>${usuarioAbertura}</strong></div>
+              <div>Fechado por: <strong>${usuarioFechamento}</strong></div>
             </div>
           </div>
         `;

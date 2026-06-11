@@ -349,18 +349,26 @@ app.post('/api/vendas', autenticar, async (req, res) => {
 // ==================== CAIXA ====================
 app.get('/api/caixa', autenticar, async (req, res) => {
   try {
-    // Buscar último caixa aberto/fechado
+    // Buscar último caixa aberto/fechado com dados de usuário
     const { data: ultimoCaixa, error: errorCaixa } = await supabase
       .from('caixa')
-      .select('*')
+      .select(`
+        *,
+        usuario_abertura:usuario_abertura_id (nome),
+        usuario_fechamento:usuario_fechamento_id (nome)
+      `)
       .order('data_abertura', { ascending: false })
       .limit(1)
       .single();
     
-    // Buscar histórico de caixas fechados
+    // Buscar histórico de caixas fechados com dados de usuário
     const { data: historicoCaixa, error: errorHistorico } = await supabase
       .from('caixa')
-      .select('*')
+      .select(`
+        *,
+        usuario_abertura:usuario_abertura_id (nome),
+        usuario_fechamento:usuario_fechamento_id (nome)
+      `)
       .not('data_fechamento', 'is', null)
       .order('data_fechamento', { ascending: false })
       .limit(10);
@@ -412,7 +420,8 @@ app.post('/api/caixa/abrir', autenticar, async (req, res) => {
       .from('caixa')
       .insert([{
         troco_inicial,
-        data_abertura: new Date().toISOString()
+        data_abertura: new Date().toISOString(),
+        usuario_abertura_id: req.usuario.id
       }])
       .select()
       .single();
@@ -459,7 +468,8 @@ app.post('/api/caixa/fechar', autenticar, async (req, res) => {
       .update({
         valor_final,
         total_vendas_dinheiro: totalVendasDinheiro,
-        data_fechamento: new Date().toISOString()
+        data_fechamento: new Date().toISOString(),
+        usuario_fechamento_id: req.usuario.id
       })
       .eq('id', caixaAberto.id)
       .select()
