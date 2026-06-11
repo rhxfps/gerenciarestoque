@@ -346,6 +346,133 @@ app.post('/api/vendas', autenticar, async (req, res) => {
   }
 });
 
+// ==================== CAIXA ====================
+app.get('/api/caixa', autenticar, async (req, res) => {
+  try {
+    // Buscar último caixa aberto/fechado
+    const { data: ultimoCaixa, error: errorCaixa } = await supabase
+      .from('caixa')
+      .select('*')
+      .order('data_abertura', { ascending: false })
+      .limit(1)
+      .single();
+    
+    // Buscar histórico de caixas fechados
+    const { data: historicoCaixa, error: errorHistorico } = await supabase
+      .from('caixa')
+      .select('*')
+      .not('data_fechamento', 'is', null)
+      .order('data_fechamento', { ascending: false })
+      .limit(10);
+    
+    if (errorCaixa && errorCaixa.code !== 'PGRST116') throw errorCaixa;
+    if (errorHistorico) throw errorHistorico;
+
+    // Calcular total de vendas em dinheiro do caixa aberto (se houver)
+    let totalVendasDinheiro = 0;
+    if (ultimoCaixa && !ultimoCaixa.data_fechamento) {
+      const { data: vendas, error: errorVendas } = await supabase
+        .from('vendas')
+        .select('total')
+        .eq('pagamento', 'dinheiro')
+        .gte('data', ultimoCaixa.data_abertura);
+      
+      if (!errorVendas && vendas) {
+        totalVendasDinheiro = vendas.reduce((sum, v) => sum + v.total, 0);
+      }
+    }
+
+    res.json({
+      caixaAtual: ultimoCaixa || null,
+      totalVendasDinheiro,
+      historico: historicoCaixa || []
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/caixa/abrir', autenticar, async (req, res) => {
+  const { troco_inicial } = req.body;
+
+  try {
+    // Verificar se já tem caixa aberto
+    const { data: caixaAberto, error: errorCaixaAberto } = await supabase
+      .from('caixa')
+      .select('*')
+      .is('data_fechamento', null)
+      .limit(1)
+      .single();
+    
+    if (caixaAberto && !errorCaixaAberto) {
+      return res.status(400).json({ error: 'Já há um caixa aberto' });
+    }
+
+    const { data: novoCaixa, error: errorNovoCaixa } = await supabase
+      .from('caixa')
+      .insert([{
+        troco_inicial,
+        data_abertura: new Date().toISOString()
+      }])
+      .select()
+      .single();
+    
+    if (errorNovoCaixa) throw errorNovoCaixa;
+
+    res.json(novoCaixa);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/caixa/fechar', autenticar, async (req, res) => {
+  const { valor_final } = req.body;
+
+  try {
+    // Buscar caixa aberto
+    const { data: caixaAberto, error: errorCaixaAberto } = await supabase
+      .from('caixa')
+      .select('*')
+      .is('data_fechamento', null)
+      .limit(1)
+      .single();
+    
+    if (errorCaixaAberto || !caixaAberto) {
+      return res.status(400).json({ error: 'Nenhum caixa aberto' });
+    }
+
+    // Calcular total de vendas em dinheiro
+    const { data: vendas, error: errorVendas } = await supabase
+      .from('vendas')
+      .select('total')
+      .eq('pagamento', 'dinheiro')
+      .gte('data', caixaAberto.data_abertura);
+    
+    let totalVendasDinheiro = 0;
+    if (!errorVendas && vendas) {
+      totalVendasDinheiro = vendas.reduce((sum, v) => sum + v.total, 0);
+    }
+
+    // Fechar caixa
+    const { data: caixaFechado, error: errorFechar } = await supabase
+      .from('caixa')
+      .update({
+        valor_final,
+        total_vendas_dinheiro: totalVendasDinheiro,
+        data_fechamento: new Date().toISOString()
+      })
+      .eq('id', caixaAberto.id)
+      .select()
+      .single();
+    
+    if (errorFechar) throw errorFechar;
+
+    res.json(caixaFechado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== MIDDLEWARE DE AUTENTICAÇÃO ====================
 function autenticar(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1];

@@ -205,12 +205,13 @@ const titles = {
   historico: 'Histórico',
   relatorio: 'Relatório semanal',
   vendas: 'Comandas/Vendas',
+  caixa: 'Caixa',
   usuarios: 'Usuários'
 };
 
 function nav(screen) {
   // Verificar permissão
-  if (screen !== 'vendas' && currentUser.role !== 'dono') {
+  if (screen !== 'vendas' && screen !== 'caixa' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
@@ -228,6 +229,7 @@ function nav(screen) {
   if (screen === 'saidas') { populateSelect('s-produto'); renderSaidas(); }
   if (screen === 'historico') { populateHFiltro(); renderHistorico(); }
   if (screen === 'relatorio') renderRelatorio();
+  if (screen === 'caixa') renderCaixa();
   if (screen === 'vendas') {
     vendaItens = [];
     vendaProdutoSelecionado = null; // Reset selected product
@@ -1170,6 +1172,113 @@ function renderUsuarios() {
     const deleteBtn = u.id === currentUser.id ? '' : `<button class="btn btn-danger btn-sm" onclick="deleteUsuario(${u.id})"><i class="ti ti-trash"></i></button>`;
     return `<tr><td><strong>${u.nome}</strong></td><td>${u.usuario}</td><td>${roleLabel}</td><td style="display:flex;gap:4px">${editBtn} ${deleteBtn}</td></tr>`;
   }).join('');
+}
+
+// ==================== CAIXA ====================
+async function renderCaixa() {
+  try {
+    const response = await apiRequest('/caixa');
+    const { caixaAtual, totalVendasDinheiro, historico } = response;
+
+    const caixaAbertoDiv = document.getElementById('caixa-aberto');
+    const caixaFechadoDiv = document.getElementById('caixa-fechado');
+    const historicoDiv = document.getElementById('historico-caixa');
+
+    if (caixaAtual && !caixaAtual.data_fechamento) {
+      caixaAbertoDiv.style.display = 'block';
+      caixaFechadoDiv.style.display = 'none';
+
+      document.getElementById('caixa-troco-inicial').textContent = 
+        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(caixaAtual.troco_inicial || 0);
+      document.getElementById('caixa-total-vendas').textContent = 
+        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalVendasDinheiro || 0);
+    } else {
+      caixaAbertoDiv.style.display = 'none';
+      caixaFechadoDiv.style.display = 'block';
+    }
+
+    if (historico.length) {
+      historicoDiv.innerHTML = historico.map(c => {
+        const dataAbertura = fmt(c.data_abertura);
+        const dataFechamento = c.data_fechamento ? fmt(c.data_fechamento) : '-';
+        const trocoInicial = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.troco_inicial || 0);
+        const totalVendas = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.total_vendas_dinheiro || 0);
+        const valorFinal = c.valor_final ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.valor_final) : '-';
+        const diferenca = c.valor_final ? 
+          (c.valor_final - (c.troco_inicial + c.total_vendas_dinheiro)) : 0;
+        const diferencaColor = diferenca >= 0 ? 'green' : 'red';
+        const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
+        
+        return `
+          <div class="card" style="margin-bottom:12px;padding:1rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>Aberto: ${dataAbertura}</strong>
+              <strong>Fechado: ${dataFechamento}</strong>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+              <div>Troco Inicial: <strong>${trocoInicial}</strong></div>
+              <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
+              <div>Valor Final: <strong>${valorFinal}</strong></div>
+              <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      historicoDiv.innerHTML = '<div class="empty">Nenhum caixa fechado ainda</div>';
+    }
+  } catch (error) {
+    toast(error.message || 'Erro ao carregar caixa!', false);
+    console.error(error);
+  }
+}
+
+async function abrirCaixa() {
+  const trocoInput = document.getElementById('caixa-troco');
+  const trocoInicial = parseFloat(trocoInput.value);
+
+  if (isNaN(trocoInicial) || trocoInicial < 0) {
+    toast('Informe um valor de troco inicial válido!', false);
+    return;
+  }
+
+  try {
+    await apiRequest('/caixa/abrir', {
+      method: 'POST',
+      body: JSON.stringify({ troco_inicial: trocoInicial })
+    });
+
+    trocoInput.value = '';
+    toast('Caixa aberto com sucesso!');
+    renderCaixa();
+  } catch (error) {
+    toast(error.message || 'Erro ao abrir caixa!', false);
+    console.error(error);
+  }
+}
+
+async function fecharCaixa() {
+  const valorFinalInput = document.getElementById('caixa-valor-final');
+  const valorFinal = parseFloat(valorFinalInput.value);
+
+  if (isNaN(valorFinal) || valorFinal < 0) {
+    toast('Informe um valor final válido!', false);
+    return;
+  }
+
+  try {
+    await apiRequest('/caixa/fechar', {
+      method: 'POST',
+      body: JSON.stringify({ valor_final: valorFinal })
+    });
+
+    valorFinalInput.value = '';
+    toast('Caixa fechado com sucesso!');
+    renderCaixa();
+  } catch (error) {
+    toast(error.message || 'Erro ao fechar caixa!', false);
+    console.error(error);
+  }
 }
 
 // ==================== INICIALIZAÇÃO ====================

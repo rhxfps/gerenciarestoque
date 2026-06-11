@@ -46,6 +46,7 @@
       <div class="nav-item" data-screen="historico" id="nav-historico"><i class="ti ti-history"></i> <span>Histórico</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
+      <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="usuarios" id="nav-usuarios"><i class="ti ti-users"></i> <span>Usuários</span></div>
     </nav>
     <div class="sidebar-footer">
@@ -89,6 +90,7 @@
       <div class="mobile-nav-item" data-screen="historico"><i class="ti ti-history"></i> Histórico</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
+      <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="usuarios"><i class="ti ti-users"></i> Usuários</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
@@ -450,6 +452,53 @@
           <button class="btn btn-primary" onclick="addVenda()" style="width:100%;padding:16px;font-size:18px;font-weight:600">
             <i class="ti ti-check"></i> Registrar Venda
           </button>
+        </div>
+      </div>
+
+      <!-- CAIXA -->
+      <div class="screen" id="screen-caixa">
+        <div class="card">
+          <div class="section-header">
+            <h2>Caixa</h2>
+          </div>
+          <div id="caixa-aberto" style="display:none">
+            <div class="grid2" style="margin-bottom:1.5rem">
+              <div class="metric-card" style="border-left:4px solid var(--green)">
+                <div class="metric-label"><i class="ti ti-moneybag"></i> Troco Inicial</div>
+                <div class="metric-value text-green" id="caixa-troco-inicial">R$ 0,00</div>
+              </div>
+              <div class="metric-card" style="border-left:4px solid var(--blue)">
+                <div class="metric-label"><i class="ti ti-cash"></i> Total de Vendas (Apenas Dinheiro)</div>
+                <div class="metric-value text-blue" id="caixa-total-vendas">R$ 0,00</div>
+              </div>
+            </div>
+            <div class="card" style="background:var(--bg-secondary);padding:1.5rem;margin-bottom:1.5rem">
+              <div class="form-group">
+                <label>Valor final do caixa</label>
+                <input type="number" id="caixa-valor-final" placeholder="Ex: 500.00" step="0.01">
+              </div>
+              <button class="btn btn-danger" onclick="fecharCaixa()" style="width:100%">
+                <i class="ti ti-lock"></i> Fechar Caixa
+              </button>
+            </div>
+          </div>
+          <div id="caixa-fechado">
+            <div class="empty" style="margin-bottom:1.5rem">
+              <i class="ti ti-lock"></i>
+              <p>Caixa fechado</p>
+            </div>
+            <div class="form-group">
+              <label>Troco inicial</label>
+              <input type="number" id="caixa-troco" placeholder="Ex: 100.00" step="0.01">
+            </div>
+            <button class="btn btn-primary" onclick="abrirCaixa()" style="width:100%">
+              <i class="ti ti-lock-open"></i> Abrir Caixa
+            </button>
+            <div style="margin-top:1.5rem">
+              <div class="card-title"><i class="ti ti-history"></i> Últimos fechamentos</div>
+              <div id="historico-caixa"></div>
+            </div>
+          </div>
         </div>
       </div>
 
