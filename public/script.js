@@ -4,6 +4,7 @@ let movimentacoes = [];
 let vendas = [];
 let usuarios = [];
 let vendaItens = [];
+let caixas = [];
 let vendasListenersAdicionados = false;
 let currentUser = null;
 let authToken = null;
@@ -188,6 +189,8 @@ async function loadAllData() {
 
     if (currentUser.role === 'dono') {
       usuarios = await apiRequest('/usuarios');
+      const caixaResponse = await apiRequest('/caixa');
+      caixas = caixaResponse.historico || [];
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -757,6 +760,39 @@ function renderRelatorio() {
     const precoFormatado = p.preco ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco) : '—';
     return `<tr><td><strong>${p.nome}</strong></td><td>${p.categoria || '—'}</td><td>${p.qtd}</td><td>${p.qtd_minima}</td><td>${precoFormatado}</td><td>${badge}</td></tr>`;
   }).join('');
+
+  // Renderizar fechamentos de caixa
+  const rCaixas = document.getElementById('r-caixas');
+  if (!caixas.length) {
+    rCaixas.innerHTML = '<div class="empty">Nenhum fechamento de caixa registrado ainda</div>';
+  } else {
+    rCaixas.innerHTML = caixas.map(c => {
+      const dataAbertura = fmt(c.data_abertura);
+      const dataFechamento = c.data_fechamento ? fmt(c.data_fechamento) : '-';
+      const trocoInicial = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.troco_inicial || 0);
+      const totalVendas = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.total_vendas_dinheiro || 0);
+      const valorFinal = c.valor_final ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.valor_final) : '-';
+      const diferenca = c.valor_final ? 
+        (c.valor_final - (c.troco_inicial + c.total_vendas_dinheiro)) : 0;
+      const diferencaColor = diferenca >= 0 ? 'green' : 'red';
+      const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
+      
+      return `
+        <div class="card" style="margin-bottom:12px;padding:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong>Aberto: ${dataAbertura}</strong>
+            <strong>Fechado: ${dataFechamento}</strong>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            <div>Troco Inicial: <strong>${trocoInicial}</strong></div>
+            <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
+            <div>Valor Final: <strong>${valorFinal}</strong></div>
+            <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 }
 
 // ==================== VENDAS ====================
