@@ -771,14 +771,25 @@ function renderRelMovimentacoes() {
   const semEnt = movimentacoes.filter(m => m.tipo==='entrada' && semanaAtual(m.data)).reduce((a,m)=>a+m.qtd,0);
   const semSai = movimentacoes.filter(m => m.tipo==='saida'  && semanaAtual(m.data)).reduce((a,m)=>a+m.qtd,0);
   const totalMov = Math.max(semEnt, semSai, 1);
+
   document.getElementById('r-ent').textContent = `${semEnt} un.`;
   document.getElementById('r-sai').textContent = `${semSai} un.`;
-  document.getElementById('r-bar-ent').style.width = `${Math.round((semEnt/totalMov)*100)}%`;
-  document.getElementById('r-bar-sai').style.width = `${Math.round((semSai/totalMov)*100)}%`;
+
+  const pctEnt = Math.round((semEnt/totalMov)*100);
+  const pctSai = Math.round((semSai/totalMov)*100);
+  document.getElementById('r-bar-ent').style.width = `${pctEnt}%`;
+  document.getElementById('r-bar-sai').style.width = `${pctSai}%`;
+  document.getElementById('r-ent-pct').textContent = `${pctEnt}%`;
+  document.getElementById('r-sai-pct').textContent = `${pctSai}%`;
+
   const saldo = semEnt - semSai;
   const sd = document.getElementById('r-saldo');
   sd.textContent = `${saldo>=0?'+':''}${saldo} un.`;
-  sd.style.color = saldo>=0 ? 'var(--green)' : 'var(--red)';
+
+  // Balanço KPI: verde se positivo, vermelho se negativo, azul se zero
+  const kpiBalanco = document.getElementById('r-kpi-balanco');
+  kpiBalanco.classList.remove('dash-kpi--green','dash-kpi--red','dash-kpi--blue');
+  kpiBalanco.classList.add(saldo > 0 ? 'dash-kpi--green' : saldo < 0 ? 'dash-kpi--red' : 'dash-kpi--blue');
 
   const movSemana = movimentacoes.filter(m => semanaAtual(m.data));
   const rank = {};

@@ -450,24 +450,60 @@
 
         <!-- ===== ABA MOVIMENTAÇÕES ===== -->
         <div class="rel-panel" id="rel-movimentacoes">
-          <div class="dash-charts-grid" style="margin-bottom:1.5rem">
-            <div class="report-block">
-              <div class="report-block-title"><i class="ti ti-arrow-bar-to-down"></i> Entradas da semana</div>
-              <div style="font-size:28px;font-weight:700;color:var(--green);margin-bottom:8px" id="r-ent">0 un.</div>
-              <div class="progress-bar"><div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div></div>
+
+          <!-- KPI row -->
+          <div class="mov-kpi-row">
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-arrow-bar-to-down"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Entradas da semana</span>
+                <span class="dash-kpi-value" id="r-ent">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
             </div>
-            <div class="report-block">
-              <div class="report-block-title"><i class="ti ti-arrow-bar-up"></i> Saídas da semana</div>
-              <div style="font-size:28px;font-weight:700;color:var(--red);margin-bottom:8px" id="r-sai">0 un.</div>
-              <div class="progress-bar"><div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div></div>
+
+            <div class="dash-kpi dash-kpi--red">
+              <div class="dash-kpi-icon"><i class="ti ti-arrow-bar-up"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Saídas da semana</span>
+                <span class="dash-kpi-value" id="r-sai">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
+            </div>
+
+            <div class="dash-kpi dash-kpi--balanco" id="r-kpi-balanco">
+              <div class="dash-kpi-icon"><i class="ti ti-chart-line"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Balanço semanal</span>
+                <span class="dash-kpi-value" id="r-saldo">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Entradas − Saídas</span>
+              </div>
             </div>
           </div>
 
-          <div class="card" style="margin-bottom:1.5rem">
-            <div class="card-title"><i class="ti ti-chart-line"></i> Balanço semanal</div>
-            <div style="font-size:32px;font-weight:800;text-align:center;padding:0.5rem 0" id="r-saldo">0 un.</div>
+          <!-- progress bars -->
+          <div class="card mov-bars-card">
+            <div class="mov-bar-row">
+              <div class="mov-bar-label">
+                <span><i class="ti ti-arrow-bar-to-down" style="color:var(--green)"></i> Entradas</span>
+                <strong id="r-ent-pct">0%</strong>
+              </div>
+              <div class="progress-bar mov-progress">
+                <div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div>
+              </div>
+            </div>
+            <div class="mov-bar-row">
+              <div class="mov-bar-label">
+                <span><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Saídas</span>
+                <strong id="r-sai-pct">0%</strong>
+              </div>
+              <div class="progress-bar mov-progress">
+                <div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div>
+              </div>
+            </div>
           </div>
 
+          <!-- ranking -->
           <div class="card">
             <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos com mais movimentações</div>
             <div id="r-ranking" class="dash-ranking"></div>

@@ -1675,3 +1675,58 @@ tbody tr:hover td { background: var(--blue-50); }
   .caixa-card-grid { grid-template-columns: 1fr; }
   .caixa-stat { border-right: none !important; }
 }
+
+/* ============================================================
+   RELATÓRIO — MOVIMENTAÇÕES
+   ============================================================ */
+.dash-kpi--red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.mov-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 1.25rem;
+}
+
+.mov-bars-card {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mov-bar-row { display: flex; flex-direction: column; gap: 6px; }
+
+.mov-bar-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mov-bar-label span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.mov-bar-label strong { font-size: 12px; color: var(--text-muted); }
+
+.mov-progress { height: 10px; }
+
+/* Balanço placeholder — cor definida via JS */
+.dash-kpi--balanco { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+
+@media (max-width: 720px) {
+  .mov-kpi-row { grid-template-columns: 1fr 1fr; }
+  .mov-kpi-row .dash-kpi:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+  .mov-kpi-row { grid-template-columns: 1fr; }
+  .mov-kpi-row .dash-kpi:last-child { grid-column: auto; }
+}
