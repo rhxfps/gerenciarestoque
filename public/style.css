@@ -2733,3 +2733,136 @@ mark.estoque-highlight {
   .estoque-busca-input:focus { width: 100%; }
   .estoque-busca-wrap    { width: 100%; }
 }
+
+/* ============================================================
+   CAIXA — layout melhorado
+   ============================================================ */
+.caixa-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+/* card de retirada */
+.caixa-retirada-card {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--red);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.caixa-retirada-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.9rem;
+}
+
+.caixa-retirada-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-retirada {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+  box-shadow: 0 2px 8px rgba(220,38,38,.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, box-shadow .15s;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.btn-retirada:hover { background: #b91c1c; box-shadow: 0 4px 14px rgba(220,38,38,.35); }
+
+/* lista de retiradas da sessão */
+.caixa-ret-lista {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.caixa-ret-lista-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-tertiary);
+}
+
+.caixa-ret-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.caixa-ret-item:last-child { border-bottom: none; }
+
+.caixa-ret-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.caixa-ret-valor {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--red);
+}
+
+.caixa-ret-motivo {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.caixa-ret-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.caixa-ret-hora {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .caixa-kpis { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .caixa-kpis { grid-template-columns: 1fr 1fr; }
+  .caixa-retirada-body { flex-direction: column; }
+  .caixa-retirada-body .form-group { width: 100%; }
+  .btn-retirada { width: 100%; justify-content: center; }
+}

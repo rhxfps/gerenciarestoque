@@ -767,27 +767,66 @@
           <div class="section-header">
             <h2>Caixa</h2>
           </div>
+
+          <!-- Caixa ABERTO -->
           <div id="caixa-aberto" style="display:none">
-            <div class="grid2" style="margin-bottom:1.5rem">
+
+            <!-- KPIs -->
+            <div class="caixa-kpis">
               <div class="metric-card" style="border-left:4px solid var(--green)">
                 <div class="metric-label"><i class="ti ti-moneybag"></i> Troco Inicial</div>
                 <div class="metric-value text-green" id="caixa-troco-inicial">R$ 0,00</div>
               </div>
               <div class="metric-card" style="border-left:4px solid var(--blue)">
-                <div class="metric-label"><i class="ti ti-cash"></i> Total de Vendas (Apenas Dinheiro)</div>
+                <div class="metric-label"><i class="ti ti-cash"></i> Vendas (Dinheiro)</div>
                 <div class="metric-value text-blue" id="caixa-total-vendas">R$ 0,00</div>
               </div>
+              <div class="metric-card" style="border-left:4px solid var(--red)">
+                <div class="metric-label"><i class="ti ti-arrow-bar-up"></i> Total Retiradas</div>
+                <div class="metric-value text-red" id="caixa-total-retiradas">R$ 0,00</div>
+              </div>
+              <div class="metric-card" style="border-left:4px solid var(--amber)">
+                <div class="metric-label"><i class="ti ti-wallet"></i> Saldo Estimado</div>
+                <div class="metric-value text-amber" id="caixa-saldo-estimado">R$ 0,00</div>
+              </div>
             </div>
-            <div class="card" style="background:var(--bg-secondary);padding:1.5rem;margin-bottom:1.5rem">
+
+            <!-- Retirada -->
+            <div class="caixa-retirada-card">
+              <div class="caixa-retirada-title">
+                <i class="ti ti-arrow-bar-up"></i> Registrar Retirada
+              </div>
+              <div class="caixa-retirada-body">
+                <div class="form-group" style="flex:1;min-width:160px;margin:0">
+                  <label>Valor</label>
+                  <input type="number" id="caixa-retirada-valor" placeholder="Ex: 50.00" step="0.01" min="0.01">
+                </div>
+                <div class="form-group" style="flex:2;min-width:200px;margin:0">
+                  <label>Motivo (opcional)</label>
+                  <input type="text" id="caixa-retirada-motivo" placeholder="Ex: Troco para compra, pagamento fornecedor...">
+                </div>
+                <button class="btn btn-retirada" onclick="registrarRetirada()">
+                  <i class="ti ti-minus"></i> Retirar
+                </button>
+              </div>
+            </div>
+
+            <!-- Histórico de retiradas -->
+            <div id="caixa-retiradas-lista"></div>
+
+            <!-- Fechar caixa -->
+            <div class="card" style="background:var(--bg-secondary);padding:1.25rem;margin-bottom:0.5rem">
               <div class="form-group">
-                <label>Valor final do caixa</label>
+                <label>Valor final do caixa (contagem física)</label>
                 <input type="number" id="caixa-valor-final" placeholder="Ex: 500.00" step="0.01">
               </div>
-              <button class="btn btn-danger" onclick="fecharCaixa()" style="width:100%">
+              <button class="btn btn-danger" onclick="fecharCaixa()" style="width:100%;justify-content:center">
                 <i class="ti ti-lock"></i> Fechar Caixa
               </button>
             </div>
           </div>
+
+          <!-- Caixa FECHADO -->
           <div id="caixa-fechado">
             <div class="empty" style="margin-bottom:1.5rem">
               <i class="ti ti-lock"></i>
@@ -797,7 +836,7 @@
               <label>Troco inicial</label>
               <input type="number" id="caixa-troco" placeholder="Ex: 100.00" step="0.01">
             </div>
-            <button class="btn btn-primary" onclick="abrirCaixa()" style="width:100%">
+            <button class="btn btn-primary" onclick="abrirCaixa()" style="width:100%;justify-content:center">
               <i class="ti ti-lock-open"></i> Abrir Caixa
             </button>
           </div>

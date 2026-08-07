@@ -1730,33 +1730,117 @@ function renderUsuarios() {
 }
 
 // ==================== CAIXA ====================
+let caixaRetiradas = []; // armazenadas localmente enquanto o caixa estiver aberto
+
 async function renderCaixa() {
   try {
     const response = await apiRequest('/caixa');
     const { caixaAtual, totalVendasDinheiro, historico } = response;
 
-    const caixaAbertoDiv = document.getElementById('caixa-aberto');
+    const caixaAbertoDiv  = document.getElementById('caixa-aberto');
     const caixaFechadoDiv = document.getElementById('caixa-fechado');
-    const historicoDiv = document.getElementById('historico-caixa');
 
     if (caixaAtual && !caixaAtual.data_fechamento) {
-      caixaAbertoDiv.style.display = 'block';
+      caixaAbertoDiv.style.display  = 'block';
       caixaFechadoDiv.style.display = 'none';
 
-      document.getElementById('caixa-troco-inicial').textContent = 
-        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(caixaAtual.troco_inicial || 0);
-      document.getElementById('caixa-total-vendas').textContent = 
-        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalVendasDinheiro || 0);
-    } else {
-      caixaAbertoDiv.style.display = 'none';
-      caixaFechadoDiv.style.display = 'block';
-    }
+      const trocoInicial = caixaAtual.troco_inicial || 0;
+      const totalVendas  = totalVendasDinheiro || 0;
+      const totalRet     = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
+      const saldo        = trocoInicial + totalVendas - totalRet;
 
-    // O histórico dos caixas é exibido apenas na tela de Relatórios
+      const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+      document.getElementById('caixa-troco-inicial').textContent  = fmt(trocoInicial);
+      document.getElementById('caixa-total-vendas').textContent   = fmt(totalVendas);
+      document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
+      document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
+
+      renderCaixaRetiradas();
+    } else {
+      caixaAbertoDiv.style.display  = 'none';
+      caixaFechadoDiv.style.display = 'block';
+      caixaRetiradas = []; // limpa ao fechar
+    }
   } catch (error) {
     toast(error.message || 'Erro ao carregar caixa!', false);
     console.error(error);
   }
+}
+
+function renderCaixaRetiradas() {
+  const el = document.getElementById('caixa-retiradas-lista');
+  if (!el) return;
+
+  if (!caixaRetiradas.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+  el.innerHTML = `
+    <div class="caixa-ret-lista">
+      <div class="caixa-ret-lista-title">
+        <i class="ti ti-history"></i> Retiradas desta sessão
+      </div>
+      ${caixaRetiradas.map((r, i) => `
+        <div class="caixa-ret-item">
+          <div class="caixa-ret-item-left">
+            <span class="caixa-ret-valor">${fmt(r.valor)}</span>
+            <span class="caixa-ret-motivo">${r.motivo || 'Sem motivo informado'}</span>
+          </div>
+          <div class="caixa-ret-item-right">
+            <span class="caixa-ret-hora">${r.hora}</span>
+            <button class="btn btn-sm btn-danger" onclick="removerRetirada(${i})" title="Desfazer">
+              <i class="ti ti-trash"></i>
+            </button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function registrarRetirada() {
+  const valorInput  = document.getElementById('caixa-retirada-valor');
+  const motivoInput = document.getElementById('caixa-retirada-motivo');
+  const valor = parseFloat(valorInput.value);
+
+  if (isNaN(valor) || valor <= 0) {
+    toast('Informe um valor válido para a retirada!', false);
+    return;
+  }
+
+  const agora = new Date();
+  const hora  = agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+  caixaRetiradas.push({ valor, motivo: motivoInput.value.trim(), hora });
+  valorInput.value  = '';
+  motivoInput.value = '';
+
+  // atualiza saldo e lista sem recarregar da API
+  const totalRet = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
+  const trocoEl  = document.getElementById('caixa-troco-inicial');
+  const vendasEl = document.getElementById('caixa-total-vendas');
+  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+  const parseFmt = el => parseFloat(el.textContent.replace(/[^0-9,]/g,'').replace(',','.')) || 0;
+  const saldo = parseFmt(trocoEl) + parseFmt(vendasEl) - totalRet;
+
+  document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
+  document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
+  renderCaixaRetiradas();
+  toast(`Retirada de ${fmt(valor)} registrada!`);
+}
+
+function removerRetirada(index) {
+  caixaRetiradas.splice(index, 1);
+  // recalcula
+  const totalRet = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
+  const trocoEl  = document.getElementById('caixa-troco-inicial');
+  const vendasEl = document.getElementById('caixa-total-vendas');
+  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+  const parseFmt = el => parseFloat(el.textContent.replace(/[^0-9,]/g,'').replace(',','.')) || 0;
+  const saldo = parseFmt(trocoEl) + parseFmt(vendasEl) - totalRet;
+  document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
+  document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
+  renderCaixaRetiradas();
 }
 
 async function abrirCaixa() {
