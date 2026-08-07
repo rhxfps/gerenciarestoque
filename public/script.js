@@ -273,17 +273,6 @@ function nav(screen) {
   }
 }
 
-      const tiposVenda = document.querySelectorAll('input[name="v-tipo-venda"]');
-      tiposVenda.forEach(input => {
-        input.addEventListener('change', togglePlataforma);
-      });
-      vendasListenersAdicionados = true;
-    }
-    
-    atualizaEstiloOpcoes();
-  }
-}
-
 document.getElementById('nav').addEventListener('click', e => {
   const item = e.target.closest('.nav-item');
   if (item) nav(item.dataset.screen);
