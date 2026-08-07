@@ -1089,31 +1089,47 @@ function renderRelCaixa() {
     rCaixas.innerHTML = '<div class="empty" style="padding:2rem"><i class="ti ti-cash"></i>Nenhum fechamento de caixa registrado ainda</div>';
     return;
   }
+  const fmt$ = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+
   rCaixas.innerHTML = caixas.map(c => {
-    const dataAbertura    = fmt(c.data_abertura);
-    const dataFechamento  = c.data_fechamento ? fmt(c.data_fechamento) : '—';
-    const trocoInicial    = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.troco_inicial||0);
-    const totalVendasFmt  = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.total_vendas_dinheiro||0);
-    const valorFinal      = c.valor_final ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.valor_final) : '—';
-    const diferenca       = c.valor_final ? c.valor_final-(c.troco_inicial+c.total_vendas_dinheiro) : 0;
-    const difColor        = diferenca>=0 ? 'var(--green)' : 'var(--red)';
-    const difFmt          = (diferenca>=0?'+':'')+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(diferenca);
-    const usuAbr          = c.usuario_abertura?.nome  || 'Desconhecido';
-    const usufec          = c.usuario_fechamento?.nome|| 'Desconhecido';
+    const diferenca  = c.valor_final ? c.valor_final-(c.troco_inicial+c.total_vendas_dinheiro) : 0;
+    const difColor   = diferenca >= 0 ? 'var(--green)' : 'var(--red)';
+    const difFmt     = (diferenca>=0?'+':'')+fmt$(diferenca);
+    const usuAbr     = c.usuario_abertura?.nome   || 'Desconhecido';
+    const usuFec     = c.usuario_fechamento?.nome || 'Desconhecido';
+    const retiradas  = c.caixa_retiradas || [];
+    const totalRet   = retiradas.reduce((s,r)=>s+parseFloat(r.valor||0),0);
+
+    const retiradasHTML = retiradas.length
+      ? `<div class="caixa-ret-section">
+          <div class="caixa-ret-title"><i class="ti ti-arrow-bar-up"></i> Retiradas (${retiradas.length})</div>
+          ${retiradas.map(r=>`
+            <div class="caixa-ret-item">
+              <span class="caixa-ret-motivo">${r.motivo}</span>
+              <span class="caixa-ret-user">${r.usuario?.nome||'—'}</span>
+              <span class="caixa-ret-hora">${fmt(r.data)}</span>
+              <span class="caixa-ret-valor">${fmt$(r.valor)}</span>
+            </div>`).join('')}
+          <div class="caixa-ret-total">Total retirado: <strong>${fmt$(totalRet)}</strong></div>
+        </div>`
+      : '';
+
     return `
       <div class="caixa-card">
         <div class="caixa-card-header">
-          <span><i class="ti ti-lock-open"></i> Aberto: <strong>${dataAbertura}</strong></span>
-          <span><i class="ti ti-lock"></i> Fechado: <strong>${dataFechamento}</strong></span>
+          <span><i class="ti ti-lock-open"></i> Aberto: <strong>${fmt(c.data_abertura)}</strong></span>
+          <span><i class="ti ti-lock"></i> Fechado: <strong>${c.data_fechamento ? fmt(c.data_fechamento) : '—'}</strong></span>
         </div>
         <div class="caixa-card-grid">
-          <div class="caixa-stat"><span>Troco inicial</span><strong>${trocoInicial}</strong></div>
-          <div class="caixa-stat"><span>Vendas (dinheiro)</span><strong>${totalVendasFmt}</strong></div>
-          <div class="caixa-stat"><span>Valor final</span><strong>${valorFinal}</strong></div>
+          <div class="caixa-stat"><span>Troco inicial</span><strong>${fmt$(c.troco_inicial)}</strong></div>
+          <div class="caixa-stat"><span>Vendas (dinheiro)</span><strong>${fmt$(c.total_vendas_dinheiro)}</strong></div>
+          <div class="caixa-stat"><span>Total retirado</span><strong style="color:var(--red)">${fmt$(totalRet)}</strong></div>
+          <div class="caixa-stat"><span>Valor final</span><strong>${c.valor_final ? fmt$(c.valor_final) : '—'}</strong></div>
           <div class="caixa-stat"><span>Diferença</span><strong style="color:${difColor}">${difFmt}</strong></div>
           <div class="caixa-stat"><span>Aberto por</span><strong>${usuAbr}</strong></div>
-          <div class="caixa-stat"><span>Fechado por</span><strong>${usufec}</strong></div>
+          <div class="caixa-stat"><span>Fechado por</span><strong>${usuFec}</strong></div>
         </div>
+        ${retiradasHTML}
       </div>`;
   }).join('');
 }
@@ -1730,36 +1746,63 @@ function renderUsuarios() {
 }
 
 // ==================== CAIXA ====================
-let caixaRetiradas = []; // armazenadas localmente enquanto o caixa estiver aberto
-
 async function renderCaixa() {
   try {
     const response = await apiRequest('/caixa');
-    const { caixaAtual, totalVendasDinheiro, historico } = response;
+    const { caixaAtual, totalVendasDinheiro, totalRetiradas, retiradas, historico } = response;
 
     const caixaAbertoDiv  = document.getElementById('caixa-aberto');
     const caixaFechadoDiv = document.getElementById('caixa-fechado');
+
+    const fmt$ = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
 
     if (caixaAtual && !caixaAtual.data_fechamento) {
       caixaAbertoDiv.style.display  = 'block';
       caixaFechadoDiv.style.display = 'none';
 
-      const trocoInicial = caixaAtual.troco_inicial || 0;
-      const totalVendas  = totalVendasDinheiro || 0;
-      const totalRet     = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
-      const saldo        = trocoInicial + totalVendas - totalRet;
+      const troco   = caixaAtual.troco_inicial || 0;
+      const vendas  = totalVendasDinheiro || 0;
+      const ret     = totalRetiradas || 0;
+      const saldo   = troco + vendas - ret;
 
-      const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-      document.getElementById('caixa-troco-inicial').textContent  = fmt(trocoInicial);
-      document.getElementById('caixa-total-vendas').textContent   = fmt(totalVendas);
-      document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
-      document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
+      document.getElementById('caixa-troco-inicial').textContent    = fmt$(troco);
+      document.getElementById('caixa-total-vendas').textContent     = fmt$(vendas);
+      document.getElementById('caixa-total-retiradas').textContent  = fmt$(ret);
+      document.getElementById('caixa-saldo-esperado').textContent   = fmt$(saldo);
 
-      renderCaixaRetiradas();
+      // Lista de retiradas
+      const listaEl = document.getElementById('caixa-retiradas-lista');
+      if (!retiradas || !retiradas.length) {
+        listaEl.innerHTML = '<div class="empty"><i class="ti ti-receipt-off"></i>Nenhuma retirada registrada.</div>';
+      } else {
+        listaEl.innerHTML = `
+          <table>
+            <thead><tr><th>Horário</th><th>Motivo</th><th>Usuário</th><th style="text-align:right">Valor</th></tr></thead>
+            <tbody>
+              ${retiradas.map(r => `
+                <tr>
+                  <td style="white-space:nowrap">${fmt(r.data)}</td>
+                  <td>${r.motivo}</td>
+                  <td>${r.usuario?.nome || '—'}</td>
+                  <td style="text-align:right;font-weight:700;color:var(--red)">${fmt$(r.valor)}</td>
+                </tr>`).join('')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align:right;font-weight:700;padding-top:10px">Total retirado:</td>
+                <td style="text-align:right;font-weight:800;color:var(--red);padding-top:10px">${fmt$(ret)}</td>
+              </tr>
+            </tfoot>
+          </table>`;
+      }
     } else {
       caixaAbertoDiv.style.display  = 'none';
       caixaFechadoDiv.style.display = 'block';
-      caixaRetiradas = []; // limpa ao fechar
+    }
+
+    // Atualiza caixas no histórico do relatório
+    if (historico) {
+      caixas = historico;
     }
   } catch (error) {
     toast(error.message || 'Erro ao carregar caixa!', false);
@@ -1767,80 +1810,26 @@ async function renderCaixa() {
   }
 }
 
-function renderCaixaRetiradas() {
-  const el = document.getElementById('caixa-retiradas-lista');
-  if (!el) return;
+async function registrarRetirada() {
+  const valor  = parseFloat(document.getElementById('retirada-valor')?.value);
+  const motivo = document.getElementById('retirada-motivo')?.value?.trim();
 
-  if (!caixaRetiradas.length) {
-    el.innerHTML = '';
-    return;
+  if (!valor || valor <= 0) { toast('Informe um valor válido!', false); return; }
+  if (!motivo)              { toast('Informe o motivo da retirada!', false); return; }
+
+  try {
+    await apiRequest('/caixa/retirada', {
+      method: 'POST',
+      body: JSON.stringify({ valor, motivo })
+    });
+
+    document.getElementById('retirada-valor').value  = '';
+    document.getElementById('retirada-motivo').value = '';
+    toast(`Retirada de ${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(valor)} registrada!`);
+    renderCaixa();
+  } catch (error) {
+    toast(error.message || 'Erro ao registrar retirada!', false);
   }
-
-  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-  el.innerHTML = `
-    <div class="caixa-ret-lista">
-      <div class="caixa-ret-lista-title">
-        <i class="ti ti-history"></i> Retiradas desta sessão
-      </div>
-      ${caixaRetiradas.map((r, i) => `
-        <div class="caixa-ret-item">
-          <div class="caixa-ret-item-left">
-            <span class="caixa-ret-valor">${fmt(r.valor)}</span>
-            <span class="caixa-ret-motivo">${r.motivo || 'Sem motivo informado'}</span>
-          </div>
-          <div class="caixa-ret-item-right">
-            <span class="caixa-ret-hora">${r.hora}</span>
-            <button class="btn btn-sm btn-danger" onclick="removerRetirada(${i})" title="Desfazer">
-              <i class="ti ti-trash"></i>
-            </button>
-          </div>
-        </div>`).join('')}
-    </div>`;
-}
-
-function registrarRetirada() {
-  const valorInput  = document.getElementById('caixa-retirada-valor');
-  const motivoInput = document.getElementById('caixa-retirada-motivo');
-  const valor = parseFloat(valorInput.value);
-
-  if (isNaN(valor) || valor <= 0) {
-    toast('Informe um valor válido para a retirada!', false);
-    return;
-  }
-
-  const agora = new Date();
-  const hora  = agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-
-  caixaRetiradas.push({ valor, motivo: motivoInput.value.trim(), hora });
-  valorInput.value  = '';
-  motivoInput.value = '';
-
-  // atualiza saldo e lista sem recarregar da API
-  const totalRet = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
-  const trocoEl  = document.getElementById('caixa-troco-inicial');
-  const vendasEl = document.getElementById('caixa-total-vendas');
-  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-  const parseFmt = el => parseFloat(el.textContent.replace(/[^0-9,]/g,'').replace(',','.')) || 0;
-  const saldo = parseFmt(trocoEl) + parseFmt(vendasEl) - totalRet;
-
-  document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
-  document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
-  renderCaixaRetiradas();
-  toast(`Retirada de ${fmt(valor)} registrada!`);
-}
-
-function removerRetirada(index) {
-  caixaRetiradas.splice(index, 1);
-  // recalcula
-  const totalRet = caixaRetiradas.reduce((s, r) => s + r.valor, 0);
-  const trocoEl  = document.getElementById('caixa-troco-inicial');
-  const vendasEl = document.getElementById('caixa-total-vendas');
-  const fmt = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-  const parseFmt = el => parseFloat(el.textContent.replace(/[^0-9,]/g,'').replace(',','.')) || 0;
-  const saldo = parseFmt(trocoEl) + parseFmt(vendasEl) - totalRet;
-  document.getElementById('caixa-total-retiradas').textContent = fmt(totalRet);
-  document.getElementById('caixa-saldo-estimado').textContent  = fmt(saldo);
-  renderCaixaRetiradas();
 }
 
 async function abrirCaixa() {

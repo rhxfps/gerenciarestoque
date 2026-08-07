@@ -418,7 +418,8 @@ app.get('/api/caixa', autenticar, async (req, res) => {
       .select(`
         *,
         usuario_abertura:usuario_abertura_id (nome),
-        usuario_fechamento:usuario_fechamento_id (nome)
+        usuario_fechamento:usuario_fechamento_id (nome),
+        caixa_retiradas (id, valor, motivo, data, usuario:usuario_id(nome))
       `)
       .not('data_fechamento', 'is', null)
       .order('data_fechamento', { ascending: false })
@@ -429,21 +430,34 @@ app.get('/api/caixa', autenticar, async (req, res) => {
 
     // Calcular total de vendas em dinheiro do caixa aberto (se houver)
     let totalVendasDinheiro = 0;
+    let totalRetiradas = 0;
+    let retiradas = [];
     if (ultimoCaixa && !ultimoCaixa.data_fechamento) {
-      const { data: vendas, error: errorVendas } = await supabase
+      const { data: vendasData, error: errorVendas } = await supabase
         .from('vendas')
         .select('total')
         .eq('pagamento', 'dinheiro')
         .gte('data', ultimoCaixa.data_abertura);
       
-      if (!errorVendas && vendas) {
-        totalVendasDinheiro = vendas.reduce((sum, v) => sum + v.total, 0);
+      if (!errorVendas && vendasData) {
+        totalVendasDinheiro = vendasData.reduce((sum, v) => sum + v.total, 0);
       }
+
+      const { data: retiradasData } = await supabase
+        .from('caixa_retiradas')
+        .select('*, usuario:usuario_id(nome)')
+        .eq('caixa_id', ultimoCaixa.id)
+        .order('data', { ascending: false });
+
+      retiradas = retiradasData || [];
+      totalRetiradas = retiradas.reduce((s, r) => s + parseFloat(r.valor), 0);
     }
 
     res.json({
       caixaAtual: ultimoCaixa || null,
       totalVendasDinheiro,
+      totalRetiradas,
+      retiradas,
       historico: historicoCaixa || []
     });
   } catch (error) {
@@ -529,6 +543,70 @@ app.post('/api/caixa/fechar', autenticar, async (req, res) => {
     if (errorFechar) throw errorFechar;
 
     res.json(caixaFechado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== CAIXA — RETIRADAS ====================
+app.post('/api/caixa/retirada', autenticar, async (req, res) => {
+  const { valor, motivo } = req.body;
+
+  if (!valor || valor <= 0) return res.status(400).json({ error: 'Valor inválido' });
+  if (!motivo || !motivo.trim()) return res.status(400).json({ error: 'Informe o motivo' });
+
+  try {
+    // Buscar caixa aberto
+    const { data: caixaAberto, error: errCaixa } = await supabase
+      .from('caixa')
+      .select('id')
+      .is('data_fechamento', null)
+      .limit(1)
+      .single();
+
+    if (errCaixa || !caixaAberto) {
+      return res.status(400).json({ error: 'Nenhum caixa aberto' });
+    }
+
+    const { data, error } = await supabase
+      .from('caixa_retiradas')
+      .insert([{
+        caixa_id:   caixaAberto.id,
+        valor:      parseFloat(valor),
+        motivo:     motivo.trim(),
+        usuario_id: req.usuario.id,
+        data:       new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/caixa/retiradas', autenticar, async (req, res) => {
+  try {
+    // Buscar caixa aberto
+    const { data: caixaAberto } = await supabase
+      .from('caixa')
+      .select('id')
+      .is('data_fechamento', null)
+      .limit(1)
+      .single();
+
+    if (!caixaAberto) return res.json([]);
+
+    const { data, error } = await supabase
+      .from('caixa_retiradas')
+      .select('*, usuario:usuario_id(nome)')
+      .eq('caixa_id', caixaAberto.id)
+      .order('data', { ascending: false });
+
+    if (error) throw error;
+    res.json(data || []);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
