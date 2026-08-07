@@ -709,12 +709,10 @@ function renderEstoque() {
   if (!produtos.length) {
     dpq.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary)">Nenhum produto cadastrado</td></tr>';
   } else {
-    dpq.innerHTML = produtos.map(p => {
-      const lowItem = p.qtd <= p.qtd_minima;
-      const badge = lowItem ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
-      const qtdColor = lowItem ? 'text-red' : 'text-green';
-      return `<tr><td><strong>${p.nome}</strong></td><td>${p.categoria || '—'}</td><td class="${qtdColor}"><strong>${p.qtd}</strong></td><td>${badge}</td></tr>`;
-    }).join('');
+    // limpa busca e renderiza via filtrarEstoque
+    const buscaEl = document.getElementById('estoque-busca');
+    if (buscaEl) buscaEl.value = '';
+    filtrarEstoque();
   }
 
   const dm = document.getElementById('estoque-movimentos');
@@ -726,6 +724,46 @@ function renderEstoque() {
     const badge = m.tipo === 'entrada' ? '<span class="badge badge-green">Entrada</span>' : '<span class="badge badge-red">Saída</span>';
     const qtd = m.tipo === 'entrada' ? `<span class="text-green">+${m.qtd}</span>` : `<span class="text-red">-${m.qtd}</span>`;
     return `<tr><td>${m.produto_nome}</td><td>${badge}</td><td>${qtd}</td><td>${fmt(m.data)}</td></tr>`;
+  }).join('');
+}
+
+function filtrarEstoque() {
+  const busca = (document.getElementById('estoque-busca')?.value || '').toLowerCase().trim();
+  const dpq   = document.getElementById('estoque-produtos-quantidades');
+  const count = document.getElementById('estoque-busca-count');
+  if (!dpq) return;
+
+  const lista = busca
+    ? produtos.filter(p =>
+        p.nome.toLowerCase().includes(busca) ||
+        (p.categoria && p.categoria.toLowerCase().includes(busca))
+      )
+    : produtos;
+
+  if (count) count.textContent = busca ? `${lista.length} resultado(s)` : '';
+
+  if (!lista.length) {
+    dpq.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">
+      ${busca ? `Nenhum produto encontrado para "<strong>${busca}</strong>"` : 'Nenhum produto cadastrado'}
+    </td></tr>`;
+    return;
+  }
+
+  dpq.innerHTML = lista.map(p => {
+    const low = p.qtd <= p.qtd_minima;
+    const badge    = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
+    const qtdColor = low ? 'text-red' : 'text-green';
+    // destaca o termo buscado no nome
+    const nome = busca
+      ? p.nome.replace(new RegExp(`(${busca.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+          '<mark class="estoque-highlight">$1</mark>')
+      : `<strong>${p.nome}</strong>`;
+    return `<tr>
+      <td>${busca ? nome : `<strong>${p.nome}</strong>`}</td>
+      <td>${p.categoria || '—'}</td>
+      <td class="${qtdColor}"><strong>${p.qtd}</strong></td>
+      <td>${badge}</td>
+    </tr>`;
   }).join('');
 }
 

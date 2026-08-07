@@ -243,7 +243,20 @@
         </div>
 
         <div class="card">
-          <div class="card-title"><i class="ti ti-package"></i> Estoque Atual</div>
+          <div class="estoque-tabela-header">
+            <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>
+            <div class="estoque-busca-wrap">
+              <i class="ti ti-search estoque-busca-icon"></i>
+              <input
+                type="text"
+                id="estoque-busca"
+                class="estoque-busca-input"
+                placeholder="Buscar produto ou categoria..."
+                oninput="filtrarEstoque()"
+              >
+              <span id="estoque-busca-count" class="estoque-busca-count"></span>
+            </div>
+          </div>
           <table>
             <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd</th><th>Status</th></tr></thead>
             <tbody id="estoque-produtos-quantidades"></tbody>

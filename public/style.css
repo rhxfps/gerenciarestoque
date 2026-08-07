@@ -2648,3 +2648,88 @@ tbody tr:hover td { background: var(--blue-50); }
   .vl-card-arrow { margin-left: auto; }
   .vl-card-prod { max-width: 100%; }
 }
+
+/* ============================================================
+   ESTOQUE — busca na tabela
+   ============================================================ */
+.estoque-tabela-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.estoque-busca-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.estoque-busca-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.estoque-busca-input {
+  width: 240px;
+  padding: 8px 12px 8px 34px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-mid);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, width .2s;
+}
+
+.estoque-busca-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  width: 280px;
+  background: var(--bg-primary);
+}
+
+.estoque-busca-input::placeholder { color: var(--text-muted); }
+
+.estoque-busca-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-light);
+  border: 1px solid var(--blue-bg);
+  border-radius: 99px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  display: none;
+}
+
+.estoque-busca-input:not(:placeholder-shown) ~ .estoque-busca-count { display: inline-block; }
+
+/* highlight do termo pesquisado */
+mark.estoque-highlight {
+  background: rgba(37,99,235,.22);
+  color: var(--blue);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+
+[data-theme="dark"] mark.estoque-highlight {
+  background: rgba(96,165,250,.25);
+  color: #93c5fd;
+}
+
+@media (max-width: 600px) {
+  .estoque-tabela-header { flex-direction: column; align-items: flex-start; }
+  .estoque-busca-input   { width: 100%; }
+  .estoque-busca-input:focus { width: 100%; }
+  .estoque-busca-wrap    { width: 100%; }
+}
