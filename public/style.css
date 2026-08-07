@@ -2147,3 +2147,361 @@ tbody tr:hover td { background: var(--blue-50); }
 @media (max-width: 480px) {
   .vendas-atalhos { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   REGISTRAR — toggle entrada / saída
+   ============================================================ */
+.reg-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 5px;
+  margin-bottom: 1.25rem;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+}
+
+.reg-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 22px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, color .15s;
+}
+
+.reg-toggle-btn.active[id="reg-btn-entrada"] {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(22,163,74,.3);
+}
+
+.reg-toggle-btn.active[id="reg-btn-saida"] {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(220,38,38,.3);
+}
+
+.reg-toggle-btn:not(.active):hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.btn-entrada {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(22,163,74,.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, box-shadow .15s;
+}
+.btn-entrada:hover { background: #15803d; box-shadow: 0 4px 14px rgba(22,163,74,.35); }
+
+.btn-saida {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+  box-shadow: 0 2px 8px rgba(220,38,38,.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, box-shadow .15s;
+}
+.btn-saida:hover { background: #b91c1c; box-shadow: 0 4px 14px rgba(220,38,38,.35); }
+
+/* ============================================================
+   LISTA DE VENDAS — filtros e KPIs
+   ============================================================ */
+.vl-filtros { margin-bottom: 1rem; }
+
+.vl-filtros-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vl-filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vl-filtro-group label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-muted);
+}
+
+.vl-filtro-group select {
+  width: 140px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.vl-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
+/* KPI strip */
+.vl-kpi-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.vl-kpi {
+  flex: 1;
+  min-width: 130px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.vl-kpi i {
+  font-size: 22px;
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.vl-kpi div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vl-kpi span {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.vl-kpi small {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+/* ============================================================
+   LISTA DE VENDAS — cards clicáveis
+   ============================================================ */
+.vl-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s, box-shadow .15s;
+  box-shadow: var(--shadow-xs);
+}
+
+.vl-card:hover {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.vl-card:active { transform: scale(.99); }
+
+.vl-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vl-card-valor {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--blue);
+  letter-spacing: -.3px;
+}
+
+.vl-card-prod {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.vl-card-data {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.vl-card-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vl-card-arrow {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+/* ============================================================
+   MODAL DETALHE DA VENDA
+   ============================================================ */
+.venda-detalhe-content {
+  max-width: 520px;
+}
+
+.vd-meta {
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vd-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.vd-meta-row i { font-size: 15px; color: var(--blue); }
+
+.vd-itens-title {
+  padding: 0.75rem 1.25rem 0.25rem;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-muted);
+}
+
+.vd-itens {
+  padding: 0 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.vd-item-nome {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vd-item-nome small {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.vd-item-qty {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.vd-item-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.vd-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+.vd-total span {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-muted);
+}
+
+.vd-total strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .reg-toggle { width: 100%; }
+  .reg-toggle-btn { flex: 1; justify-content: center; }
+  .vl-filtros-row { gap: 8px; }
+  .vl-filtro-group select { width: 120px; }
+  .vl-kpi-row { gap: 8px; }
+  .vl-kpi { padding: .75rem 1rem; }
+  .vl-kpi span { font-size: 15px; }
+  .vl-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .vl-card-right { width: 100%; justify-content: flex-start; }
+  .vl-card-arrow { margin-left: auto; }
+  .vl-card-prod { max-width: 100%; }
+}

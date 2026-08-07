@@ -55,9 +55,9 @@
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="produtos" id="nav-produtos"><i class="ti ti-box"></i> <span>Produtos</span></div>
-      <div class="nav-item" data-screen="entradas" id="nav-entradas"><i class="ti ti-arrow-bar-to-down"></i> <span>Entradas</span></div>
-      <div class="nav-item" data-screen="saidas" id="nav-saidas"><i class="ti ti-arrow-bar-up"></i> <span>Saídas</span></div>
+      <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
       <div class="nav-item" data-screen="historico" id="nav-historico"><i class="ti ti-history"></i> <span>Histórico</span></div>
+      <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
@@ -99,9 +99,9 @@
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="produtos"><i class="ti ti-box"></i> Produtos</div>
-      <div class="mobile-nav-item" data-screen="entradas"><i class="ti ti-arrow-bar-to-down"></i> Entradas</div>
-      <div class="mobile-nav-item" data-screen="saidas"><i class="ti ti-arrow-bar-up"></i> Saídas</div>
+      <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
       <div class="mobile-nav-item" data-screen="historico"><i class="ti ti-history"></i> Histórico</div>
+      <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
@@ -290,51 +290,57 @@
         </div>
       </div>
 
-      <!-- ENTRADAS -->
-      <div class="screen" id="screen-entradas">
-        <div class="card" style="margin-bottom:1.25rem">
-          <div class="card-title"><i class="ti ti-arrow-bar-to-down"></i> Registrar entrada</div>
+      <!-- REGISTRAR (Entrada / Saída unificado) -->
+      <div class="screen" id="screen-registrar">
+
+        <!-- Toggle entrada/saída -->
+        <div class="reg-toggle">
+          <button class="reg-toggle-btn active" id="reg-btn-entrada" onclick="selectRegTipo('entrada')">
+            <i class="ti ti-arrow-bar-to-down"></i> Entrada
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-saida" onclick="selectRegTipo('saida')">
+            <i class="ti ti-arrow-bar-up"></i> Saída
+          </button>
+        </div>
+
+        <!-- Formulário entrada -->
+        <div class="card" id="reg-form-entrada">
+          <div class="card-title"><i class="ti ti-arrow-bar-to-down" style="color:var(--green)"></i> Registrar entrada</div>
           <div class="form-row">
             <div class="form-group"><label>Produto</label><select id="e-produto"><option value="">Selecione um produto</option></select></div>
             <div class="form-group"><label>Quantidade</label><input type="number" id="e-qty" placeholder="0" min="1"></div>
           </div>
           <div class="form-group"><label>Observação (opcional)</label><input type="text" id="e-obs" placeholder="Ex: Reposição mensal"></div>
-          <button class="btn btn-primary" onclick="addEntrada()"><i class="ti ti-check"></i> Confirmar entrada</button>
+          <button class="btn btn-entrada" onclick="addEntrada()"><i class="ti ti-check"></i> Confirmar entrada</button>
         </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-history"></i> Entradas recentes</div>
-          <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Produto</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
-            <tbody id="tabela-entradas"></tbody>
-          </table>
-          </div>
-          <div id="entradas-empty" class="empty" style="display:none"><i class="ti ti-arrow-bar-to-down"></i>Nenhuma entrada registrada.</div>
-        </div>
-      </div>
 
-      <!-- SAÍDAS -->
-      <div class="screen" id="screen-saidas">
-        <div class="card" style="margin-bottom:1.25rem">
-          <div class="card-title"><i class="ti ti-arrow-bar-up"></i> Registrar saída</div>
+        <!-- Formulário saída -->
+        <div class="card" id="reg-form-saida" style="display:none">
+          <div class="card-title"><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Registrar saída</div>
           <div class="form-row">
             <div class="form-group"><label>Produto</label><select id="s-produto"><option value="">Selecione um produto</option></select></div>
             <div class="form-group"><label>Quantidade</label><input type="number" id="s-qty" placeholder="0" min="1"></div>
           </div>
           <div class="form-group"><label>Observação (opcional)</label><input type="text" id="s-obs" placeholder="Ex: Requisição do setor X"></div>
-          <button class="btn btn-primary" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
+          <button class="btn btn-saida" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
         </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-history"></i> Saídas recentes</div>
+
+        <!-- Histórico recente unificado -->
+        <div class="card" style="margin-top:1.25rem">
+          <div class="card-title"><i class="ti ti-history"></i> Registros recentes</div>
           <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Produto</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
-            <tbody id="tabela-saidas"></tbody>
-          </table>
+            <table>
+              <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
+              <tbody id="tabela-registros"></tbody>
+            </table>
           </div>
-          <div id="saidas-empty" class="empty" style="display:none"><i class="ti ti-arrow-bar-up"></i>Nenhuma saída registrada.</div>
+          <div id="registros-empty" class="empty" style="display:none"><i class="ti ti-transfer"></i>Nenhuma movimentação registrada.</div>
         </div>
       </div>
+
+      <!-- Manter telas legadas ocultas para compatibilidade com IDs existentes -->
+      <div class="screen" id="screen-entradas" style="display:none!important"></div>
+      <div class="screen" id="screen-saidas" style="display:none!important"></div>
 
       <!-- HISTÓRICO -->
       <div class="screen" id="screen-historico">
@@ -530,6 +536,73 @@
           <div id="r-caixas"></div>
         </div>
 
+      </div>
+
+      <!-- LISTA DE VENDAS -->
+      <div class="screen" id="screen-lista-vendas">
+
+        <!-- Filtros -->
+        <div class="card vl-filtros">
+          <div class="vl-filtros-row">
+            <div class="vl-filtro-group">
+              <label>Período</label>
+              <select id="vl-filtro-periodo" onchange="renderListaVendas()">
+                <option value="hoje">Hoje</option>
+                <option value="semana" selected>Esta semana</option>
+                <option value="mes">Este mês</option>
+                <option value="tudo">Tudo</option>
+              </select>
+            </div>
+            <div class="vl-filtro-group">
+              <label>Pagamento</label>
+              <select id="vl-filtro-pag" onchange="renderListaVendas()">
+                <option value="">Todos</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+              </select>
+            </div>
+            <div class="vl-filtro-group">
+              <label>Tipo</label>
+              <select id="vl-filtro-tipo" onchange="renderListaVendas()">
+                <option value="">Todos</option>
+                <option value="balcao">Balcão</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            </div>
+            <span id="vl-count" class="vl-count"></span>
+          </div>
+        </div>
+
+        <!-- KPIs rápidos -->
+        <div class="vl-kpi-row">
+          <div class="vl-kpi">
+            <i class="ti ti-shopping-cart"></i>
+            <div><span id="vl-kpi-qtd">0</span><small>vendas</small></div>
+          </div>
+          <div class="vl-kpi">
+            <i class="ti ti-cash"></i>
+            <div><span id="vl-kpi-total">R$ 0,00</span><small>faturamento</small></div>
+          </div>
+          <div class="vl-kpi">
+            <i class="ti ti-credit-card"></i>
+            <div><span id="vl-kpi-ticket">R$ 0,00</span><small>ticket médio</small></div>
+          </div>
+        </div>
+
+        <!-- Lista de vendas -->
+        <div id="vl-lista"></div>
+
+      </div>
+
+      <!-- Modal detalhes da venda -->
+      <div class="modal-overlay" id="venda-detalhe-modal" onclick="closeVendaDetalhe(event)">
+        <div class="modal-content venda-detalhe-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-receipt"></i> Detalhes da Venda</h3>
+            <button class="modal-close" onclick="closeVendaDetalhe()"><i class="ti ti-x"></i></button>
+          </div>
+          <div id="venda-detalhe-body"></div>
+        </div>
       </div>
 
       <!-- VENDAS (PDV rápido) -->

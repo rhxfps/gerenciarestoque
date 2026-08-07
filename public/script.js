@@ -179,12 +179,12 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'produtos', 'entradas', 'saidas', 'historico', 'relatorio', 'vendas', 'usuarios'];
+  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'historico', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'usuarios'];
   
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) {
-      if (item === 'vendas') {
+      if (item === 'vendas' || item === 'caixa') {
         el.style.display = 'block';
       } else {
         el.style.display = isDono ? 'block' : 'none';
@@ -192,7 +192,6 @@ function updateMenuByRole() {
     }
   });
   
-  // Atualizar role na sidebar
   const userRoleEl = document.getElementById('user-role');
   if (userRoleEl) {
     userRoleEl.textContent = currentUser.role === 'dono' ? 'Dono' : 'Funcionário';
@@ -221,39 +220,39 @@ async function loadAllData() {
 
 // ==================== NAVEGAÇÃO ====================
 const titles = {
-  dashboard: 'Dashboard',
-  estoque: 'Estoque',
-  produtos: 'Produtos',
-  entradas: 'Entradas',
-  saidas: 'Saídas',
-  historico: 'Histórico',
-  relatorio: 'Relatório semanal',
-  vendas: 'Comandas/Vendas',
-  caixa: 'Caixa',
-  usuarios: 'Usuários'
+  dashboard:    'Dashboard',
+  estoque:      'Estoque',
+  produtos:     'Produtos',
+  registrar:    'Registrar Movimentação',
+  historico:    'Histórico',
+  'lista-vendas': 'Vendas',
+  relatorio:    'Relatório semanal',
+  vendas:       'Comandas/Vendas',
+  caixa:        'Caixa',
+  usuarios:     'Usuários'
 };
 
 function nav(screen) {
-  // Verificar permissão
-  if (screen !== 'vendas' && screen !== 'caixa' && currentUser.role !== 'dono') {
+  if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
   }
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen));
-  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen)); // Atualiza menu móvel
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen));
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === `screen-${screen}`));
-  document.getElementById('topbar-title').textContent = titles[screen];
-  
-  if (screen === 'dashboard') renderDashboardProfissional();
-  if (screen === 'estoque') renderEstoque();
-  if (screen === 'produtos') renderProdutos();
-  if (screen === 'entradas') { populateSelect('e-produto'); renderEntradas(); }
-  if (screen === 'saidas') { populateSelect('s-produto'); renderSaidas(); }
-  if (screen === 'historico') { populateHFiltro(); renderHistorico(); }
-  if (screen === 'relatorio') renderRelatorio();
-  if (screen === 'caixa') renderCaixa();
+  document.getElementById('topbar-title').textContent = titles[screen] || screen;
+
+  if (screen === 'dashboard')    renderDashboardProfissional();
+  if (screen === 'estoque')      renderEstoque();
+  if (screen === 'produtos')     renderProdutos();
+  if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); renderRegistros(); }
+  if (screen === 'historico')    { populateHFiltro(); renderHistorico(); }
+  if (screen === 'lista-vendas') renderListaVendas();
+  if (screen === 'relatorio')    renderRelatorio();
+  if (screen === 'caixa')        renderCaixa();
+  if (screen === 'usuarios')     renderUsuarios();
   if (screen === 'vendas') {
     vendaItens = [];
     vendaCategoriaAtiva = 'Todos';
@@ -262,12 +261,17 @@ function nav(screen) {
       renderVendaItens();
       atualizaPreview();
     });
-    
+
     if (!vendasListenersAdicionados) {
       const pagamentos = document.querySelectorAll('input[name="v-pagamento"]');
-      pagamentos.forEach(input => {
-        input.addEventListener('change', atualizaEstiloOpcoes);
-      });
+      pagamentos.forEach(input => input.addEventListener('change', atualizaEstiloOpcoes));
+      const tiposVenda = document.querySelectorAll('input[name="v-tipo-venda"]');
+      tiposVenda.forEach(input => input.addEventListener('change', togglePlataforma));
+      vendasListenersAdicionados = true;
+    }
+    atualizaEstiloOpcoes();
+  }
+}
 
       const tiposVenda = document.querySelectorAll('input[name="v-tipo-venda"]');
       tiposVenda.forEach(input => {
@@ -278,7 +282,6 @@ function nav(screen) {
     
     atualizaEstiloOpcoes();
   }
-  if (screen === 'usuarios') renderUsuarios();
 }
 
 document.getElementById('nav').addEventListener('click', e => {
@@ -308,6 +311,169 @@ document.getElementById('mobileNav').addEventListener('click', e => {
     nav(item.dataset.screen);
   }
 });
+
+// ==================== REGISTRAR (Entrada + Saída unificado) ====================
+let regTipoAtivo = 'entrada';
+
+function selectRegTipo(tipo) {
+  regTipoAtivo = tipo;
+  document.getElementById('reg-btn-entrada').classList.toggle('active', tipo === 'entrada');
+  document.getElementById('reg-btn-saida').classList.toggle('active', tipo === 'saida');
+  document.getElementById('reg-form-entrada').style.display = tipo === 'entrada' ? 'block' : 'none';
+  document.getElementById('reg-form-saida').style.display   = tipo === 'saida'   ? 'block' : 'none';
+}
+
+function renderRegistros() {
+  selectRegTipo(regTipoAtivo);
+  const tb = document.getElementById('tabela-registros');
+  const em = document.getElementById('registros-empty');
+  const recentes = [...movimentacoes].slice(0, 30);
+  if (!recentes.length) {
+    tb.innerHTML = '';
+    em.style.display = 'block';
+    return;
+  }
+  em.style.display = 'none';
+  tb.innerHTML = recentes.map(m => {
+    const badge = m.tipo === 'entrada'
+      ? '<span class="badge badge-green">Entrada</span>'
+      : '<span class="badge badge-red">Saída</span>';
+    const qtd = m.tipo === 'entrada'
+      ? `<span class="tag-entrada">+${m.qtd}</span>`
+      : `<span class="tag-saida">-${m.qtd}</span>`;
+    return `<tr>
+      <td><strong>${m.produto_nome}</strong></td>
+      <td>${badge}</td>
+      <td>${qtd}</td>
+      <td>${m.obs || '—'}</td>
+      <td>${fmt(m.data)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ==================== LISTA DE VENDAS ====================
+function renderListaVendas() {
+  const periodo  = document.getElementById('vl-filtro-periodo')?.value || 'semana';
+  const pagFiltro = document.getElementById('vl-filtro-pag')?.value || '';
+  const tipoFiltro = document.getElementById('vl-filtro-tipo')?.value || '';
+
+  const hoje = new Date();
+  hoje.setHours(23, 59, 59, 999);
+  const diaSemana = hoje.getDay();
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+
+  let lista = [...vendas].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  if (periodo === 'hoje')   lista = lista.filter(v => new Date(v.data) >= inicioDia);
+  if (periodo === 'semana') lista = lista.filter(v => new Date(v.data) >= segunda);
+  if (periodo === 'mes')    lista = lista.filter(v => new Date(v.data) >= primeiroDiaMes);
+  if (pagFiltro)  lista = lista.filter(v => v.pagamento === pagFiltro);
+  if (tipoFiltro) lista = lista.filter(v => tipoFiltro === 'delivery' ? v.delivery : !v.delivery);
+
+  const totalFat   = lista.reduce((s, v) => s + (v.total || 0), 0);
+  const ticketMed  = lista.length ? totalFat / lista.length : 0;
+
+  document.getElementById('vl-count').textContent  = `${lista.length} venda(s)`;
+  document.getElementById('vl-kpi-qtd').textContent  = lista.length;
+  document.getElementById('vl-kpi-total').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalFat);
+  document.getElementById('vl-kpi-ticket').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(ticketMed);
+
+  const container = document.getElementById('vl-lista');
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty"><i class="ti ti-receipt"></i>Nenhuma venda no período selecionado.</div>';
+    return;
+  }
+
+  container.innerHTML = lista.map(v => {
+    const total = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v.total || 0);
+    const pagBadge = v.pagamento === 'dinheiro'
+      ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
+      : '<span class="badge badge-blue"><i class="ti ti-credit-card"></i> Cartão</span>';
+    const tipoBadge = v.delivery
+      ? '<span class="badge badge-amber"><i class="ti ti-delivery"></i> Delivery</span>'
+      : '<span class="badge badge-gray"><i class="ti ti-shopping-bag"></i> Balcão</span>';
+
+    let prodResumo = '';
+    if (v.itens?.length) {
+      prodResumo = v.itens.length === 1
+        ? `${v.itens[0].produto_nome} × ${v.itens[0].qtd}`
+        : `${v.itens.length} itens`;
+    } else if (v.produto_nome) {
+      prodResumo = `${v.produto_nome} × ${v.qtd || 1}`;
+    }
+
+    return `
+      <div class="vl-card" onclick="openVendaDetalhe(${v.id})">
+        <div class="vl-card-left">
+          <div class="vl-card-valor">${total}</div>
+          <div class="vl-card-prod">${prodResumo}</div>
+          <div class="vl-card-data">${fmt(v.data)}</div>
+        </div>
+        <div class="vl-card-right">
+          ${pagBadge}
+          ${tipoBadge}
+          <i class="ti ti-chevron-right vl-card-arrow"></i>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openVendaDetalhe(vendaId) {
+  const venda = vendas.find(v => v.id === vendaId);
+  if (!venda) return;
+
+  const total = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(venda.total || 0);
+  const pagBadge = venda.pagamento === 'dinheiro'
+    ? '<span class="badge badge-green">Dinheiro</span>'
+    : '<span class="badge badge-blue">Cartão</span>';
+  const tipoBadge = venda.delivery
+    ? '<span class="badge badge-amber">Delivery</span>'
+    : '<span class="badge badge-gray">Balcão</span>';
+
+  let itensHTML = '';
+  if (venda.itens?.length) {
+    itensHTML = venda.itens.map(i => {
+      const sub = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format((i.preco_unitario || 0) * i.qtd);
+      return `<div class="vd-item">
+        <span class="vd-item-nome">${i.produto_nome}${i.recheio ? ` <small>(${i.recheio})</small>` : ''}</span>
+        <span class="vd-item-qty">× ${i.qtd}</span>
+        <span class="vd-item-sub">${sub}</span>
+      </div>`;
+    }).join('');
+  } else if (venda.produto_nome) {
+    const sub = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(venda.total || 0);
+    itensHTML = `<div class="vd-item">
+      <span class="vd-item-nome">${venda.produto_nome}</span>
+      <span class="vd-item-qty">× ${venda.qtd || 1}</span>
+      <span class="vd-item-sub">${sub}</span>
+    </div>`;
+  }
+
+  document.getElementById('venda-detalhe-body').innerHTML = `
+    <div class="vd-meta">
+      <div class="vd-meta-row"><i class="ti ti-clock"></i> ${fmt(venda.data)}</div>
+      <div class="vd-meta-row">${pagBadge} ${tipoBadge}</div>
+      ${venda.plataforma ? `<div class="vd-meta-row"><i class="ti ti-device-mobile"></i> ${venda.plataforma}</div>` : ''}
+      ${venda.obs ? `<div class="vd-meta-row"><i class="ti ti-note"></i> ${venda.obs}</div>` : ''}
+    </div>
+    <div class="vd-itens-title">Itens</div>
+    <div class="vd-itens">${itensHTML || '<div class="empty" style="padding:1rem">Sem detalhes de itens</div>'}</div>
+    <div class="vd-total">
+      <span>Total</span>
+      <strong>${total}</strong>
+    </div>`;
+
+  document.getElementById('venda-detalhe-modal').classList.add('show');
+}
+
+function closeVendaDetalhe(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('venda-detalhe-modal').classList.remove('show');
+}
 
 // ==================== PRODUTOS ====================
 function toggleFormProduto() {
