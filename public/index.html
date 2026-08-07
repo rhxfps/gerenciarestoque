@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e40af">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Controle de Estoque</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
@@ -10,7 +14,7 @@
 <body>
 
 <!-- TELA DE LOGIN -->
-<div class="login-container" id="login-container">
+<div class="login-container" id="login-container" style="display:flex">
   <div class="login-box">
     <h1>Controle de Estoque</h1>
     <p>Entre com suas credenciais</p>
@@ -36,7 +40,10 @@
 <!-- APLICATIVO PRINCIPAL (oculto por padrão) -->
 <div class="app" id="app-container" style="display:none">
   <aside class="sidebar">
-    <div class="logo">Estoque</div>
+    <div class="logo">
+      <div class="logo-title"><i class="ti ti-box"></i> GerenciarStock</div>
+      <div class="logo-sub">Sistema de estoque</div>
+    </div>
     <nav id="nav">
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
@@ -416,58 +423,62 @@
               <span class="vendas-carrinho-count" id="v-carrinho-count">0 itens</span>
             </div>
 
-            <div id="v-itens-empty" class="empty vendas-empty">Toque nos produtos para adicionar</div>
-            <div id="v-itens-container" class="vendas-itens-list"></div>
+            <div class="vendas-carrinho-body">
+              <div id="v-itens-empty" class="empty vendas-empty">Toque nos produtos para adicionar</div>
+              <div id="v-itens-container" class="vendas-itens-list"></div>
+            </div>
 
-            <div class="form-grid vendas-opcoes">
-              <div class="form-group">
-                <label>Pagamento</label>
-                <div class="payment-options">
-                  <div class="payment-option active" id="label-dinheiro" onclick="selectPayment('dinheiro')">
-                    <i class="ti ti-cash"></i><span>Dinheiro</span>
+            <div class="vendas-carrinho-footer">
+              <div class="form-grid vendas-opcoes">
+                <div class="form-group">
+                  <label>Pagamento</label>
+                  <div class="payment-options">
+                    <div class="payment-option active" id="label-dinheiro" onclick="selectPayment('dinheiro')">
+                      <i class="ti ti-cash"></i><span>Dinheiro</span>
+                    </div>
+                    <div class="payment-option" id="label-cartao" onclick="selectPayment('cartao')">
+                      <i class="ti ti-credit-card"></i><span>Cartão</span>
+                    </div>
                   </div>
-                  <div class="payment-option" id="label-cartao" onclick="selectPayment('cartao')">
-                    <i class="ti ti-credit-card"></i><span>Cartão</span>
-                  </div>
+                  <input type="hidden" id="v-pagamento-hidden" value="dinheiro">
                 </div>
-                <input type="hidden" id="v-pagamento-hidden" value="dinheiro">
-              </div>
-              <div class="form-group">
-                <label>Tipo</label>
-                <div class="sale-type-options">
-                  <div class="sale-type-option active" id="label-balcao" onclick="selectSaleType('balcao')">
-                    <i class="ti ti-shopping-bag"></i><span>Balcão</span>
+                <div class="form-group">
+                  <label>Tipo</label>
+                  <div class="sale-type-options">
+                    <div class="sale-type-option active" id="label-balcao" onclick="selectSaleType('balcao')">
+                      <i class="ti ti-shopping-bag"></i><span>Balcão</span>
+                    </div>
+                    <div class="sale-type-option" id="label-delivery" onclick="selectSaleType('delivery')">
+                      <i class="ti ti-delivery"></i><span>Delivery</span>
+                    </div>
                   </div>
-                  <div class="sale-type-option" id="label-delivery" onclick="selectSaleType('delivery')">
-                    <i class="ti ti-delivery"></i><span>Delivery</span>
-                  </div>
+                  <input type="hidden" id="v-tipo-venda-hidden" value="balcao">
                 </div>
-                <input type="hidden" id="v-tipo-venda-hidden" value="balcao">
               </div>
-            </div>
 
-            <div class="form-group" id="v-plataforma-container" style="display:none">
-              <label>Plataforma</label>
-              <select id="v-plataforma">
-                <option value="">Selecione</option>
-                <option value="99">99</option>
-                <option value="ifood">iFood</option>
-              </select>
-            </div>
+              <div class="form-group" id="v-plataforma-container" style="display:none">
+                <label>Plataforma</label>
+                <select id="v-plataforma">
+                  <option value="">Selecione</option>
+                  <option value="99">99</option>
+                  <option value="ifood">iFood</option>
+                </select>
+              </div>
 
-            <div class="form-group">
-              <label>Observação</label>
-              <input type="text" id="v-obs" placeholder="Ex: Sem cebola...">
-            </div>
+              <div class="form-group vendas-obs">
+                <label>Observação</label>
+                <input type="text" id="v-obs" placeholder="Ex: Sem cebola...">
+              </div>
 
-            <div class="total-section vendas-total">
-              <div class="total-label">Total</div>
-              <div class="total-value" id="v-total-preview">R$ 0,00</div>
-            </div>
+              <div class="total-section vendas-total">
+                <div class="total-label">Total</div>
+                <div class="total-value" id="v-total-preview">R$ 0,00</div>
+              </div>
 
-            <button class="btn btn-primary vendas-finalizar" onclick="addVenda()">
-              <i class="ti ti-check"></i> Registrar Venda
-            </button>
+              <button class="btn btn-primary vendas-finalizar" onclick="addVenda()">
+                <i class="ti ti-check"></i> Registrar Venda
+              </button>
+            </div>
           </div>
         </div>
 
