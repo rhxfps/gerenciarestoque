@@ -1730,3 +1730,134 @@ tbody tr:hover td { background: var(--blue-50); }
   .mov-kpi-row { grid-template-columns: 1fr; }
   .mov-kpi-row .dash-kpi:last-child { grid-column: auto; }
 }
+
+/* ============================================================
+   DARK THEME
+   ============================================================ */
+[data-theme="dark"] {
+  --bg-page:      #0a0f1e;
+  --bg-primary:   #111827;
+  --bg-secondary: #1a2235;
+  --bg-tertiary:  #0d1526;
+
+  --text-primary:   #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+
+  --border:     #1e2d45;
+  --border-mid: #243552;
+
+  --blue:       #3b82f6;
+  --blue-dark:  #2563eb;
+  --blue-light: #0f2044;
+  --blue-bg:    #1e3a5f;
+  --blue-50:    #0f1f38;
+  --blue-100:   #1e3a5f;
+
+  --green-bg:   #052e16;
+  --red-bg:     #1c0a0a;
+  --amber-bg:   #1c1200;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.55);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.6);
+
+  --sidebar-bg:     #0d1526;
+  --sidebar-hover:  rgba(59,130,246,.15);
+  --sidebar-active: rgba(59,130,246,.25);
+  --sidebar-border: rgba(59,130,246,.12);
+}
+
+/* dark: sidebar accent */
+[data-theme="dark"] .sidebar {
+  box-shadow: 4px 0 20px rgba(0,0,0,.5);
+}
+
+[data-theme="dark"] .nav-item.active {
+  border-left-color: #60a5fa;
+}
+
+/* dark: topbar */
+[data-theme="dark"] .topbar {
+  background: var(--bg-primary);
+  border-bottom-color: var(--border);
+}
+
+/* dark: login */
+[data-theme="dark"] .login-container {
+  background: linear-gradient(135deg, #0d1526 0%, #060c18 60%, #0a1020 100%);
+}
+
+/* dark: metric / KPI cards keep colorful gradient — no override needed */
+
+/* dark: table head */
+[data-theme="dark"] thead tr { background: var(--bg-secondary); }
+[data-theme="dark"] tbody tr:hover td { background: var(--blue-light); }
+
+/* dark: select arrow */
+[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* dark: modal */
+[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,.75); }
+
+/* dark: mobile menu */
+[data-theme="dark"] .mobile-menu { background: var(--sidebar-bg); }
+
+/* dark: venda item card */
+[data-theme="dark"] .vendas-carrinho .venda-item-card {
+  background: var(--bg-secondary);
+}
+
+/* dark: payment option active */
+[data-theme="dark"] .payment-option.active,
+[data-theme="dark"] .sale-type-option.active {
+  background: var(--blue-bg);
+}
+
+/* dark: progress bar track */
+[data-theme="dark"] .progress-bar,
+[data-theme="dark"] .dash-rank-bar { background: var(--border-mid); }
+
+/* dark: caixa card */
+[data-theme="dark"] .caixa-card-header { background: var(--bg-secondary); }
+
+/* ============================================================
+   THEME TOGGLE BUTTON
+   ============================================================ */
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-mid);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: rotate(15deg);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: var(--bg-secondary);
+  border-color: var(--border-mid);
+  color: #facc15;
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background: rgba(250,204,21,.1);
+  border-color: #facc15;
+  color: #facc15;
+}

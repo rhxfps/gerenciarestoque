@@ -8,6 +8,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Controle de Estoque</title>
+<!-- anti-flash: apply saved theme before render -->
+<script>
+  (function(){
+    var t = localStorage.getItem('theme');
+    if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  })();
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -110,6 +117,9 @@
   <main class="main">
     <div class="topbar">
       <h1 id="topbar-title">Dashboard</h1>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema">
+        <i class="ti ti-moon" id="theme-icon"></i>
+      </button>
     </div>
 
     <div class="content">
