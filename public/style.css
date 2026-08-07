@@ -2235,11 +2235,18 @@ tbody tr:hover td { background: var(--blue-50); }
 /* ============================================================
    LISTA DE VENDAS — filtros e KPIs
    ============================================================ */
-.vl-filtros { margin-bottom: 1rem; }
+.vl-filtros {
+  margin-bottom: 1.25rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
 
 .vl-filtros-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -2247,21 +2254,22 @@ tbody tr:hover td { background: var(--blue-50); }
 .vl-filtro-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .vl-filtro-group label {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .4px;
+  letter-spacing: .5px;
   color: var(--text-muted);
 }
 
 .vl-filtro-group select {
-  width: 140px;
-  padding: 7px 10px;
+  width: 145px;
+  padding: 8px 12px;
   font-size: 13px;
+  border-radius: var(--radius-md);
 }
 
 .vl-count {
@@ -2269,133 +2277,240 @@ tbody tr:hover td { background: var(--blue-50); }
   font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 4px 12px;
   align-self: flex-end;
-  padding-bottom: 2px;
 }
 
-/* KPI strip */
+/* KPI strip — coloridos como o dashboard */
 .vl-kpi-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 1.25rem;
-  flex-wrap: wrap;
 }
 
 .vl-kpi {
-  flex: 1;
-  min-width: 130px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.25rem;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
+  gap: 14px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
 }
 
-.vl-kpi i {
-  font-size: 22px;
-  color: var(--blue);
+.vl-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.vl-kpi::after {
+  content: '';
+  position: absolute;
+  right: -16px; top: -16px;
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  pointer-events: none;
+}
+
+.vl-kpi:nth-child(1) { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.vl-kpi:nth-child(2) { background: linear-gradient(135deg, #16a34a, #15803d); }
+.vl-kpi:nth-child(3) { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+
+.vl-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.vl-kpi div {
+.vl-kpi-icon i { font-size: 20px; color: #fff; }
+
+.vl-kpi-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.vl-kpi span {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.vl-kpi small {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
+.vl-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .3px;
+  letter-spacing: .6px;
+  color: rgba(255,255,255,.7);
+}
+
+.vl-kpi-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vl-kpi-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,.55);
 }
 
 /* ============================================================
    LISTA DE VENDAS — cards clicáveis
    ============================================================ */
+.vl-lista-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .vl-card {
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
-  transition: background .15s, border-color .15s, transform .12s, box-shadow .15s;
+  transition: border-color .15s, box-shadow .15s, transform .12s;
   box-shadow: var(--shadow-xs);
+  display: flex;
 }
 
+/* colored left accent bar */
+.vl-card::before {
+  content: '';
+  width: 4px;
+  flex-shrink: 0;
+  background: var(--blue);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.vl-card.pag-dinheiro::before { background: var(--green); }
+.vl-card.pag-cartao::before   { background: #4f46e5; }
+
 .vl-card:hover {
-  background: var(--blue-light);
   border-color: var(--blue);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(37,99,235,.15);
+  transform: translateY(-2px);
 }
 
 .vl-card:active { transform: scale(.99); }
 
-.vl-card-left {
+.vl-card-inner {
+  flex: 1;
+  padding: 0.9rem 1.1rem;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
 }
 
+.vl-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.vl-card-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .vl-card-valor {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--blue);
-  letter-spacing: -.3px;
+  color: var(--text-primary);
+  letter-spacing: -.4px;
+  line-height: 1;
+}
+
+.vl-card-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 2px 8px;
 }
 
 .vl-card-prod {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 280px;
 }
 
 .vl-card-data {
   font-size: 11px;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+
+.vl-card-data i { font-size: 12px; }
 
 .vl-card-right {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
   flex-shrink: 0;
 }
 
+.vl-card-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .vl-card-arrow {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-muted);
-  margin-left: 4px;
+  margin-top: 2px;
 }
 
 /* ============================================================
    MODAL DETALHE DA VENDA
    ============================================================ */
-.venda-detalhe-content {
-  max-width: 520px;
+.venda-detalhe-content { max-width: 520px; }
+
+.vd-header-strip {
+  padding: 1.25rem 1.25rem 1rem;
+  background: linear-gradient(135deg, var(--blue-800), var(--blue-700));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+
+.vd-header-strip .modal-header {
+  padding: 0;
+  border: none;
+  background: transparent;
+  flex: 1;
+}
+
+.vd-header-strip .modal-header h3 { color: #fff; }
+.vd-header-strip .modal-close { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.2); color: #fff; }
+.vd-header-strip .modal-close:hover { background: rgba(255,255,255,.25); color: #fff; }
 
 .vd-meta {
   padding: 1rem 1.25rem;
@@ -2414,10 +2529,10 @@ tbody tr:hover td { background: var(--blue-50); }
   color: var(--text-secondary);
 }
 
-.vd-meta-row i { font-size: 15px; color: var(--blue); }
+.vd-meta-row i { font-size: 14px; color: var(--blue); width: 16px; text-align: center; }
 
 .vd-itens-title {
-  padding: 0.75rem 1.25rem 0.25rem;
+  padding: 0.75rem 1.25rem 0.4rem;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -2436,7 +2551,7 @@ tbody tr:hover td { background: var(--blue-50); }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -2451,43 +2566,71 @@ tbody tr:hover td { background: var(--blue-50); }
 .vd-item-nome small {
   font-weight: 400;
   color: var(--text-muted);
+  display: block;
+  font-size: 11px;
 }
 
 .vd-item-qty {
   font-size: 12px;
+  font-weight: 700;
   color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border-radius: 99px;
+  padding: 2px 8px;
   white-space: nowrap;
 }
 
 .vd-item-sub {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--blue);
   white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
 }
 
 .vd-total {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.25rem 1.25rem;
-  border-top: 1px solid var(--border);
+  padding: 0.9rem 1.25rem 1.25rem;
+  border-top: 2px solid var(--border);
   margin-top: 0.25rem;
+  background: var(--bg-secondary);
 }
 
 .vd-total span {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .4px;
+  letter-spacing: .5px;
   color: var(--text-muted);
 }
 
 .vd-total strong {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--blue);
+  letter-spacing: -.5px;
 }
+
+/* ============================================================
+   RESPONSIVE — lista de vendas
+   ============================================================ */
+@media (max-width: 720px) {
+  .vl-kpi-row { grid-template-columns: 1fr 1fr; }
+  .vl-kpi:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .vl-kpi-row { grid-template-columns: 1fr; }
+  .vl-kpi:last-child { grid-column: auto; }
+  .vl-filtros-row { gap: 8px; }
+  .vl-filtro-group select { width: 120px; }
+  .vl-card-right { display: none; }
+  .vl-card-top { flex-wrap: nowrap; }
+}
+
 
 /* ============================================================
    RESPONSIVE

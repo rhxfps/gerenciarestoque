@@ -395,17 +395,27 @@ function renderListaVendas() {
       prodResumo = `${v.produto_nome} × ${v.qtd || 1}`;
     }
 
+    const numVenda = v.id ? `#${String(v.id).padStart(4,'0')}` : '';
+    const pagClass = v.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
+
     return `
-      <div class="vl-card" onclick="openVendaDetalhe(${v.id})">
-        <div class="vl-card-left">
-          <div class="vl-card-valor">${total}</div>
-          <div class="vl-card-prod">${prodResumo}</div>
-          <div class="vl-card-data">${fmt(v.data)}</div>
-        </div>
-        <div class="vl-card-right">
-          ${pagBadge}
-          ${tipoBadge}
-          <i class="ti ti-chevron-right vl-card-arrow"></i>
+      <div class="vl-card ${pagClass}" onclick="openVendaDetalhe(${v.id})">
+        <div class="vl-card-inner">
+          <div class="vl-card-left">
+            <div class="vl-card-top">
+              <span class="vl-card-valor">${total}</span>
+              ${numVenda ? `<span class="vl-card-num">${numVenda}</span>` : ''}
+            </div>
+            <div class="vl-card-prod">${prodResumo}</div>
+            <div class="vl-card-data"><i class="ti ti-clock"></i>${fmt(v.data)}</div>
+          </div>
+          <div class="vl-card-right">
+            <div class="vl-card-badges">
+              ${pagBadge}
+              ${tipoBadge}
+            </div>
+            <i class="ti ti-chevron-right vl-card-arrow"></i>
+          </div>
         </div>
       </div>`;
   }).join('');
