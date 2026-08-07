@@ -11,8 +11,8 @@
 <!-- anti-flash: apply saved theme before render -->
 <script>
   (function(){
-    var t = localStorage.getItem('theme');
-    if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+    var t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
