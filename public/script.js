@@ -689,86 +689,71 @@ function renderDashboardProfissional() {
 }
 
 // ==================== RELATÓRIO ====================
-function renderRelatorio() {
-  const semEnt = movimentacoes.filter(m => m.tipo === 'entrada' && semanaAtual(m.data)).reduce((a, m) => a + m.qtd, 0);
-  const semSai = movimentacoes.filter(m => m.tipo === 'saida' && semanaAtual(m.data)).reduce((a, m) => a + m.qtd, 0);
-  document.getElementById('r-ent').textContent = `${semEnt} un.`;
-  document.getElementById('r-sai').textContent = `${semSai} un.`;
-  const totalMov = Math.max(semEnt, semSai, 1);
-  document.getElementById('r-bar-ent').style.width = `${Math.round((semEnt/totalMov)*100)}%`;
-  document.getElementById('r-bar-sai').style.width = `${Math.round((semSai/totalMov)*100)}%`;
-  const saldo = semEnt - semSai;
-  const sd = document.getElementById('r-saldo');
-  sd.textContent = `${saldo >= 0 ? '+' : ''}${saldo} un.`;
-  sd.style.color = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+let relTabAtiva = 'vendas';
 
+function selectRelTab(tab) {
+  relTabAtiva = tab;
+  document.querySelectorAll('.rel-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.rel-panel').forEach(p => p.classList.toggle('active', p.id === `rel-${tab}`));
+  renderRelatorioTab(tab);
+}
+
+function renderRelatorio() {
+  relTabAtiva = 'vendas';
+  document.querySelectorAll('.rel-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === 'vendas'));
+  document.querySelectorAll('.rel-panel').forEach(p => p.classList.toggle('active', p.id === 'rel-vendas'));
+  renderRelatorioTab('vendas');
+}
+
+function renderRelatorioTab(tab) {
+  if (tab === 'vendas')        renderRelVendas();
+  if (tab === 'estoque')       renderRelEstoque();
+  if (tab === 'movimentacoes') renderRelMovimentacoes();
+  if (tab === 'caixa')         renderRelCaixa();
+}
+
+function renderRelVendas() {
   const vendasSemana = vendas.filter(v => semanaAtual(v.data));
-  const totalVendas = vendasSemana.length;
-  const totalVendasReais = vendasSemana.reduce((acumulador, venda) => {
-    return acumulador + (venda.total || 0);
-  }, 0);
-  
-  const totalDinheiro = vendasSemana.filter(v => v.pagamento === 'dinheiro').reduce((acumulador, venda) => {
-    return acumulador + (venda.total || 0);
-  }, 0);
-  const totalCartao = vendasSemana.filter(v => v.pagamento === 'cartao').reduce((acumulador, venda) => {
-    return acumulador + (venda.total || 0);
-  }, 0);
-  
-  document.getElementById('r-vendas-qtd').textContent = totalVendas;
-  document.getElementById('r-total-dinheiro').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDinheiro);
-  document.getElementById('r-total-cartao').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalCartao);
-  document.getElementById('r-total-geral').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalVendasReais);
+  const totalVendasReais = vendasSemana.reduce((a, v) => a + (v.total || 0), 0);
+  const totalDinheiro    = vendasSemana.filter(v => v.pagamento === 'dinheiro').reduce((a, v) => a + (v.total || 0), 0);
+  const totalCartao      = vendasSemana.filter(v => v.pagamento === 'cartao').reduce((a, v) => a + (v.total || 0), 0);
+  const qtdDelivery      = vendasSemana.filter(v => v.delivery).length;
+  const qtdBalcao        = vendasSemana.filter(v => !v.delivery).length;
+  const totalTipo        = Math.max(qtdDelivery + qtdBalcao, 1);
+
+  document.getElementById('r-vendas-qtd').textContent   = vendasSemana.length;
+  document.getElementById('r-total-dinheiro').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalDinheiro);
+  document.getElementById('r-total-cartao').textContent   = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalCartao);
+  document.getElementById('r-total-geral').textContent    = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalVendasReais);
+  document.getElementById('r-delivery').textContent = qtdDelivery;
+  document.getElementById('r-balcao').textContent   = qtdBalcao;
+  document.getElementById('r-bar-delivery').style.width = `${Math.round((qtdDelivery/totalTipo)*100)}%`;
+  document.getElementById('r-bar-balcao').style.width   = `${Math.round((qtdBalcao/totalTipo)*100)}%`;
 
   const rankVendas = {};
-  vendasSemana.forEach(venda => {
-    if (venda.itens && venda.itens.length > 0) {
-      venda.itens.forEach(item => {
-        rankVendas[item.produto_nome] = (rankVendas[item.produto_nome] || 0) + item.qtd;
-      });
-    } else if (venda.produto_nome) {
-      rankVendas[venda.produto_nome] = (rankVendas[venda.produto_nome] || 0) + venda.qtd;
-    }
+  vendasSemana.forEach(v => {
+    if (v.itens?.length) v.itens.forEach(i => { rankVendas[i.produto_nome] = (rankVendas[i.produto_nome]||0)+i.qtd; });
+    else if (v.produto_nome) rankVendas[v.produto_nome] = (rankVendas[v.produto_nome]||0)+v.qtd;
   });
-  
-  const sortedVendas = Object.entries(rankVendas).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const sortedV = Object.entries(rankVendas).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const rkVendas = document.getElementById('r-ranking-vendas');
-  if (!sortedVendas.length) {
+  if (!sortedV.length) {
     rkVendas.innerHTML = '<div class="empty" style="padding:1rem">Sem vendas esta semana</div>';
   } else {
-    const maxVendas = sortedVendas[0][1];
-    rkVendas.innerHTML = sortedVendas.map(([nome, qtd]) => `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${nome}</span><strong>${qtd} un.</strong></div>
-        <div class="progress-bar"><div class="progress-fill" style="background:var(--blue);width:${Math.round((qtd/maxVendas)*100)}%"></div></div>
-      </div>
-    `).join('');
+    const maxV = sortedV[0][1];
+    const medals = ['🥇','🥈','🥉','',''];
+    rkVendas.innerHTML = sortedV.map(([nome, qtd], i) => `
+      <div class="dash-rank-item">
+        <div class="dash-rank-header">
+          <span class="dash-rank-name"><span class="dash-rank-medal">${medals[i]||''}</span>${nome}</span>
+          <span class="dash-rank-val">${qtd} un.</span>
+        </div>
+        <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${Math.round((qtd/maxV)*100)}%"></div></div>
+      </div>`).join('');
   }
+}
 
-  const qtdDelivery = vendasSemana.filter(v => v.delivery).length;
-  const qtdBalcao = vendasSemana.filter(v => !v.delivery).length;
-  document.getElementById('r-delivery').textContent = qtdDelivery;
-  document.getElementById('r-balcao').textContent = qtdBalcao;
-
-  const movSemana = movimentacoes.filter(m => semanaAtual(m.data));
-  const rank = {};
-  movSemana.forEach(m => {
-    rank[m.produto_nome] = (rank[m.produto_nome] || 0) + m.qtd;
-  });
-  const sorted = Object.entries(rank).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const rk = document.getElementById('r-ranking');
-  if (!sorted.length) {
-    rk.innerHTML = '<div class="empty" style="padding:1rem">Sem movimentações esta semana</div>';
-  } else {
-    const max = sorted[0][1];
-    rk.innerHTML = sorted.map(([nome, qtd]) => `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${nome}</span><strong>${qtd} un.</strong></div>
-        <div class="progress-bar"><div class="progress-fill" style="background:var(--blue);width:${Math.round((qtd/max)*100)}%"></div></div>
-      </div>
-    `).join('');
-  }
-  
+function renderRelEstoque() {
   const rt = document.getElementById('r-tabela');
   if (!produtos.length) {
     rt.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-secondary)">Sem produtos cadastrados</td></tr>';
@@ -776,47 +761,78 @@ function renderRelatorio() {
   }
   rt.innerHTML = produtos.map(p => {
     const low = p.qtd <= p.qtd_minima;
-    const badge = low ? '<span class="badge badge-amber">Repor</span>' : '<span class="badge badge-green">Normal</span>';
-    const precoFormatado = p.preco ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco) : '—';
-    return `<tr><td><strong>${p.nome}</strong></td><td>${p.categoria || '—'}</td><td>${p.qtd}</td><td>${p.qtd_minima}</td><td>${precoFormatado}</td><td>${badge}</td></tr>`;
+    const badge = low ? '<span class="badge badge-red">Repor</span>' : '<span class="badge badge-green">Normal</span>';
+    const preco = p.preco ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(p.preco) : '—';
+    return `<tr><td><strong>${p.nome}</strong></td><td>${p.categoria||'—'}</td><td>${p.qtd}</td><td>${p.qtd_minima}</td><td>${preco}</td><td>${badge}</td></tr>`;
   }).join('');
+}
 
-  // Renderizar fechamentos de caixa
+function renderRelMovimentacoes() {
+  const semEnt = movimentacoes.filter(m => m.tipo==='entrada' && semanaAtual(m.data)).reduce((a,m)=>a+m.qtd,0);
+  const semSai = movimentacoes.filter(m => m.tipo==='saida'  && semanaAtual(m.data)).reduce((a,m)=>a+m.qtd,0);
+  const totalMov = Math.max(semEnt, semSai, 1);
+  document.getElementById('r-ent').textContent = `${semEnt} un.`;
+  document.getElementById('r-sai').textContent = `${semSai} un.`;
+  document.getElementById('r-bar-ent').style.width = `${Math.round((semEnt/totalMov)*100)}%`;
+  document.getElementById('r-bar-sai').style.width = `${Math.round((semSai/totalMov)*100)}%`;
+  const saldo = semEnt - semSai;
+  const sd = document.getElementById('r-saldo');
+  sd.textContent = `${saldo>=0?'+':''}${saldo} un.`;
+  sd.style.color = saldo>=0 ? 'var(--green)' : 'var(--red)';
+
+  const movSemana = movimentacoes.filter(m => semanaAtual(m.data));
+  const rank = {};
+  movSemana.forEach(m => { rank[m.produto_nome] = (rank[m.produto_nome]||0)+m.qtd; });
+  const sorted = Object.entries(rank).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const rk = document.getElementById('r-ranking');
+  if (!sorted.length) {
+    rk.innerHTML = '<div class="empty" style="padding:1rem">Sem movimentações esta semana</div>';
+  } else {
+    const max = sorted[0][1];
+    rk.innerHTML = sorted.map(([nome, qtd]) => `
+      <div class="dash-rank-item">
+        <div class="dash-rank-header">
+          <span class="dash-rank-name">${nome}</span>
+          <span class="dash-rank-val">${qtd} un.</span>
+        </div>
+        <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${Math.round((qtd/max)*100)}%"></div></div>
+      </div>`).join('');
+  }
+}
+
+function renderRelCaixa() {
   const rCaixas = document.getElementById('r-caixas');
   if (!caixas.length) {
-    rCaixas.innerHTML = '<div class="empty">Nenhum fechamento de caixa registrado ainda</div>';
-  } else {
-    rCaixas.innerHTML = caixas.map(c => {
-      const dataAbertura = fmt(c.data_abertura);
-      const dataFechamento = c.data_fechamento ? fmt(c.data_fechamento) : '-';
-      const trocoInicial = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.troco_inicial || 0);
-      const totalVendas = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.total_vendas_dinheiro || 0);
-      const valorFinal = c.valor_final ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.valor_final) : '-';
-      const diferenca = c.valor_final ? 
-        (c.valor_final - (c.troco_inicial + c.total_vendas_dinheiro)) : 0;
-      const diferencaColor = diferenca >= 0 ? 'green' : 'red';
-      const diferencaFormatada = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(diferenca));
-      const usuarioAbertura = c.usuario_abertura?.nome || 'Desconhecido';
-      const usuarioFechamento = c.usuario_fechamento?.nome || 'Desconhecido';
-      
-      return `
-        <div class="card" style="margin-bottom:12px;padding:1rem">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <strong>Aberto: ${dataAbertura}</strong>
-            <strong>Fechado: ${dataFechamento}</strong>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-            <div>Troco Inicial: <strong>${trocoInicial}</strong></div>
-            <div>Total Vendas Dinheiro: <strong>${totalVendas}</strong></div>
-            <div>Valor Final: <strong>${valorFinal}</strong></div>
-            <div>Diferença: <strong style="color:var(--${diferencaColor})">${diferenca >= 0 ? '+' : ''}${diferencaFormatada}</strong></div>
-            <div>Aberto por: <strong>${usuarioAbertura}</strong></div>
-            <div>Fechado por: <strong>${usuarioFechamento}</strong></div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    rCaixas.innerHTML = '<div class="empty" style="padding:2rem"><i class="ti ti-cash"></i>Nenhum fechamento de caixa registrado ainda</div>';
+    return;
   }
+  rCaixas.innerHTML = caixas.map(c => {
+    const dataAbertura    = fmt(c.data_abertura);
+    const dataFechamento  = c.data_fechamento ? fmt(c.data_fechamento) : '—';
+    const trocoInicial    = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.troco_inicial||0);
+    const totalVendasFmt  = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.total_vendas_dinheiro||0);
+    const valorFinal      = c.valor_final ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(c.valor_final) : '—';
+    const diferenca       = c.valor_final ? c.valor_final-(c.troco_inicial+c.total_vendas_dinheiro) : 0;
+    const difColor        = diferenca>=0 ? 'var(--green)' : 'var(--red)';
+    const difFmt          = (diferenca>=0?'+':'')+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(diferenca);
+    const usuAbr          = c.usuario_abertura?.nome  || 'Desconhecido';
+    const usufec          = c.usuario_fechamento?.nome|| 'Desconhecido';
+    return `
+      <div class="caixa-card">
+        <div class="caixa-card-header">
+          <span><i class="ti ti-lock-open"></i> Aberto: <strong>${dataAbertura}</strong></span>
+          <span><i class="ti ti-lock"></i> Fechado: <strong>${dataFechamento}</strong></span>
+        </div>
+        <div class="caixa-card-grid">
+          <div class="caixa-stat"><span>Troco inicial</span><strong>${trocoInicial}</strong></div>
+          <div class="caixa-stat"><span>Vendas (dinheiro)</span><strong>${totalVendasFmt}</strong></div>
+          <div class="caixa-stat"><span>Valor final</span><strong>${valorFinal}</strong></div>
+          <div class="caixa-stat"><span>Diferença</span><strong style="color:${difColor}">${difFmt}</strong></div>
+          <div class="caixa-stat"><span>Aberto por</span><strong>${usuAbr}</strong></div>
+          <div class="caixa-stat"><span>Fechado por</span><strong>${usufec}</strong></div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ==================== VENDAS ====================

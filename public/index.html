@@ -352,72 +352,133 @@
         </div>
       </div>
 
-      <!-- RELATÓRIO SEMANAL -->
+      <!-- RELATÓRIO -->
       <div class="screen" id="screen-relatorio">
-        <div class="grid2" style="margin-bottom:1.5rem">
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-arrow-bar-to-down"></i> Entradas da semana</div>
-            <div style="font-size:24px;font-weight:600;margin-bottom:8px;color:var(--green)" id="r-ent">0 un.</div>
-            <div class="progress-bar"><div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div></div>
+
+        <!-- Tab nav -->
+        <div class="rel-tabs">
+          <button class="rel-tab active" data-tab="vendas" onclick="selectRelTab('vendas')">
+            <i class="ti ti-shopping-cart"></i> <span>Vendas</span>
+          </button>
+          <button class="rel-tab" data-tab="estoque" onclick="selectRelTab('estoque')">
+            <i class="ti ti-package"></i> <span>Estoque</span>
+          </button>
+          <button class="rel-tab" data-tab="movimentacoes" onclick="selectRelTab('movimentacoes')">
+            <i class="ti ti-arrows-transfer-up"></i> <span>Movimentações</span>
+          </button>
+          <button class="rel-tab" data-tab="caixa" onclick="selectRelTab('caixa')">
+            <i class="ti ti-cash"></i> <span>Caixa</span>
+          </button>
+        </div>
+
+        <!-- ===== ABA VENDAS ===== -->
+        <div class="rel-panel active" id="rel-vendas">
+          <div class="dash-kpi-grid" style="margin-bottom:1.5rem">
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Vendas semana</span>
+                <span class="dash-kpi-value" id="r-vendas-qtd">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total dinheiro</span>
+                <span class="dash-kpi-value" id="r-total-dinheiro">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-credit-card"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total cartão</span>
+                <span class="dash-kpi-value" id="r-total-cartao">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total geral</span>
+                <span class="dash-kpi-value" id="r-total-geral">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Semana</span>
+              </div>
+            </div>
           </div>
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-arrow-bar-up"></i> Saídas da semana</div>
-            <div style="font-size:24px;font-weight:600;margin-bottom:8px;color:var(--red)" id="r-sai">0 un.</div>
-            <div class="progress-bar"><div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div></div>
+
+          <div class="dash-charts-grid" style="margin-bottom:1.5rem">
+            <div class="card">
+              <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos</div>
+              <div id="r-ranking-vendas" class="dash-ranking"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-delivery"></i> Delivery vs Balcão</div>
+              <div class="dash-ranking">
+                <div class="dash-rank-item">
+                  <div class="dash-rank-header">
+                    <span class="dash-rank-name"><i class="ti ti-delivery" style="color:var(--amber)"></i> Delivery</span>
+                    <span class="dash-rank-val" id="r-delivery">0</span>
+                  </div>
+                  <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-delivery" style="background:var(--amber);width:0%"></div></div>
+                </div>
+                <div class="dash-rank-item">
+                  <div class="dash-rank-header">
+                    <span class="dash-rank-name"><i class="ti ti-shopping-bag" style="color:var(--blue)"></i> Balcão</span>
+                    <span class="dash-rank-val" id="r-balcao">0</span>
+                  </div>
+                  <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-balcao" style="background:var(--blue);width:0%"></div></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:1.5rem">
-          <div class="card-title"><i class="ti ti-chart-line"></i> Balanço semanal</div>
-          <div style="font-size:28px;font-weight:700;text-align:center" id="r-saldo">0 un.</div>
+
+        <!-- ===== ABA ESTOQUE ===== -->
+        <div class="rel-panel" id="rel-estoque">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-package"></i> Estoque atual completo</div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr><th>Produto</th><th>Categoria</th><th>Qtd</th><th>Mínimo</th><th>Preço</th><th>Status</th></tr></thead>
+                <tbody id="r-tabela"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="grid2" style="margin-bottom:1.5rem">
+
+        <!-- ===== ABA MOVIMENTAÇÕES ===== -->
+        <div class="rel-panel" id="rel-movimentacoes">
+          <div class="dash-charts-grid" style="margin-bottom:1.5rem">
+            <div class="report-block">
+              <div class="report-block-title"><i class="ti ti-arrow-bar-to-down"></i> Entradas da semana</div>
+              <div style="font-size:28px;font-weight:700;color:var(--green);margin-bottom:8px" id="r-ent">0 un.</div>
+              <div class="progress-bar"><div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div></div>
+            </div>
+            <div class="report-block">
+              <div class="report-block-title"><i class="ti ti-arrow-bar-up"></i> Saídas da semana</div>
+              <div style="font-size:28px;font-weight:700;color:var(--red);margin-bottom:8px" id="r-sai">0 un.</div>
+              <div class="progress-bar"><div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-title"><i class="ti ti-chart-line"></i> Balanço semanal</div>
+            <div style="font-size:32px;font-weight:800;text-align:center;padding:0.5rem 0" id="r-saldo">0 un.</div>
+          </div>
+
           <div class="card">
             <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos com mais movimentações</div>
-            <div id="r-ranking"></div>
-          </div>
-          <div class="card">
-            <div class="card-title"><i class="ti ti-shopping-cart"></i> Produtos mais vendidos</div>
-            <div id="r-ranking-vendas"></div>
+            <div id="r-ranking" class="dash-ranking"></div>
           </div>
         </div>
-        <div class="grid4" style="margin-bottom:1.5rem">
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-shopping-cart"></i> Vendas (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--blue)" id="r-vendas-qtd">0</div>
-          </div>
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-cash"></i> Total Dinheiro (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--green)" id="r-total-dinheiro">R$ 0,00</div>
-          </div>
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-credit-card"></i> Total Cartão (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--amber)" id="r-total-cartao">R$ 0,00</div>
-          </div>
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-cash"></i> Total Geral (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--blue)" id="r-total-geral">R$ 0,00</div>
-          </div>
-        </div>
-        <div class="grid2" style="margin-bottom:1.5rem">
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-delivery"></i> Vendas Delivery (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--amber)" id="r-delivery">0</div>
-          </div>
-          <div class="report-block">
-            <div class="report-block-title"><i class="ti ti-shopping-bag"></i> Vendas Balcão (Semana)</div>
-            <div style="font-size:24px;font-weight:600;color:var(--blue)" id="r-balcao">0</div>
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:1.5rem">
-          <div class="card-title"><i class="ti ti-package"></i> Estoque atual completo</div>
-          <div style="overflow-x:auto">
-          <table id="r-tabela"></table>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-cash"></i> Fechamentos de Caixa</div>
+
+        <!-- ===== ABA CAIXA ===== -->
+        <div class="rel-panel" id="rel-caixa">
           <div id="r-caixas"></div>
         </div>
+
       </div>
 
       <!-- VENDAS (PDV rápido) -->
