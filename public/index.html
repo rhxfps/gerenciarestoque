@@ -546,14 +546,28 @@
               <div class="vendas-categorias" id="v-categorias"></div>
             </div>
 
-            <button type="button" class="vendas-pastel-btn" onclick="openPastelModal()">
-              <span class="vendas-pastel-icon">🥟</span>
-              <span class="vendas-pastel-text">
-                <strong>Pastel</strong>
-                <small>Escolher recheio · R$ 14,00</small>
-              </span>
-              <i class="ti ti-chevron-right"></i>
-            </button>
+            <!-- Botões de atalho: Pastel e Salgados -->
+            <div class="vendas-atalhos">
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal()">
+                <span class="vendas-atalho-emoji">🥟</span>
+                <span class="vendas-atalho-info">
+                  <strong>Pastel</strong>
+                  <small>Escolher recheio · R$ 14,00</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-salgados" onclick="openSalgadosModal()">
+                <span class="vendas-atalho-emoji">🍡</span>
+                <span class="vendas-atalho-info">
+                  <strong>Salgados</strong>
+                  <small id="v-salgados-sub">Ver opções</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+            </div>
 
             <div class="vendas-produtos-grid" id="v-produtos-grid"></div>
           </div>
@@ -633,6 +647,18 @@
             </div>
             <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong></p>
             <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
+          </div>
+        </div>
+
+        <!-- Modal salgados -->
+        <div id="salgados-modal" class="modal-overlay" onclick="closeSalgadosModal(event)">
+          <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <h3><span>🍡</span> Escolha o salgado</h3>
+              <button type="button" class="modal-close" onclick="closeSalgadosModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <p class="pastel-modal-preco">A partir de <strong>R$ 4,00</strong></p>
+            <div class="pastel-recheios-grid" id="salgados-grid"></div>
           </div>
         </div>
       </div>

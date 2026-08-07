@@ -957,6 +957,13 @@ async function loadPastelData() {
 function renderVendas() {
   renderVendasCategorias();
   renderVendasGrid();
+  // atualiza subtítulo do botão de salgados
+  const sub = document.getElementById('v-salgados-sub');
+  if (sub) {
+    const disponiveis = produtos.filter(p => isSalgado(p) && p.qtd > 0).length;
+    const total = produtos.filter(p => isSalgado(p)).length;
+    sub.textContent = total ? `${disponiveis} de ${total} disponíveis` : 'Ver opções';
+  }
 }
 
 function renderVendasCategorias() {
@@ -1092,6 +1099,73 @@ function addPastelToVenda(recheio) {
   renderVendaItens();
   atualizaPreview();
   toast(`Pastel ${recheio} adicionado!`);
+}
+
+// ==================== SALGADOS MODAL ====================
+function isSalgado(p) {
+  return p.categoria && p.categoria.toLowerCase() === 'salgados';
+}
+
+function openSalgadosModal() {
+  const modal = document.getElementById('salgados-modal');
+  const grid  = document.getElementById('salgados-grid');
+  if (!modal || !grid) return;
+
+  const lista = produtos.filter(p => isSalgado(p));
+
+  if (!lista.length) {
+    grid.innerHTML = '<p style="padding:1rem;color:var(--text-secondary);text-align:center">Nenhum salgado cadastrado.<br>Execute o SQL de salgados no Supabase.</p>';
+  } else {
+    grid.innerHTML = lista.map(p => {
+      const semEstoque = p.qtd <= 0;
+      return `
+        <button type="button" class="pastel-recheio-btn salgado-btn${semEstoque ? ' salgado-sem-estoque' : ''}"
+          onclick="addSalgadoToVenda(${p.id})" ${semEstoque ? 'disabled' : ''}>
+          <span class="salgado-nome">${p.nome}</span>
+          <span class="salgado-preco">${fmtMoeda(p.preco || 0)}</span>
+          ${semEstoque ? '<span class="salgado-badge">Sem estoque</span>' : `<span class="salgado-estoque">${p.qtd} un.</span>`}
+        </button>`;
+    }).join('');
+  }
+
+  modal.classList.add('show');
+}
+
+function closeSalgadosModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('salgados-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function addSalgadoToVenda(produtoId) {
+  const produto = produtos.find(p => p.id === produtoId);
+  if (!produto) return;
+
+  if (produto.qtd <= 0) {
+    toast('Salgado sem estoque!', false);
+    return;
+  }
+
+  const existing = vendaItens.find(i => i.produtoId === produtoId && !i.recheio);
+  if (existing) {
+    if (existing.qtd + 1 > produto.qtd) {
+      toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
+      return;
+    }
+    existing.qtd += 1;
+  } else {
+    vendaItens.push({
+      produtoId: produto.id,
+      produtoNome: produto.nome,
+      qtd: 1,
+      precoUnitario: produto.preco || 0
+    });
+  }
+
+  closeSalgadosModal();
+  renderVendaItens();
+  atualizaPreview();
+  toast(`${produto.nome} adicionado!`);
 }
 
 function changeItemQty(index, delta) {

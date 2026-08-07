@@ -1997,3 +1997,153 @@ tbody tr:hover td { background: var(--blue-50); }
   .bar-day-label { font-size: 10px; }
   .dash-charts-grid:has(#r-chart-dias) { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   VENDAS — ATALHOS (Pastel + Salgados)
+   ============================================================ */
+.vendas-atalhos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.vendas-atalho-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: transform .12s, box-shadow .15s, border-color .15s;
+  text-align: left;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.vendas-atalho-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.vendas-atalho-btn:hover { transform: translateY(-2px); }
+.vendas-atalho-btn:hover::before { opacity: 1; }
+.vendas-atalho-btn:active { transform: scale(.97); }
+
+/* Pastel — âmbar */
+.vendas-atalho-pastel {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(245,158,11,.12) 0%, var(--bg-secondary) 100%);
+}
+.vendas-atalho-pastel::before {
+  background: linear-gradient(135deg, rgba(245,158,11,.08) 0%, transparent 100%);
+}
+.vendas-atalho-pastel:hover { box-shadow: 0 4px 18px rgba(245,158,11,.2); border-color: #f59e0b; }
+.vendas-atalho-pastel .vendas-atalho-arrow { color: #f59e0b; }
+
+/* Salgados — verde */
+.vendas-atalho-salgados {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(22,163,74,.12) 0%, var(--bg-secondary) 100%);
+}
+.vendas-atalho-salgados::before {
+  background: linear-gradient(135deg, rgba(22,163,74,.08) 0%, transparent 100%);
+}
+.vendas-atalho-salgados:hover { box-shadow: 0 4px 18px rgba(22,163,74,.2); border-color: var(--green); }
+.vendas-atalho-salgados .vendas-atalho-arrow { color: var(--green); }
+
+.vendas-atalho-emoji {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.vendas-atalho-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vendas-atalho-info strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vendas-atalho-info small {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vendas-atalho-arrow {
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: .7;
+}
+
+/* ============================================================
+   SALGADOS MODAL — items no grid
+   ============================================================ */
+.salgado-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 14px 12px;
+}
+
+.salgado-btn.salgado-sem-estoque {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.salgado-nome {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.salgado-preco {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.salgado-estoque {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.salgado-badge {
+  font-size: 10px;
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* dark mode */
+[data-theme="dark"] .vendas-atalho-pastel {
+  background: linear-gradient(135deg, rgba(245,158,11,.15) 0%, var(--bg-secondary) 100%);
+}
+
+[data-theme="dark"] .vendas-atalho-salgados {
+  background: linear-gradient(135deg, rgba(22,163,74,.15) 0%, var(--bg-secondary) 100%);
+}
+
+/* mobile */
+@media (max-width: 480px) {
+  .vendas-atalhos { grid-template-columns: 1fr; }
+}
