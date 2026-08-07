@@ -419,27 +419,32 @@
           </div>
 
           <div class="dash-charts-grid" style="margin-bottom:1.5rem">
+            <div class="card rel-chart-card">
+              <div class="card-title"><i class="ti ti-chart-bar"></i> Faturamento por dia</div>
+              <div id="r-chart-dias" class="bar-chart-wrap"></div>
+            </div>
             <div class="card">
               <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos</div>
               <div id="r-ranking-vendas" class="dash-ranking"></div>
             </div>
-            <div class="card">
-              <div class="card-title"><i class="ti ti-delivery"></i> Delivery vs Balcão</div>
-              <div class="dash-ranking">
-                <div class="dash-rank-item">
-                  <div class="dash-rank-header">
-                    <span class="dash-rank-name"><i class="ti ti-delivery" style="color:var(--amber)"></i> Delivery</span>
-                    <span class="dash-rank-val" id="r-delivery">0</span>
-                  </div>
-                  <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-delivery" style="background:var(--amber);width:0%"></div></div>
+          </div>
+
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-title"><i class="ti ti-delivery"></i> Delivery vs Balcão</div>
+            <div class="dash-ranking" style="max-width:480px">
+              <div class="dash-rank-item">
+                <div class="dash-rank-header">
+                  <span class="dash-rank-name"><i class="ti ti-delivery" style="color:var(--amber)"></i> Delivery</span>
+                  <span class="dash-rank-val" id="r-delivery">0</span>
                 </div>
-                <div class="dash-rank-item">
-                  <div class="dash-rank-header">
-                    <span class="dash-rank-name"><i class="ti ti-shopping-bag" style="color:var(--blue)"></i> Balcão</span>
-                    <span class="dash-rank-val" id="r-balcao">0</span>
-                  </div>
-                  <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-balcao" style="background:var(--blue);width:0%"></div></div>
+                <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-delivery" style="background:var(--amber);width:0%"></div></div>
+              </div>
+              <div class="dash-rank-item">
+                <div class="dash-rank-header">
+                  <span class="dash-rank-name"><i class="ti ti-shopping-bag" style="color:var(--blue)"></i> Balcão</span>
+                  <span class="dash-rank-val" id="r-balcao">0</span>
                 </div>
+                <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-balcao" style="background:var(--blue);width:0%"></div></div>
               </div>
             </div>
           </div>

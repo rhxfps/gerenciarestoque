@@ -1861,3 +1861,139 @@ tbody tr:hover td { background: var(--blue-50); }
   border-color: #facc15;
   color: #facc15;
 }
+
+/* ============================================================
+   RELATÓRIO — GRÁFICO DE BARRAS POR DIA
+   ============================================================ */
+.rel-chart-card { min-height: 220px; }
+
+.bar-chart-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  height: 160px;
+  padding: 0 4px;
+  margin-top: 8px;
+}
+
+/* each day column */
+.bar-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  cursor: default;
+}
+
+/* bar wrapper — sets the scale */
+.bar-day-bar-wrap {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* the actual bar */
+.bar-day-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #60a5fa 0%, var(--blue) 100%);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height .6s cubic-bezier(.4,0,.2,1);
+  min-height: 0;
+}
+
+/* today highlight */
+.bar-day--today .bar-day-bar {
+  background: linear-gradient(180deg, #a78bfa 0%, var(--blue-dark) 100%);
+  box-shadow: 0 0 12px rgba(37,99,235,.4);
+}
+
+.bar-day--today .bar-day-bar-wrap {
+  border: 1.5px solid var(--blue);
+  border-bottom: none;
+}
+
+/* future days — muted */
+.bar-day--future .bar-day-bar-wrap {
+  background: var(--bg-secondary);
+  opacity: .45;
+}
+
+/* day label */
+.bar-day-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.bar-day--today .bar-day-label { color: var(--blue); }
+
+/* today dot */
+.bar-day-today-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
+  position: absolute;
+  bottom: 22px;
+}
+
+/* tooltip on hover */
+.bar-day-tooltip {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.bar-day-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text-primary);
+}
+
+.bar-day-tooltip-val { font-size: 12px; font-weight: 800; }
+.bar-day-tooltip-qty { font-size: 10px; opacity: .75; }
+
+.bar-day:not(.bar-day--future):hover .bar-day-tooltip { display: flex; }
+.bar-day:not(.bar-day--future):hover .bar-day-bar {
+  filter: brightness(1.15);
+}
+
+/* dark mode adjustments */
+[data-theme="dark"] .bar-day-bar-wrap  { background: var(--bg-secondary); }
+[data-theme="dark"] .bar-day-bar       { background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%); }
+[data-theme="dark"] .bar-day--today .bar-day-bar { background: linear-gradient(180deg, #a78bfa 0%, #4f46e5 100%); }
+[data-theme="dark"] .bar-day-tooltip   { background: #e2e8f0; color: #0f172a; }
+[data-theme="dark"] .bar-day-tooltip::after { border-top-color: #e2e8f0; }
+
+@media (max-width: 600px) {
+  .bar-chart-wrap { gap: 4px; height: 130px; }
+  .bar-day-bar-wrap { height: 95px; }
+  .bar-day-label { font-size: 10px; }
+  .dash-charts-grid:has(#r-chart-dias) { grid-template-columns: 1fr; }
+}

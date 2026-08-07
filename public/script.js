@@ -742,7 +742,7 @@ function renderRelVendas() {
   const qtdBalcao        = vendasSemana.filter(v => !v.delivery).length;
   const totalTipo        = Math.max(qtdDelivery + qtdBalcao, 1);
 
-  document.getElementById('r-vendas-qtd').textContent   = vendasSemana.length;
+  document.getElementById('r-vendas-qtd').textContent     = vendasSemana.length;
   document.getElementById('r-total-dinheiro').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalDinheiro);
   document.getElementById('r-total-cartao').textContent   = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalCartao);
   document.getElementById('r-total-geral').textContent    = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalVendasReais);
@@ -751,6 +751,54 @@ function renderRelVendas() {
   document.getElementById('r-bar-delivery').style.width = `${Math.round((qtdDelivery/totalTipo)*100)}%`;
   document.getElementById('r-bar-balcao').style.width   = `${Math.round((qtdBalcao/totalTipo)*100)}%`;
 
+  // ---- Gráfico de barras por dia da semana ----
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0=dom
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+
+  const diasLabel  = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const diasValor  = [0, 0, 0, 0, 0, 0, 0]; // índice 0=Seg
+  const diasQtd    = [0, 0, 0, 0, 0, 0, 0];
+
+  vendasSemana.forEach(v => {
+    const d = new Date(v.data);
+    const diff = Math.floor((d - segunda) / 86400000);
+    if (diff >= 0 && diff <= 6) {
+      diasValor[diff] += v.total || 0;
+      diasQtd[diff]   += 1;
+    }
+  });
+
+  // só mostra até o dia de hoje
+  const diaAtual = ((diaSemana + 6) % 7); // 0=Seg
+  const maxValor = Math.max(...diasValor, 1);
+  const fmtM = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+  const chartEl = document.getElementById('r-chart-dias');
+  if (!chartEl) return;
+
+  chartEl.innerHTML = diasLabel.map((label, i) => {
+    const isFuture  = i > diaAtual;
+    const isHoje    = i === diaAtual;
+    const pct       = isFuture ? 0 : Math.round((diasValor[i] / maxValor) * 100);
+    const hasVenda  = diasValor[i] > 0;
+    return `
+      <div class="bar-day ${isFuture ? 'bar-day--future' : ''} ${isHoje ? 'bar-day--today' : ''}">
+        <div class="bar-day-tooltip">
+          <span class="bar-day-tooltip-val">${fmtM(diasValor[i])}</span>
+          <span class="bar-day-tooltip-qty">${diasQtd[i]} venda(s)</span>
+        </div>
+        <div class="bar-day-bar-wrap">
+          <div class="bar-day-bar" style="height:${pct}%"></div>
+        </div>
+        <span class="bar-day-label">${label}</span>
+        ${isHoje ? '<span class="bar-day-today-dot"></span>' : ''}
+      </div>`;
+  }).join('');
+
+  // ---- Ranking produtos mais vendidos ----
   const rankVendas = {};
   vendasSemana.forEach(v => {
     if (v.itens?.length) v.itens.forEach(i => { rankVendas[i.produto_nome] = (rankVendas[i.produto_nome]||0)+i.qtd; });
