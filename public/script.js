@@ -604,10 +604,14 @@ function renderDashboardProfissional() {
       topProdutosEl.innerHTML = '<div class="empty" style="padding:1rem">Sem vendas ainda</div>';
     } else {
       const maxVendas = topProdutos[0][1];
-      topProdutosEl.innerHTML = topProdutos.map(([nome, qtd]) => `
-        <div style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${nome}</span><strong>${qtd} un.</strong></div>
-          <div class="progress-bar"><div class="progress-fill" style="background:var(--blue);width:${Math.round((qtd/maxVendas)*100)}%"></div></div>
+      const medals = ['🥇','🥈','🥉','',''];
+      topProdutosEl.innerHTML = topProdutos.map(([nome, qtd], i) => `
+        <div class="dash-rank-item">
+          <div class="dash-rank-header">
+            <span class="dash-rank-name"><span class="dash-rank-medal">${medals[i]||''}</span>${nome}</span>
+            <span class="dash-rank-val">${qtd} un.</span>
+          </div>
+          <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${Math.round((qtd/maxVendas)*100)}%"></div></div>
         </div>
       `).join('');
     }
@@ -628,18 +632,22 @@ function renderDashboardProfissional() {
       pagamentosEl.innerHTML = '<div class="empty" style="padding:1rem">Sem dados ainda</div>';
     } else {
       const totalPag = pagamentos.dinheiro + pagamentos.cartao;
+      const pctDin = totalPag > 0 ? Math.round((pagamentos.dinheiro/totalPag)*100) : 0;
+      const pctCart = totalPag > 0 ? Math.round((pagamentos.cartao/totalPag)*100) : 0;
       pagamentosEl.innerHTML = `
-        <div style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-            <span>Dinheiro</span><strong>${pagamentos.dinheiro} (${totalPag > 0 ? Math.round((pagamentos.dinheiro/totalPag)*100) : 0}%)</strong>
+        <div class="dash-rank-item">
+          <div class="dash-rank-header">
+            <span class="dash-rank-name"><i class="ti ti-cash" style="color:var(--green)"></i> Dinheiro</span>
+            <span class="dash-rank-val">${pagamentos.dinheiro} venda(s) · ${pctDin}%</span>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="background:var(--green);width:${totalPag > 0 ? Math.round((pagamentos.dinheiro/totalPag)*100) : 0}%"></div></div>
+          <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--green);width:${pctDin}%"></div></div>
         </div>
-        <div style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-            <span>Cartão</span><strong>${pagamentos.cartao} (${totalPag > 0 ? Math.round((pagamentos.cartao/totalPag)*100) : 0}%)</strong>
+        <div class="dash-rank-item">
+          <div class="dash-rank-header">
+            <span class="dash-rank-name"><i class="ti ti-credit-card" style="color:var(--blue)"></i> Cartão</span>
+            <span class="dash-rank-val">${pagamentos.cartao} venda(s) · ${pctCart}%</span>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="background:var(--blue);width:${totalPag > 0 ? Math.round((pagamentos.cartao/totalPag)*100) : 0}%"></div></div>
+          <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${pctCart}%"></div></div>
         </div>
       `;
     }
@@ -1039,21 +1047,23 @@ function renderVendaItens() {
     const totalItem = item.qtd * item.precoUnitario;
     return `
       <div class="venda-item-card">
-        <div class="venda-item-info">
-          <div class="venda-item-name">${item.produtoNome}</div>
-          <div class="venda-item-meta">
-            <span>${fmtMoeda(item.precoUnitario)}</span>
+        <div class="venda-item-top">
+          <div class="venda-item-info">
+            <div class="venda-item-name">${item.produtoNome}</div>
+            <div class="venda-item-meta">${fmtMoeda(item.precoUnitario)} / un</div>
           </div>
+          <button type="button" class="venda-item-remove" onclick="removeItemFromVenda(${index})">
+            <i class="ti ti-trash"></i>
+          </button>
         </div>
-        <div class="venda-item-qty">
-          <button type="button" onclick="changeItemQty(${index}, -1)"><i class="ti ti-minus"></i></button>
-          <span>${item.qtd}</span>
-          <button type="button" onclick="changeItemQty(${index}, 1)"><i class="ti ti-plus"></i></button>
+        <div class="venda-item-bottom">
+          <div class="venda-item-qty">
+            <button type="button" onclick="changeItemQty(${index}, -1)"><i class="ti ti-minus"></i></button>
+            <span>${item.qtd}</span>
+            <button type="button" onclick="changeItemQty(${index}, 1)"><i class="ti ti-plus"></i></button>
+          </div>
+          <div class="venda-item-total">${fmtMoeda(totalItem)}</div>
         </div>
-        <div class="venda-item-total">${fmtMoeda(totalItem)}</div>
-        <button type="button" class="venda-item-remove" onclick="removeItemFromVenda(${index})">
-          <i class="ti ti-trash"></i>
-        </button>
       </div>
     `;
   }).join('');

@@ -114,57 +114,87 @@
 
     <div class="content">
 
-      <!-- DASHBOARD PROFISSIONAL DE VENDAS -->
+      <!-- DASHBOARD -->
       <div class="screen active" id="screen-dashboard">
-        <div class="grid4" style="margin-bottom: 1.5rem">
-          <div class="metric-card" style="border-left: 4px solid var(--blue);">
-            <div class="metric-label"><i class="ti ti-shopping-cart"></i> Vendas Hoje</div>
-            <div class="metric-value text-blue" id="dash-vendas-hoje">0</div>
-            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-              <i class="ti ti-clock"></i> Hoje
+
+        <!-- KPI cards -->
+        <div class="dash-kpi-grid">
+
+          <div class="dash-kpi dash-kpi--blue">
+            <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Vendas Hoje</span>
+              <span class="dash-kpi-value" id="dash-vendas-hoje">0</span>
+              <span class="dash-kpi-sub"><i class="ti ti-clock"></i> Hoje</span>
             </div>
           </div>
-          <div class="metric-card" style="border-left: 4px solid var(--green);">
-            <div class="metric-label"><i class="ti ti-currency-dollar"></i> Valor Hoje</div>
-            <div class="metric-value text-green" id="dash-valor-hoje">R$ 0,00</div>
-            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-              <i class="ti ti-clock"></i> Vendas de hoje
+
+          <div class="dash-kpi dash-kpi--green">
+            <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Faturamento Hoje</span>
+              <span class="dash-kpi-value" id="dash-valor-hoje">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Receita do dia</span>
             </div>
           </div>
-          <div class="metric-card" style="border-left: 4px solid var(--amber);">
-            <div class="metric-label"><i class="ti ti-shopping-cart"></i> Vendas do Mês</div>
-            <div class="metric-value text-amber" id="dash-vendas-mes">0</div>
-            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-              <i class="ti ti-calendar-month"></i> Vendas em <span id="dash-mes-atual"></span>
+
+          <div class="dash-kpi dash-kpi--indigo">
+            <div class="dash-kpi-icon"><i class="ti ti-calendar-stats"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Vendas do Mês</span>
+              <span class="dash-kpi-value" id="dash-vendas-mes">0</span>
+              <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Em <span id="dash-mes-atual"></span></span>
             </div>
           </div>
-          <div class="metric-card" style="border-left: 4px solid var(--blue);">
-            <div class="metric-label"><i class="ti ti-currency-dollar"></i> Valor do Mês</div>
-            <div class="metric-value text-blue" id="dash-valor-mes">R$ 0,00</div>
-            <div class="metric-sub" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-              <i class="ti ti-history"></i> Total do período
+
+          <div class="dash-kpi dash-kpi--violet">
+            <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Faturamento do Mês</span>
+              <span class="dash-kpi-value" id="dash-valor-mes">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Total acumulado</span>
             </div>
           </div>
+
         </div>
 
-        <div class="grid2" style="margin-bottom: 1.5rem">
-          <div class="card">
-            <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos Mais Vendidos</div>
-            <div id="dash-top-produtos"></div>
+        <!-- Charts row -->
+        <div class="dash-charts-grid">
+
+          <div class="card dash-chart-card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="dash-top-produtos" class="dash-ranking"></div>
           </div>
-          <div class="card">
+
+          <div class="card dash-chart-card">
             <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
-            <div id="dash-pagamentos"></div>
+            <div id="dash-pagamentos" class="dash-ranking"></div>
+          </div>
+
+        </div>
+
+        <!-- Recent sales -->
+        <div class="card">
+          <div class="dash-table-header">
+            <div class="card-title" style="margin:0"><i class="ti ti-history"></i> Últimas Vendas</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Delivery</th>
+                </tr>
+              </thead>
+              <tbody id="dash-ultimas-vendas"></tbody>
+            </table>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-title"><i class="ti ti-history"></i> Últimas Vendas</div>
-          <table>
-            <thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Pagamento</th><th>Delivery</th></tr></thead>
-            <tbody id="dash-ultimas-vendas"></tbody>
-          </table>
-        </div>
       </div>
 
       <!-- ESTOQUE (MELHORADO) -->
