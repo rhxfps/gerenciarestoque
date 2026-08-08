@@ -566,7 +566,41 @@ function populateHFiltro() {
 
 // ==================== MOVIMENTAÇÕES ====================
 async function addEntrada() {
-  console.log('addEntrada function called!');
+  const produtoId = parseInt(document.getElementById('e-produto').value);
+  const qtdRaw    = parseFloat(document.getElementById('e-qty').value);
+  const unidade   = document.getElementById('e-unidade')?.value || 'un';
+  const obsInput  = document.getElementById('e-obs').value.trim();
+
+  if (!produtoId) { toast('Selecione um produto!', false); return; }
+  if (!qtdRaw || qtdRaw <= 0) { toast('Quantidade deve ser maior que zero!', false); return; }
+
+  // Para "un" arredonda para inteiro; para demais unidades mantém decimal
+  const qtd = unidade === 'un' ? Math.round(qtdRaw) : qtdRaw;
+
+  // Monta observação incluindo a unidade
+  const obs = obsInput
+    ? `[${qtd} ${unidade}] ${obsInput}`
+    : `[${qtd} ${unidade}]`;
+
+  const produto = produtos.find(p => p.id === produtoId);
+
+  try {
+    await apiRequest('/movimentacoes', {
+      method: 'POST',
+      body: JSON.stringify({ tipo: 'entrada', produto_id: produtoId, produto_nome: produto.nome, qtd, obs })
+    });
+
+    await loadAllData();
+    renderRegistros();
+    populateSelect('e-produto');
+    document.getElementById('e-qty').value = '';
+    document.getElementById('e-obs').value = '';
+    toast('Entrada registrada com sucesso!');
+  } catch (error) {
+    toast(error.message || 'Erro ao registrar entrada!', false);
+    console.error('Error in addEntrada:', error);
+  }
+}
   const produtoId = parseInt(document.getElementById('e-produto').value);
   const qtd = parseInt(document.getElementById('e-qty').value) || 0;
   const obs = document.getElementById('e-obs').value.trim();
@@ -586,44 +620,38 @@ async function addEntrada() {
     });
     console.log('API request result:', result);
     
-    await loadAllData();
-    renderEntradas();
-    populateSelect('e-produto');
-    toast('Entrada registrada com sucesso!');
-  } catch (error) {
-    toast(error.message || 'Erro ao registrar entrada!', false);
-    console.error('Error in addEntrada:', error);
-  }
-}
-
 async function addSaida() {
-  console.log('addSaida function called!');
   const produtoId = parseInt(document.getElementById('s-produto').value);
-  const qtd = parseInt(document.getElementById('s-qty').value) || 0;
-  const obs = document.getElementById('s-obs').value.trim();
-  
-  console.log('Values:', { produtoId, qtd, obs });
-  
+  const qtdRaw    = parseFloat(document.getElementById('s-qty').value);
+  const unidade   = document.getElementById('s-unidade')?.value || 'un';
+  const obsInput  = document.getElementById('s-obs').value.trim();
+
   if (!produtoId) { toast('Selecione um produto!', false); return; }
-  if (qtd < 1) { toast('Quantidade deve ser maior que zero!', false); return; }
-  
+  if (!qtdRaw || qtdRaw <= 0) { toast('Quantidade deve ser maior que zero!', false); return; }
+
+  const qtd = unidade === 'un' ? Math.round(qtdRaw) : qtdRaw;
+
   const produto = produtos.find(p => p.id === produtoId);
-  console.log('Found product:', produto);
-  if (qtd > produto.qtd) {
+  if (unidade === 'un' && qtd > produto.qtd) {
     toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
     return;
   }
 
+  const obs = obsInput
+    ? `[${qtd} ${unidade}] ${obsInput}`
+    : `[${qtd} ${unidade}]`;
+
   try {
-    const result = await apiRequest('/movimentacoes', {
+    await apiRequest('/movimentacoes', {
       method: 'POST',
       body: JSON.stringify({ tipo: 'saida', produto_id: produtoId, produto_nome: produto.nome, qtd, obs })
     });
-    console.log('API request result:', result);
-    
+
     await loadAllData();
-    renderSaidas();
+    renderRegistros();
     populateSelect('s-produto');
+    document.getElementById('s-qty').value = '';
+    document.getElementById('s-obs').value = '';
     toast('Saída registrada com sucesso!');
   } catch (error) {
     toast(error.message || 'Erro ao registrar saída!', false);
