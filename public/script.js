@@ -601,25 +601,7 @@ async function addEntrada() {
     console.error('Error in addEntrada:', error);
   }
 }
-  const produtoId = parseInt(document.getElementById('e-produto').value);
-  const qtd = parseInt(document.getElementById('e-qty').value) || 0;
-  const obs = document.getElementById('e-obs').value.trim();
-  
-  console.log('Values:', { produtoId, qtd, obs });
-  
-  if (!produtoId) { toast('Selecione um produto!', false); return; }
-  if (qtd < 1) { toast('Quantidade deve ser maior que zero!', false); return; }
 
-  const produto = produtos.find(p => p.id === produtoId);
-  console.log('Found product:', produto);
-  
-  try {
-    const result = await apiRequest('/movimentacoes', {
-      method: 'POST',
-      body: JSON.stringify({ tipo: 'entrada', produto_id: produtoId, produto_nome: produto.nome, qtd, obs })
-    });
-    console.log('API request result:', result);
-    
 async function addSaida() {
   const produtoId = parseInt(document.getElementById('s-produto').value);
   const qtdRaw    = parseFloat(document.getElementById('s-qty').value);
