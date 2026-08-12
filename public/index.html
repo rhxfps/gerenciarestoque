@@ -207,41 +207,56 @@
 
       </div>
 
-      <!-- ESTOQUE (MELHORADO) -->
+      <!-- ESTOQUE -->
       <div class="screen" id="screen-estoque">
-        <div class="grid4" style="margin-bottom: 1.5rem">
-          <div class="metric-card" style="border-left: 4px solid var(--blue);">
-            <div class="metric-label"><i class="ti ti-box"></i> Total de Produtos</div>
-            <div class="metric-value text-blue" id="estoque-total-produtos">0</div>
+
+        <!-- Toggle de visão -->
+        <div class="estoque-view-toggle">
+          <button class="estoque-view-btn active" id="estoque-btn-dashboard" onclick="setEstoqueView('dashboard')">
+            <i class="ti ti-layout-dashboard"></i> Dashboard
+          </button>
+          <button class="estoque-view-btn" id="estoque-btn-tabela" onclick="setEstoqueView('tabela')">
+            <i class="ti ti-table"></i> Só Produtos
+          </button>
+        </div>
+
+        <!-- ── VISÃO DASHBOARD ── -->
+        <div id="estoque-view-dashboard">
+          <div class="grid4" style="margin-bottom: 1.5rem">
+            <div class="metric-card" style="border-left: 4px solid var(--blue);">
+              <div class="metric-label"><i class="ti ti-box"></i> Total de Produtos</div>
+              <div class="metric-value text-blue" id="estoque-total-produtos">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--green);">
+              <div class="metric-label"><i class="ti ti-arrow-bar-to-down"></i> Entradas (Semana)</div>
+              <div class="metric-value text-green" id="estoque-entradas">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--red);">
+              <div class="metric-label"><i class="ti ti-arrow-bar-up"></i> Saídas (Semana)</div>
+              <div class="metric-value text-red" id="estoque-saidas">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--amber);">
+              <div class="metric-label"><i class="ti ti-alert-triangle"></i> Produtos Baixos</div>
+              <div class="metric-value text-amber" id="estoque-baixo">0</div>
+            </div>
           </div>
-          <div class="metric-card" style="border-left: 4px solid var(--green);">
-            <div class="metric-label"><i class="ti ti-arrow-bar-to-down"></i> Entradas (Semana)</div>
-            <div class="metric-value text-green" id="estoque-entradas">0</div>
-          </div>
-          <div class="metric-card" style="border-left: 4px solid var(--red);">
-            <div class="metric-label"><i class="ti ti-arrow-bar-up"></i> Saídas (Semana)</div>
-            <div class="metric-value text-red" id="estoque-saidas">0</div>
-          </div>
-          <div class="metric-card" style="border-left: 4px solid var(--amber);">
-            <div class="metric-label"><i class="ti ti-alert-triangle"></i> Produtos Baixos</div>
-            <div class="metric-value text-amber" id="estoque-baixo">0</div>
+
+          <div class="grid2" style="margin-bottom: 1.5rem">
+            <div class="card">
+              <div class="card-title"><i class="ti ti-alert-triangle"></i> Produtos com Estoque Baixo</div>
+              <div id="estoque-alertas"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-history"></i> Últimas Movimentações</div>
+              <table>
+                <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Data</th></tr></thead>
+                <tbody id="estoque-movimentos"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <div class="grid2" style="margin-bottom: 1.5rem">
-          <div class="card">
-            <div class="card-title"><i class="ti ti-alert-triangle"></i> Produtos com Estoque Baixo</div>
-            <div id="estoque-alertas"></div>
-          </div>
-          <div class="card">
-            <div class="card-title"><i class="ti ti-history"></i> Últimas Movimentações</div>
-            <table>
-              <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Data</th></tr></thead>
-              <tbody id="estoque-movimentos"></tbody>
-            </table>
-          </div>
-        </div>
-
+        <!-- ── TABELA (sempre visível) ── -->
         <div class="card">
           <div class="estoque-tabela-header">
             <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>

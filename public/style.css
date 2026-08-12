@@ -2873,3 +2873,53 @@ mark.estoque-highlight {
   background-color: var(--bg-secondary);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
+
+/* ============================================================
+   ESTOQUE — toggle Dashboard / Só Produtos
+   ============================================================ */
+.estoque-view-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 5px;
+  margin-bottom: 1.25rem;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+}
+
+.estoque-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+
+.estoque-view-btn i { font-size: 15px; }
+
+.estoque-view-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.estoque-view-btn.active {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37,99,235,.25);
+}
+
+@media (max-width: 480px) {
+  .estoque-view-toggle { width: 100%; }
+  .estoque-view-btn    { flex: 1; justify-content: center; }
+}
