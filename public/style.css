@@ -2962,3 +2962,32 @@ mark.estoque-highlight {
   color: #fff;
   box-shadow: 0 2px 8px rgba(37,99,235,.2);
 }
+
+/* ============================================================
+   DASHBOARD — gráfico barras do mês
+   ============================================================ */
+.dash-chart-mes-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  padding-bottom: 2px;
+}
+
+.dash-chart-mes-wrap .bar-day { min-width: 20px; }
+
+/* Barras do mês mais estreitas — só label a cada 5 dias */
+.bar-day--mes .bar-day-label {
+  font-size: 9px;
+}
+
+/* Esconder labels ímpares no gráfico do mês para não poluir */
+.dash-chart-mes-wrap .bar-day:not(:nth-child(5n)) .bar-day-label {
+  opacity: 0;
+}
+
+/* Sempre mostrar o label do dia atual */
+.dash-chart-mes-wrap .bar-day--today .bar-day-label {
+  opacity: 1 !important;
+  color: var(--blue);
+  font-size: 10px;
+}

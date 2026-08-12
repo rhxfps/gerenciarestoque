@@ -1022,6 +1022,105 @@ function renderDashboardProfissional() {
       }).join('');
     }
   }
+
+  // ── Gráficos de barras ──────────────────────────────────────
+  renderDashBarSemana();
+  renderDashBarMes();
+}
+
+function renderDashBarSemana() {
+  const el = document.getElementById('dash-chart-semana');
+  if (!el) return;
+
+  const hoje      = new Date();
+  const diaSemana = hoje.getDay();
+  const segunda   = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+
+  const labels  = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const valores = [0,0,0,0,0,0,0];
+  const qtds    = [0,0,0,0,0,0,0];
+
+  vendas.forEach(v => {
+    const d    = new Date(v.data);
+    const diff = Math.floor((d - segunda) / 86400000);
+    if (diff >= 0 && diff <= 6) {
+      valores[diff] += v.total || 0;
+      qtds[diff]    += 1;
+    }
+  });
+
+  const diaAtual = (diaSemana + 6) % 7;
+  const maxVal   = Math.max(...valores, 1);
+  const fmtM     = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+  el.innerHTML = labels.map((label, i) => {
+    const isFuture = i > diaAtual;
+    const isHoje   = i === diaAtual;
+    const pct      = isFuture ? 0 : Math.round((valores[i] / maxVal) * 100);
+    return `
+      <div class="bar-day ${isFuture ? 'bar-day--future' : ''} ${isHoje ? 'bar-day--today' : ''}">
+        <div class="bar-day-tooltip">
+          <span class="bar-day-tooltip-val">${fmtM(valores[i])}</span>
+          <span class="bar-day-tooltip-qty">${qtds[i]} venda(s)</span>
+        </div>
+        <div class="bar-day-bar-wrap">
+          <div class="bar-day-bar" style="height:${pct}%"></div>
+        </div>
+        <span class="bar-day-label">${label}</span>
+        ${isHoje ? '<span class="bar-day-today-dot"></span>' : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderDashBarMes() {
+  const el = document.getElementById('dash-chart-mes');
+  const nomeEl = document.getElementById('dash-chart-mes-nome');
+  if (!el) return;
+
+  const hoje     = new Date();
+  const mes      = hoje.getMonth();
+  const ano      = hoje.getFullYear();
+  const meses    = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+  if (nomeEl) nomeEl.textContent = meses[mes];
+
+  // agrupa por dia do mês
+  const valores = Array(diasNoMes).fill(0);
+  const qtds    = Array(diasNoMes).fill(0);
+
+  vendas.forEach(v => {
+    const d = new Date(v.data);
+    if (d.getMonth() === mes && d.getFullYear() === ano) {
+      const dia = d.getDate() - 1; // 0-indexed
+      valores[dia] += v.total || 0;
+      qtds[dia]    += 1;
+    }
+  });
+
+  const maxVal    = Math.max(...valores, 1);
+  const diaAtual  = hoje.getDate() - 1;
+  const fmtM      = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+  el.innerHTML = valores.map((val, i) => {
+    const isFuture = i > diaAtual;
+    const isHoje   = i === diaAtual;
+    const pct      = isFuture ? 0 : Math.round((val / maxVal) * 100);
+    const label    = String(i + 1).padStart(2, '0');
+    return `
+      <div class="bar-day bar-day--mes ${isFuture ? 'bar-day--future' : ''} ${isHoje ? 'bar-day--today' : ''}">
+        <div class="bar-day-tooltip">
+          <span class="bar-day-tooltip-val">${fmtM(val)}</span>
+          <span class="bar-day-tooltip-qty">${qtds[i]} venda(s)</span>
+        </div>
+        <div class="bar-day-bar-wrap">
+          <div class="bar-day-bar" style="height:${pct}%"></div>
+        </div>
+        <span class="bar-day-label">${label}</span>
+        ${isHoje ? '<span class="bar-day-today-dot"></span>' : ''}
+      </div>`;
+  }).join('');
 }
 
 // ==================== RELATÓRIO ====================
