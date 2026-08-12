@@ -1172,12 +1172,31 @@ const PASTEL_RECHEIOS_PADRAO = [
 
 const fmtMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
+// Categorias que só aparecem no estoque — nunca no PDV de vendas
+const CATEGORIAS_SO_ESTOQUE = new Set([
+  'recheios congelados',
+  'embalagens',
+  'polpas',
+  'descartáveis',
+  'descartaveis',
+  'insumos',
+  'congelados',
+  'gelo',
+  'condimentos',
+]);
+
 function isProdutoPastel(p) {
   return p.tipo === 'pastel' || (p.nome && p.nome.toLowerCase() === 'pastel');
 }
 
+function isSoEstoque(p) {
+  if (isProdutoPastel(p)) return true;
+  if (!p.categoria) return false;
+  return CATEGORIAS_SO_ESTOQUE.has(p.categoria.toLowerCase());
+}
+
 function produtosVenda() {
-  return produtos.filter(p => !isProdutoPastel(p));
+  return produtos.filter(p => !isSoEstoque(p));
 }
 
 function getCategoriasVenda() {
