@@ -1023,104 +1023,161 @@ function renderDashboardProfissional() {
     }
   }
 
-  // ── Gráficos de barras ──────────────────────────────────────
-  renderDashBarSemana();
-  renderDashBarMes();
+  // ── Gráficos sparkline ─────────────────────────────────────
+  renderDashSparkSemana();
+  renderDashSparkMes();
 }
 
-function renderDashBarSemana() {
-  const el = document.getElementById('dash-chart-semana');
+function _buildSparkline(containerId, pontos, labels, totalEl, qtdEl, pctEl) {
+  const el = document.getElementById(containerId);
   if (!el) return;
 
+  const total = pontos.reduce((s, v) => s + v, 0);
+  const qtd   = pontos.filter(v => v > 0).length;
+  const fmtM  = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+  if (totalEl) document.getElementById(totalEl).textContent = fmtM(total);
+  if (qtdEl)   document.getElementById(qtdEl).textContent   = qtd;
+  if (pctEl) {
+    const el2 = document.getElementById(pctEl);
+    if (el2) {
+      // compara primeira metade com segunda metade
+      const mid   = Math.floor(pontos.length / 2);
+      const prima = pontos.slice(0, mid).reduce((s, v) => s + v, 0);
+      const segun = pontos.slice(mid).reduce((s, v) => s + v, 0);
+      const diff  = prima > 0 ? Math.round(((segun - prima) / prima) * 100) : null;
+      if (diff === null) {
+        el2.textContent = '';
+      } else {
+        el2.textContent = (diff >= 0 ? '↗ ' : '↘ ') + Math.abs(diff) + '%';
+        el2.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+    }
+  }
+
+  const max    = Math.max(...pontos, 0.01);
+  const width  = el.clientWidth  || 400;
+  const height = 80;
+  const pad    = 16;
+  const n      = pontos.length;
+  const stepX  = (width - pad * 2) / Math.max(n - 1, 1);
+
+  // calcula pontos SVG
+  const pts = pontos.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = pad + (1 - v / max) * (height - pad * 2);
+    return { x, y, v, label: labels[i] };
+  });
+
+  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  // área preenchida abaixo
+  const areaD = `${pathD} L${pts[pts.length-1].x.toFixed(1)},${height} L${pts[0].x.toFixed(1)},${height} Z`;
+
+  // círculos interativos
+  const circles = pts.map((p, i) => `
+    <g class="spark-point" data-label="${p.label}" data-val="${fmtM(p.v)}">
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="14" fill="transparent" class="spark-hit"/>
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--blue)" stroke="var(--bg-primary)" stroke-width="2" class="spark-dot"/>
+    </g>`).join('');
+
+  el.innerHTML = `
+    <div class="spark-tooltip" id="${containerId}-tip"></div>
+    <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"
+         class="spark-svg" onmouseleave="hideSpark('${containerId}')">
+      <defs>
+        <linearGradient id="sg-${containerId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--blue)" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- área -->
+      <path d="${areaD}" fill="url(#sg-${containerId})"/>
+      <!-- linha -->
+      <path d="${pathD}" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- pontos -->
+      ${circles}
+    </svg>`;
+
+  // eventos
+  el.querySelectorAll('.spark-point').forEach(g => {
+    g.addEventListener('mouseenter', (e) => {
+      const tip   = document.getElementById(`${containerId}-tip`);
+      const label = g.dataset.label;
+      const val   = g.dataset.val;
+      tip.innerHTML = `<strong>${label}</strong><span>Receita &nbsp;<b>${val}</b></span>`;
+      tip.classList.add('show');
+      // posição relativa ao wrapper
+      const rect = el.getBoundingClientRect();
+      const cx   = parseFloat(g.querySelector('circle').getAttribute('cx'));
+      const frac = cx / width;
+      tip.style.left = Math.min(Math.max(frac * 100, 5), 85) + '%';
+    });
+    g.addEventListener('mouseleave', () => {});
+  });
+}
+
+function hideSpark(id) {
+  const tip = document.getElementById(`${id}-tip`);
+  if (tip) tip.classList.remove('show');
+}
+
+function renderDashSparkSemana() {
   const hoje      = new Date();
   const diaSemana = hoje.getDay();
   const segunda   = new Date(hoje);
   segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
   segunda.setHours(0, 0, 0, 0);
 
-  const labels  = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const labels = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
   const valores = [0,0,0,0,0,0,0];
-  const qtds    = [0,0,0,0,0,0,0];
 
   vendas.forEach(v => {
     const d    = new Date(v.data);
     const diff = Math.floor((d - segunda) / 86400000);
-    if (diff >= 0 && diff <= 6) {
-      valores[diff] += v.total || 0;
-      qtds[diff]    += 1;
-    }
+    if (diff >= 0 && diff <= 6) valores[diff] += v.total || 0;
   });
 
+  // só dias até hoje
   const diaAtual = (diaSemana + 6) % 7;
-  const maxVal   = Math.max(...valores, 1);
-  const fmtM     = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-
-  el.innerHTML = labels.map((label, i) => {
-    const isFuture = i > diaAtual;
-    const isHoje   = i === diaAtual;
-    const pct      = isFuture ? 0 : Math.round((valores[i] / maxVal) * 100);
-    return `
-      <div class="bar-day ${isFuture ? 'bar-day--future' : ''} ${isHoje ? 'bar-day--today' : ''}">
-        <div class="bar-day-tooltip">
-          <span class="bar-day-tooltip-val">${fmtM(valores[i])}</span>
-          <span class="bar-day-tooltip-qty">${qtds[i]} venda(s)</span>
-        </div>
-        <div class="bar-day-bar-wrap">
-          <div class="bar-day-bar" style="height:${pct}%"></div>
-        </div>
-        <span class="bar-day-label">${label}</span>
-        ${isHoje ? '<span class="bar-day-today-dot"></span>' : ''}
-      </div>`;
-  }).join('');
+  _buildSparkline(
+    'dash-spark-semana',
+    valores.slice(0, diaAtual + 1),
+    labels.slice(0, diaAtual + 1),
+    'dash-spark-semana-total',
+    'dash-spark-semana-qtd',
+    'dash-spark-semana-pct'
+  );
 }
 
-function renderDashBarMes() {
-  const el = document.getElementById('dash-chart-mes');
+function renderDashSparkMes() {
+  const hoje  = new Date();
+  const mes   = hoje.getMonth();
+  const ano   = hoje.getFullYear();
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const nomeEl = document.getElementById('dash-chart-mes-nome');
-  if (!el) return;
-
-  const hoje     = new Date();
-  const mes      = hoje.getMonth();
-  const ano      = hoje.getFullYear();
-  const meses    = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const diasNoMes = new Date(ano, mes + 1, 0).getDate();
   if (nomeEl) nomeEl.textContent = meses[mes];
 
-  // agrupa por dia do mês
-  const valores = Array(diasNoMes).fill(0);
-  const qtds    = Array(diasNoMes).fill(0);
+  const diaAtual  = hoje.getDate();
+  const valores   = Array(diaAtual).fill(0);
+  const labels    = Array.from({length: diaAtual}, (_, i) => `Dia ${String(i+1).padStart(2,'0')}`);
 
   vendas.forEach(v => {
     const d = new Date(v.data);
     if (d.getMonth() === mes && d.getFullYear() === ano) {
-      const dia = d.getDate() - 1; // 0-indexed
-      valores[dia] += v.total || 0;
-      qtds[dia]    += 1;
+      const dia = d.getDate() - 1;
+      if (dia < diaAtual) valores[dia] += v.total || 0;
     }
   });
 
-  const maxVal    = Math.max(...valores, 1);
-  const diaAtual  = hoje.getDate() - 1;
-  const fmtM      = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
-
-  el.innerHTML = valores.map((val, i) => {
-    const isFuture = i > diaAtual;
-    const isHoje   = i === diaAtual;
-    const pct      = isFuture ? 0 : Math.round((val / maxVal) * 100);
-    const label    = String(i + 1).padStart(2, '0');
-    return `
-      <div class="bar-day bar-day--mes ${isFuture ? 'bar-day--future' : ''} ${isHoje ? 'bar-day--today' : ''}">
-        <div class="bar-day-tooltip">
-          <span class="bar-day-tooltip-val">${fmtM(val)}</span>
-          <span class="bar-day-tooltip-qty">${qtds[i]} venda(s)</span>
-        </div>
-        <div class="bar-day-bar-wrap">
-          <div class="bar-day-bar" style="height:${pct}%"></div>
-        </div>
-        <span class="bar-day-label">${label}</span>
-        ${isHoje ? '<span class="bar-day-today-dot"></span>' : ''}
-      </div>`;
-  }).join('');
+  _buildSparkline(
+    'dash-spark-mes',
+    valores,
+    labels,
+    'dash-spark-mes-total',
+    'dash-spark-mes-qtd',
+    'dash-spark-mes-pct'
+  );
 }
 
 // ==================== RELATÓRIO ====================

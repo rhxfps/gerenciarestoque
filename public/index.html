@@ -183,15 +183,27 @@
 
         </div>
 
-        <!-- Gráficos de barras por dia -->
+        <!-- Gráficos sparkline -->
         <div class="dash-charts-grid" style="margin-bottom:1.5rem">
-          <div class="card">
-            <div class="card-title"><i class="ti ti-chart-bar"></i> Faturamento por Dia (Semana)</div>
-            <div id="dash-chart-semana" class="bar-chart-wrap"></div>
+          <div class="card dash-spark-card">
+            <div class="dash-spark-header">
+              <div>
+                <div class="dash-spark-title">Vendas na semana (<span id="dash-spark-semana-qtd">0</span>)</div>
+                <div class="dash-spark-valor" id="dash-spark-semana-total">R$ 0,00</div>
+              </div>
+              <span class="dash-spark-pct" id="dash-spark-semana-pct"></span>
+            </div>
+            <div class="dash-spark-wrap" id="dash-spark-semana"></div>
           </div>
-          <div class="card">
-            <div class="card-title"><i class="ti ti-chart-bar"></i> Faturamento por Dia (<span id="dash-chart-mes-nome"></span>)</div>
-            <div id="dash-chart-mes" class="bar-chart-wrap dash-chart-mes-wrap"></div>
+          <div class="card dash-spark-card">
+            <div class="dash-spark-header">
+              <div>
+                <div class="dash-spark-title">Vendas em <span id="dash-chart-mes-nome"></span> (<span id="dash-spark-mes-qtd">0</span>)</div>
+                <div class="dash-spark-valor" id="dash-spark-mes-total">R$ 0,00</div>
+              </div>
+              <span class="dash-spark-pct" id="dash-spark-mes-pct"></span>
+            </div>
+            <div class="dash-spark-wrap" id="dash-spark-mes"></div>
           </div>
         </div>
 

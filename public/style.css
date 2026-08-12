@@ -2991,3 +2991,107 @@ mark.estoque-highlight {
   color: var(--blue);
   font-size: 10px;
 }
+
+/* ============================================================
+   DASHBOARD — SPARKLINE
+   ============================================================ */
+.dash-spark-card {
+  padding: 1.25rem 1.25rem 1rem;
+  overflow: hidden;
+}
+
+.dash-spark-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dash-spark-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.dash-spark-valor {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -.5px;
+  line-height: 1;
+}
+
+.dash-spark-pct {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+/* wrapper do SVG */
+.dash-spark-wrap {
+  position: relative;
+  width: 100%;
+  height: 80px;
+}
+
+.spark-svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+/* pontos */
+.spark-dot {
+  transition: r .1s;
+}
+
+.spark-point:hover .spark-dot {
+  r: 6;
+}
+
+.spark-hit { cursor: pointer; }
+
+/* tooltip */
+.spark-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+
+.spark-tooltip.show { opacity: 1; }
+
+.spark-tooltip strong {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: .75;
+}
+
+.spark-tooltip b { font-weight: 800; }
+
+[data-theme="dark"] .spark-tooltip {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* gráfico do mês com scroll */
+.dash-spark-mes-wrap .dash-spark-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
