@@ -202,6 +202,28 @@ app.post('/api/produtos', autenticar, async (req, res) => {
   }
 });
 
+app.put('/api/produtos/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  const { id } = req.params;
+  const { nome, categoria, qtd, qtd_minima, preco } = req.body;
+
+  try {
+    const { data, error } = await supabase
+      .from('produtos')
+      .update({ nome, categoria, qtd, qtd_minima, preco })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.delete('/api/produtos/:id', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') {
     return res.status(403).json({ error: 'Acesso negado' });

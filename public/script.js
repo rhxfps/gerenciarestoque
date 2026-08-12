@@ -529,6 +529,52 @@ async function deleteProduto(id) {
   }
 }
 
+function openEditarProduto(id) {
+  const p = produtos.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('edit-id').value    = p.id;
+  document.getElementById('edit-nome').value  = p.nome;
+  document.getElementById('edit-cat').value   = p.categoria || '';
+  document.getElementById('edit-qty').value   = p.qtd;
+  document.getElementById('edit-min').value   = p.qtd_minima;
+  document.getElementById('edit-preco').value = p.preco || '';
+  document.getElementById('editar-produto-modal').classList.add('show');
+}
+
+function closeEditarProduto(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('editar-produto-modal').classList.remove('show');
+}
+
+async function salvarEdicaoProduto() {
+  const id        = parseInt(document.getElementById('edit-id').value);
+  const nome      = document.getElementById('edit-nome').value.trim();
+  const categoria = document.getElementById('edit-cat').value.trim();
+  const qtd       = parseFloat(document.getElementById('edit-qty').value) || 0;
+  const qtd_minima= parseInt(document.getElementById('edit-min').value) || 0;
+  const preco     = parseFloat(document.getElementById('edit-preco').value) || 0;
+
+  if (!nome) { toast('Informe o nome do produto!', false); return; }
+
+  try {
+    await apiRequest(`/produtos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ nome, categoria, qtd, qtd_minima, preco })
+    });
+    await loadAllData();
+    renderProdutos();
+    // atualiza estoque se estiver visível
+    if (document.getElementById('screen-estoque').classList.contains('active')) {
+      renderEstoqueCats();
+      filtrarEstoque();
+    }
+    closeEditarProduto();
+    toast('Produto atualizado com sucesso!');
+  } catch (error) {
+    toast(error.message || 'Erro ao atualizar produto!', false);
+  }
+}
+
 function renderProdutos() {
   const tb = document.getElementById('tabela-produtos');
   const em = document.getElementById('produtos-empty');
@@ -546,7 +592,22 @@ function renderProdutos() {
     const low = p.qtd <= p.qtd_minima;
     const badge = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
     const precoFormatado = p.preco ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco) : '—';
-    return `<tr><td><strong>${p.nome}</strong></td><td>${p.categoria || '—'}</td><td>${p.qtd}</td><td>${p.qtd_minima}</td><td>${precoFormatado}</td><td>${badge}</td><td><button class="btn btn-danger btn-sm" onclick="deleteProduto(${p.id})"><i class="ti ti-trash"></i></button></td></tr>`;
+    return `<tr>
+      <td><strong>${p.nome}</strong></td>
+      <td>${p.categoria || '—'}</td>
+      <td>${p.qtd}</td>
+      <td>${p.qtd_minima}</td>
+      <td>${precoFormatado}</td>
+      <td>${badge}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" style="margin-right:4px" onclick="openEditarProduto(${p.id})" title="Editar">
+          <i class="ti ti-edit"></i>
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduto(${p.id})" title="Remover">
+          <i class="ti ti-trash"></i>
+        </button>
+      </td>
+    </tr>`;
   }).join('');
 }
 
