@@ -699,6 +699,7 @@ function renderHistorico() {
 
 // ==================== ESTOQUE ====================
 let estoqueViewAtiva = localStorage.getItem('estoqueView') || 'dashboard';
+let estoqueCatAtiva  = 'Todas';
 
 function setEstoqueView(view) {
   estoqueViewAtiva = view;
@@ -708,8 +709,30 @@ function setEstoqueView(view) {
   document.getElementById('estoque-view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
 }
 
+function renderEstoqueCats() {
+  const el = document.getElementById('estoque-cats');
+  if (!el) return;
+  const cats = ['Todas', ...new Set(produtos.map(p => p.categoria).filter(Boolean))].sort((a, b) => {
+    if (a === 'Todas') return -1;
+    if (b === 'Todas') return 1;
+    return a.localeCompare(b, 'pt-BR');
+  });
+  el.innerHTML = cats.map(c => `
+    <button class="estoque-cat-pill${c === estoqueCatAtiva ? ' active' : ''}"
+      onclick="selectEstoqueCat('${c.replace(/'/g, "\\'")}')">
+      ${c}
+    </button>`).join('');
+}
+
+function selectEstoqueCat(cat) {
+  estoqueCatAtiva = cat;
+  renderEstoqueCats();
+  filtrarEstoque();
+}
+
 function renderEstoque() {
   setEstoqueView(estoqueViewAtiva);
+  renderEstoqueCats();
   const low = produtos.filter(p => p.qtd <= p.qtd_minima);
   
   document.getElementById('estoque-total-produtos').textContent = produtos.length;
@@ -754,33 +777,40 @@ function filtrarEstoque() {
   const count = document.getElementById('estoque-busca-count');
   if (!dpq) return;
 
-  const lista = busca
-    ? produtos.filter(p =>
-        p.nome.toLowerCase().includes(busca) ||
-        (p.categoria && p.categoria.toLowerCase().includes(busca))
-      )
-    : produtos;
+  let lista = produtos;
 
-  if (count) count.textContent = busca ? `${lista.length} resultado(s)` : '';
+  // filtro categoria
+  if (estoqueCatAtiva && estoqueCatAtiva !== 'Todas') {
+    lista = lista.filter(p => p.categoria === estoqueCatAtiva);
+  }
+
+  // filtro busca
+  if (busca) {
+    lista = lista.filter(p =>
+      p.nome.toLowerCase().includes(busca) ||
+      (p.categoria && p.categoria.toLowerCase().includes(busca))
+    );
+  }
+
+  if (count) count.textContent = (busca || estoqueCatAtiva !== 'Todas') ? `${lista.length} produto(s)` : '';
 
   if (!lista.length) {
     dpq.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">
-      ${busca ? `Nenhum produto encontrado para "<strong>${busca}</strong>"` : 'Nenhum produto cadastrado'}
+      Nenhum produto encontrado
     </td></tr>`;
     return;
   }
 
+  const escapedBusca = busca.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   dpq.innerHTML = lista.map(p => {
     const low = p.qtd <= p.qtd_minima;
     const badge    = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
     const qtdColor = low ? 'text-red' : 'text-green';
-    // destaca o termo buscado no nome
-    const nome = busca
-      ? p.nome.replace(new RegExp(`(${busca.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
-          '<mark class="estoque-highlight">$1</mark>')
+    const nomeDisplay = busca
+      ? p.nome.replace(new RegExp(`(${escapedBusca})`, 'gi'), '<mark class="estoque-highlight">$1</mark>')
       : `<strong>${p.nome}</strong>`;
     return `<tr>
-      <td>${busca ? nome : `<strong>${p.nome}</strong>`}</td>
+      <td>${busca ? nomeDisplay : `<strong>${p.nome}</strong>`}</td>
       <td>${p.categoria || '—'}</td>
       <td class="${qtdColor}"><strong>${p.qtd}</strong></td>
       <td>${badge}</td>
