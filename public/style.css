@@ -2271,7 +2271,7 @@ tbody tr:hover td { background: var(--blue-50); }
    ============================================================ */
 .vendas-atalhos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 0.75rem;
   flex-shrink: 0;
@@ -2280,10 +2280,10 @@ tbody tr:hover td { background: var(--blue-50); }
 .vendas-atalho-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 14px;
   border-radius: var(--radius-lg);
-  border: 2px solid transparent;
+  border: 1.5px solid var(--border-mid);
   background: var(--bg-secondary);
   cursor: pointer;
   transition: transform .12s, box-shadow .15s, border-color .15s;
@@ -2293,45 +2293,71 @@ tbody tr:hover td { background: var(--blue-50); }
   overflow: hidden;
 }
 
-.vendas-atalho-btn::before {
+.vendas-atalho-btn::after {
   content: '';
   position: absolute;
-  inset: 0;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
   opacity: 0;
   transition: opacity .15s;
 }
 
 .vendas-atalho-btn:hover { transform: translateY(-2px); }
-.vendas-atalho-btn:hover::before { opacity: 1; }
+.vendas-atalho-btn:hover::after { opacity: 1; }
 .vendas-atalho-btn:active { transform: scale(.97); }
 
 /* Pastel — âmbar */
 .vendas-atalho-pastel {
-  border-color: #f59e0b;
-  background: linear-gradient(135deg, rgba(245,158,11,.12) 0%, var(--bg-secondary) 100%);
+  border-color: rgba(245,158,11,.55);
+  background: linear-gradient(135deg, rgba(245,158,11,.13) 0%, var(--bg-secondary) 70%);
 }
-.vendas-atalho-pastel::before {
-  background: linear-gradient(135deg, rgba(245,158,11,.08) 0%, transparent 100%);
+.vendas-atalho-pastel::after { background: #f59e0b; }
+.vendas-atalho-pastel:hover { box-shadow: 0 6px 20px rgba(245,158,11,.22); border-color: #f59e0b; }
+.vendas-atalho-pastel .vendas-atalho-emoji {
+  background: rgba(245,158,11,.16);
+  box-shadow: inset 0 0 0 1px rgba(245,158,11,.35);
 }
-.vendas-atalho-pastel:hover { box-shadow: 0 4px 18px rgba(245,158,11,.2); border-color: #f59e0b; }
 .vendas-atalho-pastel .vendas-atalho-arrow { color: #f59e0b; }
 
 /* Salgados — verde */
 .vendas-atalho-salgados {
-  border-color: var(--green);
-  background: linear-gradient(135deg, rgba(22,163,74,.12) 0%, var(--bg-secondary) 100%);
+  border-color: rgba(22,163,74,.55);
+  background: linear-gradient(135deg, rgba(22,163,74,.13) 0%, var(--bg-secondary) 70%);
 }
-.vendas-atalho-salgados::before {
-  background: linear-gradient(135deg, rgba(22,163,74,.08) 0%, transparent 100%);
+.vendas-atalho-salgados::after { background: var(--green); }
+.vendas-atalho-salgados:hover { box-shadow: 0 6px 20px rgba(22,163,74,.22); border-color: var(--green); }
+.vendas-atalho-salgados .vendas-atalho-emoji {
+  background: rgba(22,163,74,.16);
+  box-shadow: inset 0 0 0 1px rgba(22,163,74,.35);
 }
-.vendas-atalho-salgados:hover { box-shadow: 0 4px 18px rgba(22,163,74,.2); border-color: var(--green); }
 .vendas-atalho-salgados .vendas-atalho-arrow { color: var(--green); }
 
+/* Açaí — roxo */
+.vendas-atalho-acai {
+  border-color: rgba(139,92,246,.55);
+  background: linear-gradient(135deg, rgba(139,92,246,.13) 0%, var(--bg-secondary) 70%);
+}
+.vendas-atalho-acai::after { background: #8b5cf6; }
+.vendas-atalho-acai:hover { box-shadow: 0 6px 20px rgba(139,92,246,.22); border-color: #8b5cf6; }
+.vendas-atalho-acai .vendas-atalho-emoji {
+  background: rgba(139,92,246,.16);
+  box-shadow: inset 0 0 0 1px rgba(139,92,246,.35);
+}
+.vendas-atalho-acai .vendas-atalho-arrow { color: #8b5cf6; }
+
 .vendas-atalho-emoji {
-  font-size: 28px;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
   line-height: 1;
   flex-shrink: 0;
+  transition: transform .12s;
 }
+.vendas-atalho-btn:hover .vendas-atalho-emoji { transform: scale(1.08); }
 
 .vendas-atalho-info {
   flex: 1;
@@ -2402,6 +2428,103 @@ tbody tr:hover td { background: var(--blue-50); }
   font-weight: 700;
 }
 
+/* ============================================================
+   AÇAÍ MODAL
+   ============================================================ */
+.acai-modal { max-width: 460px; }
+
+.acai-section {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.acai-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.acai-tamanhos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.acai-tam-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 8px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+  text-align: center;
+}
+.acai-tam-btn:hover { border-color: #8b5cf6; background: rgba(139,92,246,.08); }
+.acai-tam-btn.active {
+  border-color: #8b5cf6;
+  background: rgba(139,92,246,.10);
+  box-shadow: 0 0 0 1px #8b5cf6;
+}
+.acai-tam-btn.sem-estoque { opacity: .4; cursor: not-allowed; }
+.acai-tam-nome { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.acai-tam-preco { font-size: 14px; font-weight: 800; color: #8b5cf6; }
+.acai-tam-badge { font-size: 10px; color: var(--red); font-weight: 700; }
+
+.acai-complementos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.acai-comp-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: 99px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+}
+.acai-comp-btn:hover { border-color: #8b5cf6; background: rgba(139,92,246,.08); }
+.acai-comp-btn.active {
+  border-color: #8b5cf6;
+  background: #8b5cf6;
+  color: #fff;
+}
+.acai-comp-nome { font-size: 13px; font-weight: 600; }
+.acai-comp-preco { font-size: 12px; font-weight: 800; color: #8b5cf6; }
+.acai-comp-btn.active .acai-comp-preco { color: #fff; }
+
+.acai-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1rem 1.25rem 1.25rem;
+}
+.acai-footer-total { display: flex; flex-direction: column; }
+.acai-footer-total span {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  font-weight: 700;
+}
+.acai-footer-total strong { font-size: 20px; color: #8b5cf6; }
+.acai-footer .btn { padding: 12px 22px; }
+.acai-footer .btn:disabled { opacity: .5; cursor: not-allowed; }
+
 /* dark mode */
 [data-theme="dark"] .vendas-atalho-pastel {
   background: linear-gradient(135deg, rgba(245,158,11,.15) 0%, var(--bg-secondary) 100%);
@@ -2411,9 +2534,16 @@ tbody tr:hover td { background: var(--blue-50); }
   background: linear-gradient(135deg, rgba(22,163,74,.15) 0%, var(--bg-secondary) 100%);
 }
 
+[data-theme="dark"] .vendas-atalho-acai {
+  background: linear-gradient(135deg, rgba(139,92,246,.15) 0%, var(--bg-secondary) 100%);
+}
+
 /* mobile */
 @media (max-width: 480px) {
-  .vendas-atalhos { grid-template-columns: 1fr; }
+  .vendas-atalhos { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .vendas-atalho-btn { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
+  .vendas-atalho-emoji { width: 38px; height: 38px; border-radius: 11px; font-size: 20px; }
+  .vendas-atalho-arrow { display: none; }
 }
 
 /* ============================================================

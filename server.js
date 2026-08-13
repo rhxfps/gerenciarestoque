@@ -277,6 +277,30 @@ app.get('/api/pastel/recheios', autenticar, async (req, res) => {
   }
 });
 
+// ==================== AÇAÍ ====================
+app.get('/api/acai', autenticar, async (req, res) => {
+  try {
+    const { data: tamanhos, error: tError } = await supabase
+      .from('produtos')
+      .select('id, nome, preco, qtd, tipo')
+      .eq('categoria', 'Açaí')
+      .order('preco');
+
+    if (tError) throw tError;
+
+    const { data: complementos, error: cError } = await supabase
+      .from('acai_complementos')
+      .select('id, nome, preco, ordem')
+      .order('ordem');
+
+    if (cError) throw cError;
+
+    res.json({ tamanhos: tamanhos || [], complementos: complementos || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== MOVIMENTAÇÕES ====================
 app.get('/api/movimentacoes', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') {

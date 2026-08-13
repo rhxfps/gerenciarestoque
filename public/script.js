@@ -300,7 +300,7 @@ function nav(screen) {
       consumoUsuarioId = currentUser.id;
       const label = document.getElementById('c-quem-label');
       if (label) label.textContent = currentUser.nome || 'Quem consumiu';
-      loadPastelData().then(() => {
+      Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
         renderConsumo();
         renderConsumoItens();
         atualizaConsumoPreview();
@@ -311,7 +311,7 @@ function nav(screen) {
   if (screen === 'vendas') {
     vendaItens = [];
     vendaCategoriaAtiva = 'Todos';
-    loadPastelData().then(() => {
+    Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
       renderVendas();
       renderVendaItens();
       atualizaPreview();
@@ -1714,6 +1714,146 @@ function addSalgadoToVenda(produtoId, modo = 'vendas') {
     atualizaPreview();
   }
   toast(`${produto.nome} adicionado!`);
+}
+
+// ==================== AÇAÍ MODAL ====================
+let acaiData = { tamanhos: [], complementos: [] };
+let acaiModo = 'vendas';
+let acaiTamanhoId = null;
+let acaiComplementosSel = [];
+
+async function loadAcaiData() {
+  try {
+    const data = await apiRequest('/acai');
+    acaiData = { tamanhos: data.tamanhos || [], complementos: data.complementos || [] };
+  } catch (e) {
+    console.error('Erro ao carregar açaí:', e);
+  }
+}
+
+function openAcaiModal(modo = 'vendas') {
+  acaiModo = modo;
+  acaiTamanhoId = null;
+  acaiComplementosSel = [];
+
+  const modal = document.getElementById('acai-modal');
+  const tEl = document.getElementById('acai-tamanhos');
+  const cEl = document.getElementById('acai-complementos');
+  if (!modal || !tEl || !cEl) return;
+
+  if (!acaiData.tamanhos.length) {
+    toast('Açaí não cadastrado. Execute o SQL de açaí no Supabase.', false);
+    return;
+  }
+
+  tEl.innerHTML = acaiData.tamanhos.map(t => {
+    const semEstoque = t.qtd <= 0;
+    return `
+      <button type="button" class="acai-tam-btn${semEstoque ? ' sem-estoque' : ''}"
+        onclick="selectAcaiTamanho(${t.id})" data-id="${t.id}" ${semEstoque ? 'disabled' : ''}>
+        <span class="acai-tam-nome">${t.nome}</span>
+        <span class="acai-tam-preco">${fmtMoeda(t.preco || 0)}</span>
+        ${semEstoque ? '<span class="acai-tam-badge">Sem estoque</span>' : ''}
+      </button>`;
+  }).join('');
+
+  cEl.innerHTML = acaiData.complementos.map(c => `
+    <button type="button" class="acai-comp-btn" onclick="toggleAcaiComplemento(${c.id})" data-id="${c.id}">
+      <span class="acai-comp-nome">${c.nome}</span>
+      <span class="acai-comp-preco">${c.preco > 0 ? `+${fmtMoeda(c.preco)}` : 'Grátis'}</span>
+    </button>
+  `).join('');
+
+  atualizaAcaiPreview();
+  modal.classList.add('show');
+}
+
+function closeAcaiModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('acai-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function selectAcaiTamanho(id) {
+  acaiTamanhoId = id;
+  document.querySelectorAll('#acai-tamanhos .acai-tam-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.id) === id);
+  });
+  atualizaAcaiPreview();
+}
+
+function toggleAcaiComplemento(id) {
+  const idx = acaiComplementosSel.indexOf(id);
+  if (idx >= 0) {
+    acaiComplementosSel.splice(idx, 1);
+  } else {
+    acaiComplementosSel.push(id);
+  }
+  const btn = document.querySelector(`#acai-complementos .acai-comp-btn[data-id="${id}"]`);
+  if (btn) btn.classList.toggle('active');
+  atualizaAcaiPreview();
+}
+
+function atualizaAcaiPreview() {
+  const t = acaiData.tamanhos.find(x => x.id === acaiTamanhoId);
+  let total = t ? (t.preco || 0) : 0;
+  acaiComplementosSel.forEach(id => {
+    const c = acaiData.complementos.find(x => x.id === id);
+    if (c) total += (c.preco || 0);
+  });
+  const el = document.getElementById('acai-total-preview');
+  if (el) el.textContent = fmtMoeda(total);
+  const btn = document.getElementById('acai-add-btn');
+  if (btn) btn.disabled = !t;
+}
+
+function addAcaiToVenda() {
+  const t = acaiData.tamanhos.find(x => x.id === acaiTamanhoId);
+  if (!t) {
+    toast('Selecione o tamanho!', false);
+    return;
+  }
+
+  const produto = produtos.find(p => p.id === t.id);
+  if (produto && produto.qtd <= 0) {
+    toast('Açaí sem estoque!', false);
+    return;
+  }
+
+  const itens = acaiModo === 'consumo' ? consumoItens : vendaItens;
+  const comps = acaiData.complementos.filter(c => acaiComplementosSel.includes(c.id));
+  const compsNome = comps.map(c => c.nome).join(' + ');
+  const precoUnit = (t.preco || 0) + comps.reduce((s, c) => s + (c.preco || 0), 0);
+  const nome = comps.length
+    ? `${t.nome} (${compsNome})`
+    : t.nome;
+
+  const existing = itens.find(i => i.produtoId === t.id && (i.complementos || '') === compsNome);
+  if (existing) {
+    if (produto && existing.qtd + 1 > produto.qtd) {
+      toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
+      return;
+    }
+    existing.qtd += 1;
+  } else {
+    itens.push({
+      produtoId: t.id,
+      produtoNome: nome,
+      qtd: 1,
+      precoUnitario: precoUnit,
+      complementos: compsNome
+    });
+  }
+
+  closeAcaiModal();
+  if (acaiModo === 'consumo') {
+    renderConsumoItens();
+    atualizaConsumoPreview();
+  } else {
+    renderVendaItens();
+    atualizaPreview();
+  }
+  toast('Açaí adicionado!');
 }
 
 function changeItemQty(index, delta) {

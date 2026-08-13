@@ -737,6 +737,15 @@
                 <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
               </button>
 
+              <button type="button" class="vendas-atalho-btn vendas-atalho-acai" onclick="openAcaiModal()">
+                <span class="vendas-atalho-emoji">🍧</span>
+                <span class="vendas-atalho-info">
+                  <strong>Açaí</strong>
+                  <small>Tamanho + complementos</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
             </div>
 
             <div class="vendas-produtos-grid" id="v-produtos-grid"></div>
@@ -831,6 +840,36 @@
             <div class="pastel-recheios-grid" id="salgados-grid"></div>
           </div>
         </div>
+
+        <!-- Modal açaí -->
+        <div id="acai-modal" class="modal-overlay" onclick="closeAcaiModal(event)">
+          <div class="modal-content acai-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <h3><span>🍧</span> Monte seu açaí</h3>
+              <button type="button" class="modal-close" onclick="closeAcaiModal()"><i class="ti ti-x"></i></button>
+            </div>
+
+            <div class="acai-section">
+              <div class="acai-section-title"><i class="ti ti-cup"></i> Escolha o tamanho</div>
+              <div class="acai-tamanhos" id="acai-tamanhos"></div>
+            </div>
+
+            <div class="acai-section">
+              <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos (opcional)</div>
+              <div class="acai-complementos" id="acai-complementos"></div>
+            </div>
+
+            <div class="acai-footer">
+              <div class="acai-footer-total">
+                <span>Total</span>
+                <strong id="acai-total-preview">R$ 0,00</strong>
+              </div>
+              <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()">
+                <i class="ti ti-check"></i> Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- CONSUMO (funcionários) -->
@@ -870,6 +909,16 @@
                   </span>
                   <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
                 </button>
+
+                <button type="button" class="vendas-atalho-btn vendas-atalho-acai" onclick="openAcaiModal('consumo')">
+                  <span class="vendas-atalho-emoji">🍧</span>
+                  <span class="vendas-atalho-info">
+                    <strong>Açaí</strong>
+                    <small>Tamanho + complementos</small>
+                  </span>
+                  <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+                </button>
+
               </div>
 
               <div class="vendas-produtos-grid" id="c-produtos-grid"></div>
