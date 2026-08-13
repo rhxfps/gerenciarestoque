@@ -825,7 +825,7 @@
             <h3><span>🥟</span> Escolha o recheio</h3>
             <button type="button" class="modal-close" onclick="closePastelModal()"><i class="ti ti-x"></i></button>
           </div>
-          <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong> — escolha até <strong>2 sabores</strong></p>
+          <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong> — escolha até <strong>3 sabores</strong></p>
           <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
           <div class="pastel-modal-footer">
             <div class="pastel-modal-selecao">
@@ -1227,7 +1227,10 @@
   </main>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast">
+  <span class="toast-ic" id="toast-icon"><i class="ti ti-check"></i></span>
+  <span class="toast-msg" id="toast-msg"></span>
+</div>
 
 <!-- Modal editar produto -->
 <div class="modal-overlay" id="editar-produto-modal" onclick="closeEditarProduto(event)">

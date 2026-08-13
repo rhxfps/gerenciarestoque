@@ -95,20 +95,35 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 // Toast notification
+let toastTimer = null;
+
 function toast(msg, ok = true) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = ok ? '#1D9E75' : '#A32D2D';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2400);
+  const tipo = ok === true ? 'success' : ok === false ? 'error' : ok;
+  showToast(msg, tipo);
 }
 
 function toastWarn(msg) {
+  showToast(msg, 'warning');
+}
+
+function showToast(msg, tipo = 'success') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = '#d97706';
+  if (!t) return;
+  const icon = document.getElementById('toast-icon');
+  const text = document.getElementById('toast-msg');
+  const cfg = {
+    success: { cls: 'toast-success', icon: 'ti ti-check' },
+    error:   { cls: 'toast-error',   icon: 'ti ti-alert-circle' },
+    warning: { cls: 'toast-warning', icon: 'ti ti-alert-triangle' },
+  };
+  const c = cfg[tipo] || cfg.success;
+  t.className = `toast ${c.cls}`;
+  icon.className = c.icon;
+  text.textContent = msg;
+  void t.offsetWidth;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3400);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
 // Format date
@@ -1632,8 +1647,8 @@ function togglePastelRecheio(nome) {
   const idx = pastelSelecionados.indexOf(nome);
   if (idx >= 0) {
     pastelSelecionados.splice(idx, 1);
-  } else if (pastelSelecionados.length >= 2) {
-    toast('Máximo de 2 sabores por pastel!', false);
+  } else if (pastelSelecionados.length >= 3) {
+    toast('Máximo de 3 sabores por pastel!', false);
     return;
   } else {
     pastelSelecionados.push(nome);

@@ -824,21 +824,43 @@ tbody tr:hover td { background: var(--blue-50); }
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: var(--blue-800);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  color: var(--text-primary);
+  padding: 10px 16px 10px 10px;
+  border-radius: 14px;
+  border-left: 4px solid var(--blue);
   font-size: 13px;
   font-weight: 600;
   opacity: 0;
-  transition: opacity .25s, transform .25s;
-  transform: translateY(8px);
+  transform: translateY(14px) scale(.97);
+  transition: opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1);
   pointer-events: none;
   z-index: 99999;
-  box-shadow: var(--shadow-lg);
-  max-width: calc(100vw - 40px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .22);
+  max-width: min(360px, calc(100vw - 40px));
 }
-.toast.show { opacity: 1; transform: translateY(0); }
+.toast.show { opacity: 1; transform: translateY(0) scale(1); }
+.toast .toast-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  color: #fff;
+  flex-shrink: 0;
+  background: var(--blue);
+}
+.toast .toast-msg { min-width: 0; line-height: 1.4; }
+.toast-success { border-left-color: #1D9E75; }
+.toast-success .toast-ic { background: #1D9E75; }
+.toast-error { border-left-color: #E5484D; }
+.toast-error .toast-ic { background: #E5484D; }
+.toast-warning { border-left-color: #F59E0B; }
+.toast-warning .toast-ic { background: #F59E0B; }
 
 .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
@@ -1571,7 +1593,7 @@ tbody tr:hover td { background: var(--blue-50); }
   th, td { padding: 9px 10px; }
 
   /* toast bottom nav safe area */
-  .toast { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; text-align: center; }
+  .toast { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; justify-content: center; }
 
   /* ---- PDV on mobile: stacked layout ---- */
   .content:has(#screen-vendas.active),
