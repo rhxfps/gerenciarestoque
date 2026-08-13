@@ -52,6 +52,7 @@
       <div class="logo-sub">Sistema de estoque</div>
     </div>
     <nav id="nav">
+      <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
@@ -60,7 +61,6 @@
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
-      <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="user-info">
@@ -108,6 +108,7 @@
       </button>
     </div>
     <nav class="mobile-nav" id="mobileNav">
+      <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
@@ -116,7 +117,6 @@
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
-      <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
       <button class="btn btn-danger" onclick="logout(); toggleMobileMenu();" style="width:100%;">

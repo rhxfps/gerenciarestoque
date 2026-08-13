@@ -193,6 +193,44 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
 .nav-section-link:hover { background: var(--sidebar-hover); color: #ffffff; }
 .nav-section-link.active { background: var(--sidebar-active); color: #ffffff; border-left-color: var(--blue-200); }
 
+/* Admin: destaque no topo da sidebar */
+#nav-admin-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0.25rem 0.75rem 0.75rem;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139,92,246,.45);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(59,130,246,.35));
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  user-select: none;
+}
+#nav-admin-section:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(124,58,237,.55), rgba(59,130,246,.55));
+}
+#nav-admin-section.active {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  border-color: rgba(255,255,255,.25);
+  box-shadow: 0 4px 16px rgba(124,58,237,.4);
+}
+#nav-admin-section i {
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,.18);
+}
+
 /* sidebar footer */
 .sidebar-footer {
   padding: 1rem 1.25rem;
@@ -1591,6 +1629,44 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 .mobile-nav-section-link:hover { background: var(--sidebar-hover); color: #fff; }
 .mobile-nav-section-link.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--blue-200); }
+
+/* Admin: destaque no menu mobile */
+#mobile-admin-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0.25rem 0.75rem 0.75rem;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(139,92,246,.45);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(59,130,246,.35));
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  user-select: none;
+}
+#mobile-admin-section:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(124,58,237,.55), rgba(59,130,246,.55));
+}
+#mobile-admin-section.active {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  border-color: rgba(255,255,255,.25);
+  box-shadow: 0 4px 16px rgba(124,58,237,.4);
+}
+#mobile-admin-section i {
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,.18);
+}
 
 /* ============================================================
    RESPONSIVE — TABLET  (≤ 900px)
