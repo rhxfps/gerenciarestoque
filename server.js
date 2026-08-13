@@ -381,11 +381,13 @@ async function baixarCopoAcai(item, obs = 'Açaí') {
   if (!m) return;
 
   const ml = m[1];
-  const { data: copo } = await supabase
+  // Aceita "Copo 500 ML", "Copo 500ml", "copo 500 ml", etc.
+  const { data: copos } = await supabase
     .from('produtos')
-    .select('id, qtd')
-    .eq('nome', `Copo ${ml}ml`)
-    .maybeSingle();
+    .select('id, qtd, nome')
+    .ilike('nome', `copo ${ml}%ml`)
+    .limit(1);
+  const copo = copos?.[0];
   if (!copo) return;
 
   await supabase
@@ -398,7 +400,7 @@ async function baixarCopoAcai(item, obs = 'Açaí') {
     .insert([{
       tipo: 'saida',
       produto_id: copo.id,
-      produto_nome: `Copo ${ml}ml`,
+      produto_nome: copo.nome,
       qtd: item.qtd,
       obs
     }]);
