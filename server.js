@@ -133,7 +133,7 @@ app.delete('/api/usuarios/:id', autenticar, async (req, res) => {
       supabase.from('caixa').update({ usuario_fechamento_id: null }).eq('usuario_fechamento_id', id),
       supabase.from('caixa_retiradas').update({ usuario_id: null }).eq('usuario_id', id),
     ];
-    await Promise.all(limpeza.map(p => p.catch(() => null)));
+    await Promise.all(limpeza.map(p => Promise.resolve(p).catch(() => null)));
 
     const { error } = await supabase
       .from('usuarios')
