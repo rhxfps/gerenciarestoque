@@ -503,14 +503,19 @@ function renderListaVendas() {
     return;
   }
 
+  // No mês/tudo a lista vai junta (sem separadores de dia); datas continuam em cada venda
+  const agruparPorDia = periodo !== 'mes' && periodo !== 'tudo';
+
   let html = '';
   let ultimoDia = null;
   listaFiltrada.forEach(v => {
-    const dia = new Date(v.data);
-    const chaveDia = dia.toDateString();
-    if (chaveDia !== ultimoDia) {
-      ultimoDia = chaveDia;
-      html += `<div class="vl-dia"><i class="ti ti-calendar"></i>${rotuloDia(dia)}</div>`;
+    if (agruparPorDia) {
+      const dia = new Date(v.data);
+      const chaveDia = dia.toDateString();
+      if (chaveDia !== ultimoDia) {
+        ultimoDia = chaveDia;
+        html += `<div class="vl-dia"><i class="ti ti-calendar"></i>${rotuloDia(dia)}</div>`;
+      }
     }
 
     const total = fmt$(v.total);
@@ -666,12 +671,6 @@ function openVendaDetalhe(vendaId) {
 
   const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
   const total = fmt$(venda.total);
-  const pagBadge = venda.pagamento === 'dinheiro'
-    ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
-    : '<span class="badge badge-blue"><i class="ti ti-credit-card"></i> Cartão</span>';
-  const tipoBadge = venda.delivery
-    ? '<span class="badge badge-amber"><i class="ti ti-delivery"></i> Delivery</span>'
-    : '<span class="badge badge-gray"><i class="ti ti-shopping-bag"></i> Balcão</span>';
 
   let itens = [];
   if (venda.itens?.length) {
@@ -685,12 +684,16 @@ function openVendaDetalhe(vendaId) {
 
   const itensHTML = itens.length
     ? itens.map(i => {
-        const sub = fmt$((i.preco_unitario || 0) * i.qtd);
+        const un = i.qtd || 1;
+        const preco = i.preco_unitario || 0;
+        const sub = fmt$(preco * un);
         return `<div class="vd-item">
           <div class="vd-item-ico"><i class="ti ti-basket"></i></div>
-          <span class="vd-item-nome">${i.produto_nome}${i.recheio ? `<small>${i.recheio}</small>` : ''}</span>
-          <span class="vd-item-qty">× ${i.qtd}</span>
-          <span class="vd-item-sub">${sub}</span>
+          <div class="vd-item-body">
+            <div class="vd-item-nome">${i.produto_nome}${i.recheio ? `<small>${i.recheio}</small>` : ''}</div>
+            <div class="vd-item-preco">${fmt$(preco)} × ${un}</div>
+          </div>
+          <div class="vd-item-sub">${sub}</div>
         </div>`;
       }).join('')
     : '<div class="empty" style="padding:1rem">Sem detalhes de itens</div>';
@@ -699,24 +702,35 @@ function openVendaDetalhe(vendaId) {
   const dt = new Date(venda.data);
   const dataHora = `${dt.toLocaleDateString('pt-BR')} às ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
+  const chipPag = venda.pagamento === 'dinheiro'
+    ? '<span class="vd-strip-chip"><i class="ti ti-cash"></i> Dinheiro</span>'
+    : '<span class="vd-strip-chip"><i class="ti ti-credit-card"></i> Cartão</span>';
+  const chipTipo = venda.delivery
+    ? '<span class="vd-strip-chip"><i class="ti ti-delivery"></i> Delivery</span>'
+    : '<span class="vd-strip-chip"><i class="ti ti-shopping-bag"></i> Balcão</span>';
+
   document.getElementById('venda-detalhe-body').innerHTML = `
     <div class="vd-strip">
-      <div class="vd-strip-left">
-        <div class="vd-strip-num">${numVenda}</div>
-        <div class="vd-strip-data"><i class="ti ti-clock"></i>${dataHora}</div>
-        ${venda.plataforma ? `<div class="vd-strip-data"><i class="ti ti-device-mobile"></i>${venda.plataforma}</div>` : ''}
+      <div class="vd-strip-top">
+        <span class="vd-strip-num">${numVenda}</span>
+        <span class="vd-strip-total">${total}</span>
       </div>
-      <div class="vd-strip-right">
-        <div class="vd-strip-total">${total}</div>
-        <div class="vd-strip-badges">${pagBadge} ${tipoBadge}</div>
+      <div class="vd-strip-meta">
+        <span class="vd-strip-chip"><i class="ti ti-clock"></i>${dataHora}</span>
+        ${chipPag}
+        ${chipTipo}
+        ${venda.plataforma ? `<span class="vd-strip-chip"><i class="ti ti-device-mobile"></i>${venda.plataforma}</span>` : ''}
       </div>
     </div>
     ${venda.obs ? `<div class="vd-obs"><i class="ti ti-note"></i> ${venda.obs}</div>` : ''}
-    <div class="vd-itens-title">Itens <span>${nItens} item(ns) · ${nUnid} un.</span></div>
+    <div class="vd-section-title">Itens <span>${nItens} item(ns) · ${nUnid} un.</span></div>
     <div class="vd-itens">${itensHTML}</div>
-    <div class="vd-total">
-      <span>Total da venda</span>
-      <strong>${total}</strong>
+    <div class="vd-footer">
+      <div class="vd-footer-count"><i class="ti ti-box"></i> ${nItens} itens · ${nUnid} un.</div>
+      <div class="vd-footer-total">
+        <span>Total da venda</span>
+        <strong>${total}</strong>
+      </div>
     </div>`;
 
   document.getElementById('venda-detalhe-modal').classList.add('show');
