@@ -170,6 +170,21 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
 
 .nav-item i { font-size: 16px; width: 18px; flex-shrink: 0; }
 
+/* seção do menu (ex.: Admin) */
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 1.25rem 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: rgba(255,255,255,.45);
+  user-select: none;
+}
+.nav-section i { font-size: 14px; }
+
 /* sidebar footer */
 .sidebar-footer {
   padding: 1rem 1.25rem;
@@ -1580,6 +1595,22 @@ tbody tr:hover td { background: var(--blue-50); }
 .mobile-nav-item:hover { background: var(--sidebar-hover); color: #fff; }
 .mobile-nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 700; border-left-color: var(--blue-200); }
 .mobile-nav-item i { font-size: 19px; width: 20px; flex-shrink: 0; }
+
+.mobile-nav-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 1.25rem 6px;
+  margin-top: 10px;
+  border-top: 1px solid var(--sidebar-border);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  user-select: none;
+}
+.mobile-nav-section i { font-size: 15px; }
 
 /* ============================================================
    RESPONSIVE — TABLET  (≤ 900px)

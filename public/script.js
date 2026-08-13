@@ -230,6 +230,12 @@ function updateMenuByRole() {
       }
     }
   });
+
+  // Seção Admin: só aparece para o dono
+  const adminSection = document.getElementById('nav-admin-section');
+  if (adminSection) adminSection.style.display = isDono ? 'flex' : 'none';
+  const mobileAdmin = document.getElementById('mobile-admin-section');
+  if (mobileAdmin) mobileAdmin.style.display = isDono ? 'flex' : 'none';
   
   const userRoleEl = document.getElementById('user-role');
   if (userRoleEl) {
