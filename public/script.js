@@ -2432,6 +2432,11 @@ async function renderConsumoDono() {
             : `${fmtMoeda(restante)} restantes`}</span>
           <span>${limite}</span>
         </div>
+        <div class="cd-acoes" onclick="event.stopPropagation()">
+          <button class="cd-btn cd-btn-add" onclick="openAdminAddConsumo(${f.id})"><i class="ti ti-plus"></i> Adicionar</button>
+          <button class="cd-btn cd-btn-del" onclick="openAdminDelConsumo(${f.id})"><i class="ti ti-trash"></i> Remover</button>
+          <button class="cd-btn cd-btn-zero" onclick="zerarConsumo(${f.id})"><i class="ti ti-eraser"></i> Zerar</button>
+        </div>
       </div>`;
   }).join('');
 }
@@ -2475,6 +2480,169 @@ function openConsumoDonoDetalhe(usuarioId) {
 function closeConsumoDonoDetalhe(e) {
   if (e && e.target !== e.currentTarget) return;
   document.getElementById('consumo-detalhe-modal').classList.remove('show');
+}
+
+// ==================== CONSUMO ADMIN (ajustes do dono) ====================
+let adminAddItens = [];
+let adminDelAlvoId = null;
+
+function openAdminAddConsumo(usuarioId) {
+  const f = consumoFuncionarios.find(x => x.id === usuarioId);
+  if (!f) return;
+  adminAddItens = [];
+  document.getElementById('aac-usuario-id').value = f.id;
+  document.getElementById('aac-nome').textContent = f.nome;
+  document.getElementById('aac-qtd').value = 1;
+  document.getElementById('aac-obs').value = '';
+  populateAdminAddProdutos();
+  renderAdminAddItens();
+  document.getElementById('admin-add-consumo-modal').classList.add('show');
+}
+
+function closeAdminAddConsumo(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('admin-add-consumo-modal').classList.remove('show');
+}
+
+function populateAdminAddProdutos() {
+  const sel = document.getElementById('aac-produto');
+  sel.innerHTML = produtos.map(p => {
+    const preco = parseFloat(p.preco) || 0;
+    return `<option value="${p.id}" data-preco="${preco}">${p.nome} — R$ ${preco.toFixed(2).replace('.', ',')}</option>`;
+  }).join('');
+}
+
+function adminAddItemLista() {
+  const sel = document.getElementById('aac-produto');
+  const produto = produtos.find(p => p.id === parseInt(sel.value));
+  if (!produto) { toast('Selecione um produto!', false); return; }
+  const qtd = parseFloat(document.getElementById('aac-qtd').value);
+  if (!qtd || qtd <= 0) { toast('Informe uma quantidade válida!', false); return; }
+  adminAddItens.push({
+    produtoId: produto.id,
+    produtoNome: produto.nome,
+    qtd,
+    precoUnitario: parseFloat(produto.preco) || 0
+  });
+  document.getElementById('aac-qtd').value = 1;
+  renderAdminAddItens();
+}
+
+function renderAdminAddItens() {
+  const list = document.getElementById('aac-itens-list');
+  const empty = document.getElementById('aac-itens-empty');
+  const total = adminAddItens.reduce((s, i) => s + (parseFloat(i.precoUnitario || 0) * i.qtd), 0);
+  if (!adminAddItens.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.innerHTML = adminAddItens.map((it, idx) => `
+      <div class="vd-item">
+        <span class="vd-item-nome">${it.produtoNome}</span>
+        <span class="vd-item-qty">× ${it.qtd}</span>
+        <span class="vd-item-sub">${fmtMoeda(parseFloat(it.precoUnitario || 0) * it.qtd)}</span>
+        <button class="btn btn-danger btn-sm" onclick="adminRemoveItemLista(${idx})" title="Remover item"><i class="ti ti-x"></i></button>
+      </div>`).join('');
+  }
+  document.getElementById('aac-total').textContent = fmtMoeda(total);
+}
+
+function adminRemoveItemLista(idx) {
+  adminAddItens.splice(idx, 1);
+  renderAdminAddItens();
+}
+
+async function confirmarAdminAddConsumo() {
+  if (!adminAddItens.length) { toast('Adicione pelo menos um item!', false); return; }
+  const obs = document.getElementById('aac-obs').value;
+  const usuario_id = parseInt(document.getElementById('aac-usuario-id').value);
+  try {
+    await apiRequest('/consumo/admin', {
+      method: 'POST',
+      body: JSON.stringify({ usuario_id, itens: adminAddItens, obs })
+    });
+    toast('Consumo adicionado!');
+    closeAdminAddConsumo();
+    renderConsumoDono();
+  } catch (e) {
+    toast(e.message || 'Erro ao adicionar consumo', false);
+  }
+}
+
+function openAdminDelConsumo(usuarioId) {
+  adminDelAlvoId = usuarioId;
+  const f = consumoFuncionarios.find(x => x.id === usuarioId);
+  if (!f) return;
+  document.getElementById('adc-nome').textContent = f.nome;
+  document.getElementById('adc-total').textContent = fmtMoeda(f.totalMes || 0);
+  const body = document.getElementById('admin-del-body');
+  if (!f.consumos?.length) {
+    body.innerHTML = '<div class="empty"><i class="ti ti-wallet"></i>Nenhum consumo registrado neste mês.</div>';
+  } else {
+    body.innerHTML = f.consumos.map(c => {
+      const itensHTML = (c.itens || []).map(i => `
+        <div class="vd-item">
+          <span class="vd-item-nome">${i.produto_nome}${i.recheio ? ` <small>(${i.recheio})</small>` : ''}</span>
+          <span class="vd-item-qty">× ${i.qtd}</span>
+          <span class="vd-item-sub">${fmtMoeda((parseFloat(i.preco_unitario) || 0) * i.qtd)}</span>
+          <button class="btn btn-danger btn-sm" onclick="removerItemConsumo(${i.id})" title="Remover este item"><i class="ti ti-x"></i></button>
+        </div>`).join('') || '<div class="empty" style="padding:.5rem">Sem itens</div>';
+      return `
+        <div class="cd-consumo">
+          <div class="cd-consumo-header">
+            <span><i class="ti ti-clock"></i> ${fmt(c.data)}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <strong>${fmtMoeda(c.total || 0)}</strong>
+              <button class="btn btn-danger btn-sm" onclick="removerConsumoInteiro(${c.id})" title="Remover consumo inteiro"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>
+          ${c.obs ? `<div class="cd-consumo-obs"><i class="ti ti-note"></i> ${c.obs}</div>` : ''}
+          <div class="vd-itens">${itensHTML}</div>
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('admin-del-consumo-modal').classList.add('show');
+}
+
+function closeAdminDelConsumo(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('admin-del-consumo-modal').classList.remove('show');
+}
+
+async function removerItemConsumo(itemId) {
+  try {
+    await apiRequest(`/consumo/admin/item/${itemId}`, { method: 'DELETE' });
+    toast('Item removido!');
+    renderConsumoDono();
+    openAdminDelConsumo(adminDelAlvoId);
+  } catch (e) {
+    toast(e.message || 'Erro ao remover item', false);
+  }
+}
+
+async function removerConsumoInteiro(consumoId) {
+  try {
+    await apiRequest(`/consumo/admin/${consumoId}`, { method: 'DELETE' });
+    toast('Consumo removido!');
+    renderConsumoDono();
+    openAdminDelConsumo(adminDelAlvoId);
+  } catch (e) {
+    toast(e.message || 'Erro ao remover consumo', false);
+  }
+}
+
+async function zerarConsumo(usuarioId) {
+  const f = consumoFuncionarios.find(x => x.id === usuarioId);
+  if (!f) return;
+  if (!confirm(`Zerar todo o consumo do mês de ${f.nome}? Essa ação não pode ser desfeita.`)) return;
+  try {
+    await apiRequest(`/consumo/admin/zerar/${usuarioId}`, { method: 'DELETE' });
+    toast('Consumo zerado!');
+    renderConsumoDono();
+  } catch (e) {
+    toast(e.message || 'Erro ao zerar consumo', false);
+  }
 }
 
 // ==================== QUEM CONSUMIU (funcionário) ====================

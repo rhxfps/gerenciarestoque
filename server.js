@@ -705,6 +705,138 @@ app.get('/api/consumo/funcionarios', autenticar, async (req, res) => {
   }
 });
 
+// ==================== CONSUMO ADMIN (ajustes do dono) ====================
+// Adicionar itens ao consumo de um usuário (sem baixar estoque)
+app.post('/api/consumo/admin', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  const { itens, obs, usuario_id } = req.body;
+
+  if (!usuario_id) return res.status(400).json({ error: 'Informe o usuário' });
+  if (!itens || !Array.isArray(itens) || !itens.length) {
+    return res.status(400).json({ error: 'Adicione pelo menos um item' });
+  }
+
+  try {
+    const { data: alvo, error: alvoError } = await supabase
+      .from('usuarios')
+      .select('id, role')
+      .eq('id', usuario_id)
+      .single();
+
+    if (alvoError || !alvo || !['funcionario', 'dono'].includes(alvo.role)) {
+      return res.status(400).json({ error: 'Usuário inválido para consumo' });
+    }
+
+    const total = itens.reduce((s, i) => s + (parseFloat(i.qtd || 0) * parseFloat(i.precoUnitario || 0)), 0);
+
+    const { data: consumo, error: consumoError } = await supabase
+      .from('consumos')
+      .insert([{ usuario_id, total, obs: obs || null }])
+      .select()
+      .single();
+    if (consumoError) throw consumoError;
+
+    const itensData = itens.map(item => ({
+      consumo_id: consumo.id,
+      produto_id: item.produtoId,
+      produto_nome: item.produtoNome,
+      qtd: item.qtd,
+      preco_unitario: item.precoUnitario,
+      ...(item.recheio ? { recheio: item.recheio } : {})
+    }));
+    const { error: itensError } = await supabase.from('consumo_itens').insert(itensData);
+    if (itensError) throw itensError;
+
+    res.json({ ...consumo, itens });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remover um item específico do consumo (recalcula o total; apaga o consumo se não restarem itens)
+app.delete('/api/consumo/admin/item/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  try {
+    const { data: item, error: itemError } = await supabase
+      .from('consumo_itens')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+    if (itemError) return res.status(404).json({ error: 'Item não encontrado' });
+
+    const { error: delError } = await supabase.from('consumo_itens').delete().eq('id', req.params.id);
+    if (delError) throw delError;
+
+    // Verificar se ainda restam itens
+    const { data: restantes } = await supabase
+      .from('consumo_itens')
+      .select('id')
+      .eq('consumo_id', item.consumo_id);
+
+    if (!restantes || !restantes.length) {
+      await supabase.from('consumos').delete().eq('id', item.consumo_id);
+    } else {
+      const { data: itensRestantes } = await supabase
+        .from('consumo_itens')
+        .select('qtd, preco_unitario')
+        .eq('consumo_id', item.consumo_id);
+      const novoTotal = (itensRestantes || []).reduce((s, i) => s + parseFloat(i.qtd) * parseFloat(i.preco_unitario), 0);
+      await supabase.from('consumos').update({ total: novoTotal }).eq('id', item.consumo_id);
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remover um consumo inteiro (com todos os itens)
+app.delete('/api/consumo/admin/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  try {
+    await supabase.from('consumo_itens').delete().eq('consumo_id', req.params.id);
+    await supabase.from('consumos').delete().eq('id', req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Zerar todo o consumo do usuário no mês atual
+app.delete('/api/consumo/admin/zerar/:usuarioId', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  try {
+    const inicio = inicioDoMesLocal();
+    const { data: consumos } = await supabase
+      .from('consumos')
+      .select('id')
+      .eq('usuario_id', req.params.usuarioId)
+      .gte('data', inicio.toISOString());
+
+    const ids = (consumos || []).map(c => c.id);
+    if (ids.length) {
+      await supabase.from('consumo_itens').delete().in('consumo_id', ids);
+      await supabase.from('consumos').delete().in('id', ids);
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== CAIXA ====================
 app.get('/api/caixa', autenticar, async (req, res) => {
   try {

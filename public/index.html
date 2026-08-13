@@ -1160,6 +1160,54 @@
         </div>
       </div>
 
+      <!-- Modal admin: adicionar consumo ao usuário -->
+      <div class="modal-overlay" id="admin-add-consumo-modal" onclick="closeAdminAddConsumo(event)">
+        <div class="modal-content admin-add-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-wallet"></i> Adicionar consumo de <span id="aac-nome">—</span></h3>
+            <button class="modal-close" onclick="closeAdminAddConsumo()"><i class="ti ti-x"></i></button>
+          </div>
+          <input type="hidden" id="aac-usuario-id">
+          <div class="form-row">
+            <div class="form-group" style="flex:2"><label>Produto</label><select id="aac-produto"></select></div>
+            <div class="form-group" style="flex:1"><label>Qtd</label><input type="number" id="aac-qtd" value="1" min="0.001" step="0.001"></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="adminAddItemLista()">
+            <i class="ti ti-plus"></i> Adicionar item à lista
+          </button>
+          <div class="vendas-carrinho-body" style="margin-top:12px">
+            <div id="aac-itens-empty" class="empty vendas-empty">Nenhum item adicionado</div>
+            <div id="aac-itens-list" class="vendas-itens-list"></div>
+          </div>
+          <div class="total-section" style="margin:12px 0">
+            <div class="total-label">Total</div>
+            <div class="total-value" id="aac-total">R$ 0,00</div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Observação (opcional)</label>
+            <input type="text" id="aac-obs" placeholder="Ex: Ajuste manual...">
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="confirmarAdminAddConsumo()">
+            <i class="ti ti-check"></i> Registrar consumo
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal admin: remover consumo do usuário -->
+      <div class="modal-overlay" id="admin-del-consumo-modal" onclick="closeAdminDelConsumo(event)">
+        <div class="modal-content consumo-detalhe-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-trash"></i> Remover consumo de <span id="adc-nome">—</span></h3>
+            <button class="modal-close" onclick="closeAdminDelConsumo()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="consumo-detalhe-total">
+            <span>Total no mês</span>
+            <strong id="adc-total">R$ 0,00</strong>
+          </div>
+          <div id="admin-del-body"></div>
+        </div>
+      </div>
+
       <!-- Modal: quem consumiu (funcionário) -->
       <div class="modal-overlay" id="consumo-quem-modal" onclick="closeConsumoQuem(event)">
         <div class="modal-content consumo-quem-content" onclick="event.stopPropagation()">

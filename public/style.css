@@ -501,6 +501,37 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
   font-style: italic;
 }
 
+/* ações de ajuste de consumo (admin) */
+.cd-acoes {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  border-top: 1px dashed var(--border-mid);
+  padding-top: 10px;
+}
+.cd-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter .12s, transform .12s;
+}
+.cd-btn:hover { filter: brightness(1.08); }
+.cd-btn:active { transform: scale(.97); }
+.cd-btn-add { background: var(--green-bg); color: var(--green); }
+.cd-btn-del { background: var(--red-bg); color: var(--red); }
+.cd-btn-zero { background: #fef3c7; color: var(--amber); }
+
+.admin-add-content { max-width: 440px; }
+
 /* ============================================================
    TOPBAR
    ============================================================ */
