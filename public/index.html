@@ -816,58 +816,56 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Modal recheio do pastel -->
-        <div id="pastel-modal" class="modal-overlay" onclick="closePastelModal(event)">
-          <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-              <h3><span>🥟</span> Escolha o recheio</h3>
-              <button type="button" class="modal-close" onclick="closePastelModal()"><i class="ti ti-x"></i></button>
-            </div>
-            <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong></p>
-            <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
+      <!-- Modais compartilhados (Pastel / Salgados / Açaí) — fora das telas -->
+      <div id="pastel-modal" class="modal-overlay" onclick="closePastelModal(event)">
+        <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><span>🥟</span> Escolha o recheio</h3>
+            <button type="button" class="modal-close" onclick="closePastelModal()"><i class="ti ti-x"></i></button>
           </div>
+          <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong></p>
+          <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
         </div>
+      </div>
 
-        <!-- Modal salgados -->
-        <div id="salgados-modal" class="modal-overlay" onclick="closeSalgadosModal(event)">
-          <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-              <h3><span>🍡</span> Escolha o salgado</h3>
-              <button type="button" class="modal-close" onclick="closeSalgadosModal()"><i class="ti ti-x"></i></button>
-            </div>
-            <p class="pastel-modal-preco">A partir de <strong>R$ 4,00</strong></p>
-            <div class="pastel-recheios-grid" id="salgados-grid"></div>
+      <div id="salgados-modal" class="modal-overlay" onclick="closeSalgadosModal(event)">
+        <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><span>🍡</span> Escolha o salgado</h3>
+            <button type="button" class="modal-close" onclick="closeSalgadosModal()"><i class="ti ti-x"></i></button>
           </div>
+          <p class="pastel-modal-preco">A partir de <strong>R$ 4,00</strong></p>
+          <div class="pastel-recheios-grid" id="salgados-grid"></div>
         </div>
+      </div>
 
-        <!-- Modal açaí -->
-        <div id="acai-modal" class="modal-overlay" onclick="closeAcaiModal(event)">
-          <div class="modal-content acai-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-              <h3><span>🍧</span> Monte seu açaí</h3>
-              <button type="button" class="modal-close" onclick="closeAcaiModal()"><i class="ti ti-x"></i></button>
-            </div>
+      <div id="acai-modal" class="modal-overlay" onclick="closeAcaiModal(event)">
+        <div class="modal-content acai-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><span>🍧</span> Monte seu açaí</h3>
+            <button type="button" class="modal-close" onclick="closeAcaiModal()"><i class="ti ti-x"></i></button>
+          </div>
 
-            <div class="acai-section">
-              <div class="acai-section-title"><i class="ti ti-cup"></i> Escolha o tamanho</div>
-              <div class="acai-tamanhos" id="acai-tamanhos"></div>
-            </div>
+          <div class="acai-section">
+            <div class="acai-section-title"><i class="ti ti-cup"></i> Escolha o tamanho</div>
+            <div class="acai-tamanhos" id="acai-tamanhos"></div>
+          </div>
 
-            <div class="acai-section">
-              <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos (opcional)</div>
-              <div class="acai-complementos" id="acai-complementos"></div>
-            </div>
+          <div class="acai-section">
+            <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos (opcional)</div>
+            <div class="acai-complementos" id="acai-complementos"></div>
+          </div>
 
-            <div class="acai-footer">
-              <div class="acai-footer-total">
-                <span>Total</span>
-                <strong id="acai-total-preview">R$ 0,00</strong>
-              </div>
-              <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()">
-                <i class="ti ti-check"></i> Adicionar
-              </button>
+          <div class="acai-footer">
+            <div class="acai-footer-total">
+              <span>Total</span>
+              <strong id="acai-total-preview">R$ 0,00</strong>
             </div>
+            <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()">
+              <i class="ti ti-check"></i> Adicionar
+            </button>
           </div>
         </div>
       </div>
