@@ -109,8 +109,8 @@ function toastWarn(msg) {
 function showToast(msg, tipo = 'success') {
   const t = document.getElementById('toast');
   if (!t) return;
-  const icon = document.getElementById('toast-icon');
-  const text = document.getElementById('toast-msg');
+  const ic = t.querySelector('.toast-ic i');
+  const text = t.querySelector('.toast-msg');
   const cfg = {
     success: { cls: 'toast-success', icon: 'ti ti-check' },
     error:   { cls: 'toast-error',   icon: 'ti ti-alert-circle' },
@@ -118,9 +118,13 @@ function showToast(msg, tipo = 'success') {
   };
   const c = cfg[tipo] || cfg.success;
   t.className = `toast ${c.cls}`;
-  icon.className = c.icon;
+  ic.className = c.icon;
   text.textContent = msg;
+  // Reinicia a animação sem "fantasma" do toast anterior
+  t.style.transition = 'none';
+  t.classList.remove('show');
   void t.offsetWidth;
+  t.style.transition = '';
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
