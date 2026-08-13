@@ -54,7 +54,6 @@
     <nav id="nav">
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
-      <div class="nav-item" data-screen="produtos" id="nav-produtos"><i class="ti ti-box"></i> <span>Produtos</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
       <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
@@ -111,7 +110,6 @@
     <nav class="mobile-nav" id="mobileNav">
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
-      <div class="mobile-nav-item" data-screen="produtos"><i class="ti ti-box"></i> Produtos</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
       <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
@@ -252,8 +250,11 @@
           <button class="estoque-view-btn active" id="estoque-btn-dashboard" onclick="setEstoqueView('dashboard')">
             <i class="ti ti-layout-dashboard"></i> Dashboard
           </button>
+          <button class="estoque-view-btn" id="estoque-btn-estoque" onclick="setEstoqueView('estoque')">
+            <i class="ti ti-table"></i> Estoque Atual
+          </button>
           <button class="estoque-view-btn" id="estoque-btn-produtos" onclick="setEstoqueView('produtos')">
-            <i class="ti ti-table"></i> Produtos
+            <i class="ti ti-box"></i> Produtos
           </button>
         </div>
 
@@ -293,8 +294,8 @@
           </div>
         </div>
 
-        <!-- ── ABA PRODUTOS ── -->
-        <div id="estoque-view-produtos" style="display:none">
+        <!-- ── ABA ESTOQUE ATUAL ── -->
+        <div id="estoque-view-estoque" style="display:none">
           <div class="card">
             <div class="estoque-tabela-header">
               <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>
@@ -320,43 +321,42 @@
             </table>
           </div>
         </div>
-      </div>
-
-      <!-- PRODUTOS -->
-      <div class="screen" id="screen-produtos">
-        <div class="card">
-          <div class="section-header">
-            <h2>Produtos cadastrados</h2>
-            <div style="display:flex;gap:10px;align-items:center">
-              <span id="p-count" style="font-size:12px;color:var(--text-secondary)"></span>
-              <button class="btn btn-primary" onclick="toggleFormProduto()" id="btn-toggle-form">
-                <i class="ti ti-plus"></i> Novo produto
-              </button>
+        <!-- ── ABA PRODUTOS (cadastro) ── -->
+        <div id="estoque-view-produtos" style="display:none">
+          <div class="card">
+            <div class="section-header">
+              <h2>Produtos cadastrados</h2>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span id="p-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <button class="btn btn-primary" onclick="toggleFormProduto()" id="btn-toggle-form">
+                  <i class="ti ti-plus"></i> Novo produto
+                </button>
+              </div>
             </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd atual</th><th>Qtd mínima</th><th>Valor de venda</th><th>Status</th><th></th></tr></thead>
+              <tbody id="tabela-produtos"></tbody>
+            </table>
+            </div>
+            <div id="produtos-empty" class="empty" style="display:none"><i class="ti ti-box"></i>Nenhum produto cadastrado ainda.<br>Clique no botão "Novo produto" acima para começar.</div>
           </div>
-          <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd atual</th><th>Qtd mínima</th><th>Valor de venda</th><th>Status</th><th></th></tr></thead>
-            <tbody id="tabela-produtos"></tbody>
-          </table>
-          </div>
-          <div id="produtos-empty" class="empty" style="display:none"><i class="ti ti-box"></i>Nenhum produto cadastrado ainda.<br>Clique no botão "Novo produto" acima para começar.</div>
-        </div>
-        
-        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-produto">
-          <div class="card-title"><i class="ti ti-plus"></i> Novo produto</div>
-          <div class="form-row-2">
-            <div class="form-group"><label>Nome do produto</label><input type="text" id="p-nome" placeholder="Ex: Papel A4"></div>
-            <div class="form-group"><label>Categoria</label><input type="text" id="p-cat" placeholder="Ex: Papelaria"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Quantidade atual</label><input type="number" id="p-qty" placeholder="0" min="0"></div>
-            <div class="form-group"><label>Quantidade mínima</label><input type="number" id="p-min" placeholder="0" min="0"></div>
-            <div class="form-group"><label>Valor de venda</label><input type="number" id="p-preco" placeholder="0.00" step="0.01" min="0"></div>
-          </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-primary" onclick="addProduto()"><i class="ti ti-check"></i> Cadastrar produto</button>
-            <button class="btn" onclick="toggleFormProduto()"><i class="ti ti-x"></i> Cancelar</button>
+
+          <div class="card" style="margin-top:1.25rem;display:none" id="card-form-produto">
+            <div class="card-title"><i class="ti ti-plus"></i> Novo produto</div>
+            <div class="form-row-2">
+              <div class="form-group"><label>Nome do produto</label><input type="text" id="p-nome" placeholder="Ex: Papel A4"></div>
+              <div class="form-group"><label>Categoria</label><input type="text" id="p-cat" placeholder="Ex: Papelaria"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Quantidade atual</label><input type="number" id="p-qty" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Quantidade mínima</label><input type="number" id="p-min" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Valor de venda</label><input type="number" id="p-preco" placeholder="0.00" step="0.01" min="0"></div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="addProduto()"><i class="ti ti-check"></i> Cadastrar produto</button>
+              <button class="btn" onclick="toggleFormProduto()"><i class="ti ti-x"></i> Cancelar</button>
+            </div>
           </div>
         </div>
       </div>

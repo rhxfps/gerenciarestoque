@@ -217,7 +217,7 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
+  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
   
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
@@ -312,7 +312,6 @@ function nav(screen) {
 
   if (screen === 'dashboard')    renderDashboardProfissional();
   if (screen === 'estoque')      renderEstoque();
-  if (screen === 'produtos')     renderProdutos();
   if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); populateHFiltro(); selectRegTipo(regTipoAtivo); renderHistorico(); }
   if (screen === 'lista-vendas') renderListaVendas();
   if (screen === 'relatorio')    renderRelatorio();
@@ -823,9 +822,12 @@ function setEstoqueView(view) {
   estoqueViewAtiva = view;
   localStorage.setItem('estoqueView', view);
   document.getElementById('estoque-btn-dashboard').classList.toggle('active', view === 'dashboard');
+  document.getElementById('estoque-btn-estoque').classList.toggle('active', view === 'estoque');
   document.getElementById('estoque-btn-produtos').classList.toggle('active', view === 'produtos');
   document.getElementById('estoque-view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+  document.getElementById('estoque-view-estoque').style.display = view === 'estoque' ? 'block' : 'none';
   document.getElementById('estoque-view-produtos').style.display = view === 'produtos' ? 'block' : 'none';
+  if (view === 'produtos') renderProdutos();
 }
 
 function renderEstoqueCats() {
