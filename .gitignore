@@ -22,3 +22,10 @@ lerna-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+.vercel
+
+# Backups / exports
+*.rar
+*.zip
+sql/export/
