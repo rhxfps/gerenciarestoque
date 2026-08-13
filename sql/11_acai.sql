@@ -1,17 +1,10 @@
 -- ============================================================
--- Açaí — tamanhos (produtos com estoque) + complementos (adicionais)
+-- AÇAÍ — script completo (modelo estilo pastel)
+-- Tamanhos SEM estoque próprio: o estoque é controlado pelos
+-- copos (Copo 300 ML / 500 ML / 700 ML — já criados no 07b).
 -- Execute no SQL Editor do Supabase:
 -- https://supabase.com/dashboard → seu projeto → SQL Editor
 -- ============================================================
-
--- Tamanhos de açaí como produtos (controlam estoque na venda)
-INSERT INTO produtos (nome, categoria, qtd, qtd_minima, preco, tipo)
-SELECT nome, categoria, qtd, qtd_minima, preco, tipo FROM (VALUES
-  ('Açaí 300ml', 'Açaí', 30, 10, 10.00, 'estoque'),
-  ('Açaí 500ml', 'Açaí', 30, 10, 14.00, 'estoque'),
-  ('Açaí 700ml', 'Açaí', 30, 10, 18.00, 'estoque')
-) AS v(nome, categoria, qtd, qtd_minima, preco, tipo)
-WHERE NOT EXISTS (SELECT 1 FROM produtos WHERE produtos.nome = v.nome);
 
 -- Complementos (adicionais com preço extra)
 CREATE TABLE IF NOT EXISTS acai_complementos (
@@ -31,3 +24,13 @@ SELECT nome, preco, ordem FROM (VALUES
   ('Paçoca',            1.50, 6)
 ) AS v(nome, preco, ordem)
 WHERE NOT EXISTS (SELECT 1 FROM acai_complementos WHERE acai_complementos.nome = v.nome);
+
+-- Tamanhos de açaí — tipo 'acai' = sem estoque (estilo pastel).
+-- A baixa de estoque acontece no copo correspondente a cada venda/consumo.
+INSERT INTO produtos (nome, categoria, qtd, qtd_minima, preco, tipo)
+SELECT nome, categoria, qtd, qtd_minima, preco, tipo FROM (VALUES
+  ('Açaí 300ml', 'Açaí', 0, 0, 10.00, 'acai'),
+  ('Açaí 500ml', 'Açaí', 0, 0, 14.00, 'acai'),
+  ('Açaí 700ml', 'Açaí', 0, 0, 18.00, 'acai')
+) AS v(nome, categoria, qtd, qtd_minima, preco, tipo)
+WHERE NOT EXISTS (SELECT 1 FROM produtos WHERE produtos.nome = v.nome);
