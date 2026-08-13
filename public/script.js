@@ -218,13 +218,16 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
-  
+  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo'];
+
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) {
-      if (item === 'consumo' || item === 'vendas' || item === 'caixa') {
+      if (item === 'vendas' || item === 'caixa') {
         el.style.display = 'block';
+      } else if (item === 'consumo') {
+        // Consumo (compra) aparece apenas para funcionários
+        el.style.display = isDono ? 'none' : 'block';
       } else {
         el.style.display = isDono ? 'block' : 'none';
       }
