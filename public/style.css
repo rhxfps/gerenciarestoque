@@ -3057,72 +3057,64 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 
 .vl-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 0;
-  overflow: hidden;
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s, transform .12s;
   box-shadow: var(--shadow-xs);
-  display: flex;
+  margin-bottom: 8px;
 }
-
-/* colored left accent bar */
-.vl-card::before {
-  content: '';
-  width: 5px;
-  flex-shrink: 0;
-  background: var(--blue);
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-}
-
-.vl-card.pag-dinheiro::before { background: var(--green); }
-.vl-card.pag-cartao::before   { background: #4f46e5; }
+.vl-card.pag-dinheiro { background: linear-gradient(90deg, rgba(22,163,74,.06), var(--bg-primary) 42%); }
+.vl-card.pag-cartao   { background: linear-gradient(90deg, rgba(79,70,229,.07), var(--bg-primary) 42%); }
 
 .vl-card:hover {
   border-color: var(--blue);
-  box-shadow: 0 4px 20px rgba(37,99,235,.15);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
-.vl-card:active { transform: scale(.99); }
+.vl-card:active { transform: scale(.995); }
 
-.vl-card-inner {
-  flex: 1;
-  padding: 0.9rem 1.1rem;
+.vl-card-icone {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
 }
+.vl-card.pag-dinheiro .vl-card-icone { background: var(--green-bg); color: var(--green); }
+.vl-card.pag-cartao   .vl-card-icone { background: var(--blue-bg); color: #4f46e5; }
 
-.vl-card-left {
+.vl-card-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  min-width: 0;
-  flex: 1;
 }
 
 .vl-card-top {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .vl-card-valor {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -.4px;
-  line-height: 1;
-  transition: color .15s;
+  line-height: 1.2;
 }
-.vl-card.pag-dinheiro .vl-card-valor { color: var(--green); }
-.vl-card.pag-cartao .vl-card-valor   { color: #4f46e5; }
 
 .vl-card-num {
   font-size: 11px;
@@ -3132,12 +3124,16 @@ tbody tr:hover td { background: var(--blue-50); }
   border: 1px solid var(--border);
   border-radius: 99px;
   padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .vl-card-prod {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -3146,23 +3142,31 @@ tbody tr:hover td { background: var(--blue-50); }
 
 .vl-card-data {
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-.vl-card-data i { font-size: 12px; }
+.vl-card-data > i { font-size: 12px; }
 
-.vl-card-plataforma {
+.vl-card-tag {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--amber);
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
 }
-.vl-card-plataforma i { font-size: 12px; }
+.vl-card-tag i { font-size: 11px; }
+.vl-card-tag.pag-dinheiro { background: var(--green-bg); color: var(--green); }
+.vl-card-tag.pag-cartao   { background: var(--blue-bg); color: #4f46e5; }
+.vl-card-tag.vl-card-plataforma { background: var(--amber-bg); color: var(--amber); }
 
 .vl-card-unid {
   display: inline-flex;
@@ -3192,29 +3196,24 @@ tbody tr:hover td { background: var(--blue-50); }
   background: var(--border);
 }
 
-.vl-card-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.vl-card-badges {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
 .vl-card-arrow {
-  font-size: 15px;
+  width: 30px;
+  height: 30px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-muted);
-  margin-top: 2px;
-  transition: color .15s, transform .15s;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all .15s;
 }
 .vl-card:hover .vl-card-arrow {
-  color: var(--blue);
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
   transform: translateX(2px);
 }
 
@@ -3232,7 +3231,26 @@ tbody tr:hover td { background: var(--blue-50); }
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
 }
+.vd-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background .15s;
+}
+.vd-close:hover { background: rgba(255,255,255,.28); }
 .vd-strip-top {
   display: flex;
   align-items: center;
@@ -3270,6 +3288,8 @@ tbody tr:hover td { background: var(--blue-50); }
   white-space: nowrap;
 }
 .vd-strip-chip i { font-size: 13px; }
+.vd-strip-chip.vd-chip-pag.pag-dinheiro { background: rgba(22,163,74,.25); border-color: rgba(22,163,74,.4); color: #dcfce7; }
+.vd-strip-chip.vd-chip-pag.pag-cartao   { background: rgba(129,140,248,.25); border-color: rgba(129,140,248,.4); color: #e0e7ff; }
 
 .vd-obs {
   display: flex;
@@ -3424,7 +3444,6 @@ tbody tr:hover td { background: var(--blue-50); }
   .vl-filtros-row { gap: 8px; }
   .vl-filtro-group select,
   .vl-filtro-group input[type="date"] { width: 120px; }
-  .vl-card-right { display: none; }
   .vl-card-top { flex-wrap: nowrap; }
 }
 
@@ -3436,12 +3455,13 @@ tbody tr:hover td { background: var(--blue-50); }
   .reg-toggle { width: 100%; }
   .reg-toggle-btn { flex: 1; justify-content: center; }
   .vl-filtros-row { gap: 8px; }
-  .vl-filtro-group select { width: 120px; }
+  .vl-filtro-group select,
+  .vl-filtro-group input[type="date"] { width: 120px; }
   .vl-kpi-row { gap: 8px; }
   .vl-kpi { padding: .75rem 1rem; }
   .vl-kpi span { font-size: 15px; }
-  .vl-card { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .vl-card-right { width: 100%; justify-content: flex-start; }
+  .vl-card { gap: 11px; padding: 11px 13px; }
+  .vl-card-icone { width: 38px; height: 38px; font-size: 18px; }
   .vl-card-arrow { margin-left: auto; }
   .vl-card-prod { max-width: 100%; }
 }

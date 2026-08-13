@@ -519,12 +519,11 @@ function renderListaVendas() {
     }
 
     const total = fmt$(v.total);
-    const pagBadge = v.pagamento === 'dinheiro'
-      ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
-      : '<span class="badge badge-blue"><i class="ti ti-credit-card"></i> Cartão</span>';
-    const tipoBadge = v.delivery
-      ? '<span class="badge badge-amber"><i class="ti ti-delivery"></i> Delivery</span>'
-      : '<span class="badge badge-gray"><i class="ti ti-shopping-bag"></i> Balcão</span>';
+    const pagCls = v.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
+    const pagTxt = v.pagamento === 'dinheiro' ? 'Dinheiro' : 'Cartão';
+    const pagIco = v.pagamento === 'dinheiro' ? 'ti-cash' : 'ti-credit-card';
+    const tipoTxt = v.delivery ? 'Delivery' : 'Balcão';
+    const tipoIco = v.delivery ? 'ti-delivery' : 'ti-shopping-bag';
 
     let prodResumo = '';
     let nUnid = 0;
@@ -539,31 +538,25 @@ function renderListaVendas() {
     }
 
     const numVenda = v.id ? `#${String(v.id).padStart(4,'0')}` : '';
-    const pagClass = v.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
 
     html += `
-      <div class="vl-card ${pagClass}" onclick="openVendaDetalhe(${v.id})">
-        <div class="vl-card-inner">
-          <div class="vl-card-left">
-            <div class="vl-card-top">
-              <span class="vl-card-valor">${total}</span>
-              ${numVenda ? `<span class="vl-card-num">${numVenda}</span>` : ''}
-              ${nUnid ? `<span class="vl-card-num vl-card-unid"><i class="ti ti-box"></i> ${nUnid} un.</span>` : ''}
-            </div>
-            <div class="vl-card-prod">${prodResumo}</div>
-            <div class="vl-card-data">
-              <i class="ti ti-clock"></i>${fmt(v.data)}
-              ${v.plataforma ? `<span class="vl-card-plataforma"><i class="ti ti-device-mobile"></i>${v.plataforma}</span>` : ''}
-            </div>
+      <div class="vl-card ${pagCls}" onclick="openVendaDetalhe(${v.id})">
+        <div class="vl-card-icone"><i class="ti ${pagIco}"></i></div>
+        <div class="vl-card-info">
+          <div class="vl-card-top">
+            <span class="vl-card-valor">${total}</span>
+            ${numVenda ? `<span class="vl-card-num">${numVenda}</span>` : ''}
+            ${nUnid ? `<span class="vl-card-num vl-card-unid"><i class="ti ti-box"></i> ${nUnid} un.</span>` : ''}
           </div>
-          <div class="vl-card-right">
-            <div class="vl-card-badges">
-              ${pagBadge}
-              ${tipoBadge}
-            </div>
-            <i class="ti ti-chevron-right vl-card-arrow"></i>
+          <div class="vl-card-prod">${prodResumo}</div>
+          <div class="vl-card-data">
+            <i class="ti ti-clock"></i>${fmt(v.data)}
+            <span class="vl-card-tag ${pagCls}"><i class="ti ${pagIco}"></i>${pagTxt}</span>
+            <span class="vl-card-tag"><i class="ti ${tipoIco}"></i>${tipoTxt}</span>
+            ${v.plataforma ? `<span class="vl-card-tag vl-card-plataforma"><i class="ti ti-device-mobile"></i>${v.plataforma}</span>` : ''}
           </div>
         </div>
+        <div class="vl-card-arrow"><i class="ti ti-chevron-right"></i></div>
       </div>`;
   });
 
@@ -702,23 +695,24 @@ function openVendaDetalhe(vendaId) {
   const dt = new Date(venda.data);
   const dataHora = `${dt.toLocaleDateString('pt-BR')} às ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-  const chipPag = venda.pagamento === 'dinheiro'
-    ? '<span class="vd-strip-chip"><i class="ti ti-cash"></i> Dinheiro</span>'
-    : '<span class="vd-strip-chip"><i class="ti ti-credit-card"></i> Cartão</span>';
-  const chipTipo = venda.delivery
+  const pagIco = venda.pagamento === 'dinheiro' ? 'ti-cash' : 'ti-credit-card';
+  const pagTxt = venda.pagamento === 'dinheiro' ? 'Dinheiro' : 'Cartão';
+  const pagCls = venda.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
+  const tipoChip = venda.delivery
     ? '<span class="vd-strip-chip"><i class="ti ti-delivery"></i> Delivery</span>'
     : '<span class="vd-strip-chip"><i class="ti ti-shopping-bag"></i> Balcão</span>';
 
   document.getElementById('venda-detalhe-body').innerHTML = `
     <div class="vd-strip">
+      <button type="button" class="vd-close" onclick="closeVendaDetalhe()"><i class="ti ti-x"></i></button>
       <div class="vd-strip-top">
         <span class="vd-strip-num">${numVenda}</span>
         <span class="vd-strip-total">${total}</span>
       </div>
       <div class="vd-strip-meta">
         <span class="vd-strip-chip"><i class="ti ti-clock"></i>${dataHora}</span>
-        ${chipPag}
-        ${chipTipo}
+        <span class="vd-strip-chip vd-chip-pag ${pagCls}"><i class="ti ${pagIco}"></i>${pagTxt}</span>
+        ${tipoChip}
         ${venda.plataforma ? `<span class="vd-strip-chip"><i class="ti ti-device-mobile"></i>${venda.plataforma}</span>` : ''}
       </div>
     </div>
