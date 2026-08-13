@@ -676,6 +676,11 @@
               <label>Até</label>
               <input type="date" id="vl-filtro-ate" onchange="renderListaVendas()">
             </div>
+            <label class="vl-switch" title="Ativar/desativar produtos mais vendidos">
+              <input type="checkbox" id="vl-mostrar-ranking" checked onchange="toggleListaRanking()">
+              <span class="vl-switch-slider"></span>
+              <span class="vl-switch-label"><i class="ti ti-trophy"></i> Mais vendidos</span>
+            </label>
             <span id="vl-count" class="vl-count"></span>
           </div>
         </div>
@@ -716,14 +721,14 @@
           </div>
         </div>
 
+        <!-- Lista de vendas -->
+        <div id="vl-lista"></div>
+
         <!-- Mais vendidos no período -->
-        <div class="card vl-ranking-card">
+        <div class="card vl-ranking-card" id="vl-ranking-card">
           <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos no período <span id="vl-ranking-sub" class="card-title-sub"></span></div>
           <div id="vl-ranking" class="dash-ranking"></div>
         </div>
-
-        <!-- Lista de vendas -->
-        <div id="vl-lista"></div>
 
       </div>
 

@@ -2864,6 +2864,55 @@ tbody tr:hover td { background: var(--blue-50); }
   align-self: flex-end;
 }
 
+/* switch mostrar/ocultar ranking */
+.vl-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 1px;
+  user-select: none;
+}
+.vl-switch input { display: none; }
+.vl-switch-slider {
+  width: 38px;
+  height: 21px;
+  border-radius: 99px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.vl-switch-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 99px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .15s;
+}
+.vl-switch input:checked + .vl-switch-slider {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.vl-switch input:checked + .vl-switch-slider::after { transform: translateX(17px); }
+.vl-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.vl-switch-label i { color: var(--amber); font-size: 14px; }
+
 /* KPI strip — coloridos como o dashboard */
 .vl-kpi-row {
   display: grid;
@@ -2946,7 +2995,8 @@ tbody tr:hover td { background: var(--blue-50); }
 
 /* ranking de produtos vendidos */
 .vl-ranking-card {
-  margin-bottom: 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
 }
 .card-title-sub {
   font-size: 11px;
@@ -2994,7 +3044,7 @@ tbody tr:hover td { background: var(--blue-50); }
 /* colored left accent bar */
 .vl-card::before {
   content: '';
-  width: 4px;
+  width: 5px;
   flex-shrink: 0;
   background: var(--blue);
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
@@ -3042,7 +3092,10 @@ tbody tr:hover td { background: var(--blue-50); }
   color: var(--text-primary);
   letter-spacing: -.4px;
   line-height: 1;
+  transition: color .15s;
 }
+.vl-card.pag-dinheiro .vl-card-valor { color: var(--green); }
+.vl-card.pag-cartao .vl-card-valor   { color: #4f46e5; }
 
 .vl-card-num {
   font-size: 11px;
@@ -3131,6 +3184,11 @@ tbody tr:hover td { background: var(--blue-50); }
   font-size: 15px;
   color: var(--text-muted);
   margin-top: 2px;
+  transition: color .15s, transform .15s;
+}
+.vl-card:hover .vl-card-arrow {
+  color: var(--blue);
+  transform: translateX(2px);
 }
 
 /* ============================================================

@@ -397,6 +397,14 @@ function selectRegTipo(tipo) {
 
 // ==================== LISTA DE VENDAS ====================
 function renderListaVendas() {
+  // Preferência salva do ranking
+  const storedRank = localStorage.getItem('vl-mostrar-ranking');
+  if (storedRank !== null) {
+    const chk = document.getElementById('vl-mostrar-ranking');
+    if (chk) chk.checked = storedRank === '1';
+  }
+  toggleListaRanking();
+
   const periodo    = document.getElementById('vl-filtro-periodo')?.value || 'semana';
   const pagFiltro  = document.getElementById('vl-filtro-pag')?.value || '';
   const tipoFiltro = document.getElementById('vl-filtro-tipo')?.value || '';
@@ -540,6 +548,14 @@ function rotuloDia(d) {
   if (dia.getTime() === hoje.getTime()) return 'Hoje';
   if (dia.getTime() === ontem.getTime()) return 'Ontem';
   return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+}
+
+function toggleListaRanking() {
+  const chk = document.getElementById('vl-mostrar-ranking');
+  const card = document.getElementById('vl-ranking-card');
+  const on = chk ? chk.checked : true;
+  localStorage.setItem('vl-mostrar-ranking', on ? '1' : '0');
+  if (card) card.style.display = on ? 'block' : 'none';
 }
 
 function renderListaRanking(lista, prodFiltro) {
