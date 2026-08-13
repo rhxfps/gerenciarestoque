@@ -56,7 +56,6 @@
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="produtos" id="nav-produtos"><i class="ti ti-box"></i> <span>Produtos</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
-      <div class="nav-item" data-screen="historico" id="nav-historico"><i class="ti ti-history"></i> <span>Histórico</span></div>
       <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
@@ -114,7 +113,6 @@
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="produtos"><i class="ti ti-box"></i> Produtos</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
-      <div class="mobile-nav-item" data-screen="historico"><i class="ti ti-history"></i> Histórico</div>
       <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
@@ -364,13 +362,16 @@
       <!-- REGISTRAR (Entrada / Saída unificado) -->
       <div class="screen" id="screen-registrar">
 
-        <!-- Toggle entrada/saída -->
+        <!-- Toggle entrada/saída/histórico -->
         <div class="reg-toggle">
           <button class="reg-toggle-btn active" id="reg-btn-entrada" onclick="selectRegTipo('entrada')">
             <i class="ti ti-arrow-bar-to-down"></i> Entrada
           </button>
           <button class="reg-toggle-btn" id="reg-btn-saida" onclick="selectRegTipo('saida')">
             <i class="ti ti-arrow-bar-up"></i> Saída
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-historico" onclick="selectRegTipo('historico')">
+            <i class="ti ti-history"></i> Histórico
           </button>
         </div>
 
@@ -424,27 +425,10 @@
           <button class="btn btn-saida" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
         </div>
 
-        <!-- Histórico recente unificado -->
-        <div class="card" style="margin-top:1.25rem">
-          <div class="card-title"><i class="ti ti-history"></i> Registros recentes</div>
-          <div style="overflow-x:auto">
-            <table>
-              <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th><th>Data/hora</th></tr></thead>
-              <tbody id="tabela-registros"></tbody>
-            </table>
-          </div>
-          <div id="registros-empty" class="empty" style="display:none"><i class="ti ti-transfer"></i>Nenhuma movimentação registrada.</div>
-        </div>
-      </div>
-
-      <!-- Manter telas legadas ocultas para compatibilidade com IDs existentes -->
-      <div class="screen" id="screen-entradas" style="display:none!important"></div>
-      <div class="screen" id="screen-saidas" style="display:none!important"></div>
-
-      <!-- HISTÓRICO -->
-      <div class="screen" id="screen-historico">
-        <div class="card" style="margin-bottom:1rem">
-          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <!-- Histórico -->
+        <div class="card" id="reg-form-historico" style="display:none">
+          <div class="card-title"><i class="ti ti-history"></i> Histórico de movimentações</div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:1rem">
             <select id="h-filtro-tipo" onchange="renderHistorico()" style="width:160px">
               <option value="">Todos os tipos</option>
               <option value="entrada">Entradas</option>
@@ -455,17 +439,19 @@
             </select>
             <span id="h-count" style="font-size:13px;color:var(--text-secondary);margin-left:auto"></span>
           </div>
-        </div>
-        <div class="card">
           <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Data/hora</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th></tr></thead>
-            <tbody id="tabela-historico"></tbody>
-          </table>
+            <table>
+              <thead><tr><th>Data/hora</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th></tr></thead>
+              <tbody id="tabela-historico"></tbody>
+            </table>
           </div>
           <div id="historico-empty" class="empty" style="display:none"><i class="ti ti-history"></i>Nenhuma movimentação registrada ainda.</div>
         </div>
       </div>
+
+      <!-- Manter telas legadas ocultas para compatibilidade com IDs existentes -->
+      <div class="screen" id="screen-entradas" style="display:none!important"></div>
+      <div class="screen" id="screen-saidas" style="display:none!important"></div>
 
       <!-- RELATÓRIO -->
       <div class="screen" id="screen-relatorio">

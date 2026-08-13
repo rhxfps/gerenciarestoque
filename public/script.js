@@ -188,7 +188,7 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'historico', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
+  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
   
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
@@ -249,7 +249,6 @@ const titles = {
   estoque:      'Estoque',
   produtos:     'Produtos',
   registrar:    'Registrar Movimentação',
-  historico:    'Histórico',
   'lista-vendas': 'Vendas',
   relatorio:    'Relatório semanal',
   vendas:       'Comandas/Vendas',
@@ -279,8 +278,7 @@ function nav(screen) {
   if (screen === 'dashboard')    renderDashboardProfissional();
   if (screen === 'estoque')      renderEstoque();
   if (screen === 'produtos')     renderProdutos();
-  if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); renderRegistros(); }
-  if (screen === 'historico')    { populateHFiltro(); renderHistorico(); }
+  if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); populateHFiltro(); selectRegTipo(regTipoAtivo); renderHistorico(); }
   if (screen === 'lista-vendas') renderListaVendas();
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
@@ -354,36 +352,11 @@ function selectRegTipo(tipo) {
   regTipoAtivo = tipo;
   document.getElementById('reg-btn-entrada').classList.toggle('active', tipo === 'entrada');
   document.getElementById('reg-btn-saida').classList.toggle('active', tipo === 'saida');
+  document.getElementById('reg-btn-historico').classList.toggle('active', tipo === 'historico');
   document.getElementById('reg-form-entrada').style.display = tipo === 'entrada' ? 'block' : 'none';
   document.getElementById('reg-form-saida').style.display   = tipo === 'saida'   ? 'block' : 'none';
-}
-
-function renderRegistros() {
-  selectRegTipo(regTipoAtivo);
-  const tb = document.getElementById('tabela-registros');
-  const em = document.getElementById('registros-empty');
-  const recentes = [...movimentacoes].slice(0, 30);
-  if (!recentes.length) {
-    tb.innerHTML = '';
-    em.style.display = 'block';
-    return;
-  }
-  em.style.display = 'none';
-  tb.innerHTML = recentes.map(m => {
-    const badge = m.tipo === 'entrada'
-      ? '<span class="badge badge-green">Entrada</span>'
-      : '<span class="badge badge-red">Saída</span>';
-    const qtd = m.tipo === 'entrada'
-      ? `<span class="tag-entrada">+${m.qtd}</span>`
-      : `<span class="tag-saida">-${m.qtd}</span>`;
-    return `<tr>
-      <td><strong>${m.produto_nome}</strong></td>
-      <td>${badge}</td>
-      <td>${qtd}</td>
-      <td>${m.obs || '—'}</td>
-      <td>${fmt(m.data)}</td>
-    </tr>`;
-  }).join('');
+  document.getElementById('reg-form-historico').style.display = tipo === 'historico' ? 'block' : 'none';
+  if (tipo === 'historico') renderHistorico();
 }
 
 // ==================== LISTA DE VENDAS ====================
@@ -698,7 +671,7 @@ async function addEntrada() {
     });
 
     await loadAllData();
-    renderRegistros();
+    renderHistorico();
     populateSelect('e-produto');
     document.getElementById('e-qty').value = '';
     document.getElementById('e-obs').value = '';
@@ -737,7 +710,7 @@ async function addSaida() {
     });
 
     await loadAllData();
-    renderRegistros();
+    renderHistorico();
     populateSelect('s-produto');
     document.getElementById('s-qty').value = '';
     document.getElementById('s-obs').value = '';

@@ -2395,6 +2395,12 @@ tbody tr:hover td { background: var(--blue-50); }
   box-shadow: 0 2px 8px rgba(220,38,38,.3);
 }
 
+.reg-toggle-btn.active[id="reg-btn-historico"] {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59,130,246,.3);
+}
+
 .reg-toggle-btn:not(.active):hover {
   background: var(--bg-secondary);
   color: var(--text-primary);
