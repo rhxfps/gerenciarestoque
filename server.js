@@ -129,8 +129,8 @@ app.delete('/api/usuarios/:id', autenticar, async (req, res) => {
     // Limpa referências do usuário para a exclusão não quebrar por chave estrangeira
     const limpeza = [
       supabase.from('consumo').delete().eq('usuario_id', id),
-      supabase.from('vendas').update({ usuario_id: null }).eq('usuario_id', id),
-      supabase.from('caixa').update({ usuario_id: null }).eq('usuario_id', id),
+      supabase.from('caixa').update({ usuario_abertura_id: null }).eq('usuario_abertura_id', id),
+      supabase.from('caixa').update({ usuario_fechamento_id: null }).eq('usuario_fechamento_id', id),
       supabase.from('caixa_retiradas').update({ usuario_id: null }).eq('usuario_id', id),
     ];
     await Promise.all(limpeza.map(p => p.catch(() => null)));
