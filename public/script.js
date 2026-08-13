@@ -531,15 +531,21 @@ function closeVendaDetalhe(e) {
 }
 
 // ==================== PRODUTOS ====================
-function toggleFormProduto() {
-  const formCard = document.getElementById('card-form-produto');
-  formCard.style.display = formCard.style.display === 'none' ? 'block' : 'none';
-  if (formCard.style.display === 'block') {
+function toggleFormProduto(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('novo-produto-modal');
+  if (!modal) return;
+  const aberto = modal.classList.contains('show');
+  if (aberto) {
+    modal.classList.remove('show');
+  } else {
     document.getElementById('p-nome').value = '';
     document.getElementById('p-cat').value = '';
     document.getElementById('p-qty').value = '';
     document.getElementById('p-min').value = '';
     document.getElementById('p-preco').value = '';
+    modal.classList.add('show');
+    setTimeout(() => document.getElementById('p-nome').focus(), 120);
   }
 }
 
@@ -925,15 +931,28 @@ function filtrarEstoque() {
   const escapedBusca = busca.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   dpq.innerHTML = lista.map(p => {
     const low = p.qtd <= p.qtd_minima;
-    const badge    = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
+    const badge = low
+      ? '<span class="badge badge-red"><i class="ti ti-alert-triangle"></i> Baixo</span>'
+      : '<span class="badge badge-green"><i class="ti ti-check"></i> OK</span>';
     const qtdColor = low ? 'text-red' : 'text-green';
     const nomeDisplay = busca
       ? p.nome.replace(new RegExp(`(${escapedBusca})`, 'gi'), '<mark class="estoque-highlight">$1</mark>')
       : `<strong>${p.nome}</strong>`;
+
+    // Barra de progresso: qtd em relação ao mínimo (verde = folga, âmbar = perto, vermelho = baixo)
+    const pct = p.qtd_minima > 0 ? Math.min(Math.round((p.qtd / p.qtd_minima) * 100), 100) : 100;
+    const barColor = low ? 'var(--red)' : (p.qtd >= p.qtd_minima * 2 ? 'var(--green)' : 'var(--amber)');
+
     return `<tr>
-      <td>${busca ? nomeDisplay : `<strong>${p.nome}</strong>`}</td>
-      <td>${p.categoria || '—'}</td>
-      <td class="${qtdColor}"><strong>${p.qtd}</strong></td>
+      <td>${nomeDisplay}</td>
+      <td><span class="est-cat-pill">${p.categoria || '—'}</span></td>
+      <td>
+        <div class="est-qtd-head">
+          <span class="est-qtd-val ${qtdColor}"><strong>${p.qtd}</strong></span>
+          <span class="est-qtd-min">mín ${p.qtd_minima}</span>
+        </div>
+        <div class="est-bar"><div class="est-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      </td>
       <td>${badge}</td>
     </tr>`;
   }).join('');

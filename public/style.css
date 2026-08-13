@@ -3451,6 +3451,48 @@ mark.estoque-highlight {
 }
 
 /* ============================================================
+   ESTOQUE ATUAL — tabela melhorada
+   ============================================================ */
+.est-cat-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.est-qtd-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.est-qtd-val { font-size: 15px; }
+.est-qtd-min { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+.est-bar {
+  width: 100%;
+  min-width: 120px;
+  max-width: 180px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+.est-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+
+.badge { display: inline-flex; align-items: center; gap: 4px; }
+.badge i { font-size: 12px; }
+
+/* ============================================================
    DASHBOARD — gráfico barras do mês
    ============================================================ */
 .dash-chart-mes-wrap {
