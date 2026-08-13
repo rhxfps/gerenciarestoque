@@ -286,6 +286,70 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
 }
 .consumo-status-foot span:first-child { font-weight: 700; color: var(--green); }
 
+/* ---- seletor "Quem consumiu" ---- */
+.consumo-quem-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 10px;
+  transition: border-color .15s, background .15s;
+}
+.consumo-quem-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+.consumo-quem-btn i:first-child { color: var(--blue); }
+.consumo-quem-btn i:last-child { margin-left: auto; color: var(--text-muted); font-size: 16px; }
+
+.consumo-quem-content { max-width: 380px; }
+.consumo-quem-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0 1.25rem 1.25rem;
+}
+.consumo-quem-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: border-color .15s, background .15s;
+}
+.consumo-quem-row:hover,
+.consumo-quem-row.active {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+.consumo-quem-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.consumo-quem-avatar i { font-size: 22px; color: var(--blue); }
+.consumo-quem-info { flex: 1; min-width: 0; }
+.consumo-quem-nome { font-size: 14px; font-weight: 700; }
+.consumo-quem-user { font-size: 12px; color: var(--text-muted); }
+.consumo-quem-check { color: var(--blue); font-size: 18px; flex-shrink: 0; }
+
 /* ---- visão do dono: consumo dos funcionários ---- */
 .cd-grid {
   display: grid;

@@ -839,27 +839,6 @@
         <!-- ===== VISÃO DO FUNCIONÁRIO (compra) ===== -->
         <div id="consumo-funcionario-view">
 
-          <!-- Status do limite mensal -->
-          <div class="card consumo-status">
-            <div class="consumo-status-top">
-              <div>
-                <div class="consumo-status-title"><i class="ti ti-wallet"></i> Consumo do mês</div>
-                <div class="consumo-status-sub">Você tem <strong>R$ 100,00</strong> de consumo por mês</div>
-              </div>
-              <div class="consumo-status-nums">
-                <strong id="c-usado">R$ 0,00</strong>
-                <span>/ R$ 100,00</span>
-              </div>
-            </div>
-            <div class="progress-bar consumo-progress consumo-progress-lg">
-              <div class="progress-fill" id="c-bar-fill" style="width:0%;background:var(--blue)"></div>
-            </div>
-            <div class="consumo-status-foot">
-              <span id="c-restante">R$ 100,00 restantes</span>
-              <span id="c-count">0 consumo(s)</span>
-            </div>
-          </div>
-
           <div class="vendas-layout">
 
             <!-- Coluna: produtos -->
@@ -909,6 +888,12 @@
               </div>
 
               <div class="vendas-carrinho-footer">
+                <button type="button" class="consumo-quem-btn" onclick="openConsumoQuem()">
+                  <i class="ti ti-user"></i>
+                  <span id="c-quem-label">Selecionar quem consumiu</span>
+                  <i class="ti ti-chevron-down"></i>
+                </button>
+
                 <div class="form-group vendas-obs">
                   <label>Observação (opcional)</label>
                   <input type="text" id="c-obs" placeholder="Ex: Almoço de hoje...">
@@ -976,6 +961,17 @@
             <strong id="cd-detalhe-total">R$ 0,00</strong>
           </div>
           <div id="consumo-detalhe-body"></div>
+        </div>
+      </div>
+
+      <!-- Modal: quem consumiu (funcionário) -->
+      <div class="modal-overlay" id="consumo-quem-modal" onclick="closeConsumoQuem(event)">
+        <div class="modal-content consumo-quem-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-users"></i> Quem consumiu?</h3>
+            <button class="modal-close" onclick="closeConsumoQuem()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="consumo-quem-body" id="consumo-quem-body"></div>
         </div>
       </div>
 

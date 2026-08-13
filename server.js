@@ -463,21 +463,36 @@ app.post('/api/consumo', autenticar, async (req, res) => {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
-  const { itens, obs } = req.body;
+  const { itens, obs, usuario_id } = req.body;
 
   if (!itens || !Array.isArray(itens) || !itens.length) {
     return res.status(400).json({ error: 'Adicione pelo menos um item' });
   }
 
+  // Quem consumiu (padrão: o próprio funcionário logado)
+  let consumidorId = req.usuario.id;
+  if (usuario_id) {
+    const { data: alvo, error: alvoError } = await supabase
+      .from('usuarios')
+      .select('id, role')
+      .eq('id', usuario_id)
+      .single();
+
+    if (alvoError || !alvo || alvo.role !== 'funcionario') {
+      return res.status(400).json({ error: 'Usuário inválido para consumo' });
+    }
+    consumidorId = alvo.id;
+  }
+
   const total = itens.reduce((s, i) => s + (parseFloat(i.qtd || 0) * parseFloat(i.precoUnitario || 0)), 0);
 
   try {
-    // Verificar limite mensal
+    // Verificar limite mensal do usuário que consumiu
     const inicio = inicioDoMesLocal();
     const { data: consumosMes } = await supabase
       .from('consumos')
       .select('total')
-      .eq('usuario_id', req.usuario.id)
+      .eq('usuario_id', consumidorId)
       .gte('data', inicio.toISOString());
 
     const jaUsado = (consumosMes || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
@@ -492,7 +507,7 @@ app.post('/api/consumo', autenticar, async (req, res) => {
     // Inserir consumo
     const { data: consumo, error: consumoError } = await supabase
       .from('consumos')
-      .insert([{ usuario_id: req.usuario.id, total, obs: obs || null }])
+      .insert([{ usuario_id: consumidorId, total, obs: obs || null }])
       .select()
       .single();
     if (consumoError) throw consumoError;
@@ -538,6 +553,26 @@ app.post('/api/consumo', autenticar, async (req, res) => {
     }
 
     res.json({ ...consumo, itens });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/consumo/usuarios', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'funcionario' && req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  try {
+    const { data: funcionarios, error } = await supabase
+      .from('usuarios')
+      .select('id, nome, usuario')
+      .eq('role', 'funcionario')
+      .order('nome');
+
+    if (error) throw error;
+
+    res.json(funcionarios || []);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

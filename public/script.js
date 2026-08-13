@@ -36,6 +36,8 @@ let consumoCategoriaAtiva = 'Todos';
 let consumos = [];
 let consumoTotalMes = 0;
 let consumoFuncionarios = [];
+let consumoUsuarios = [];
+let consumoUsuarioId = null;
 const LIMITE_CONSUMO = 100;
 
 const API_URL = '/api';
@@ -236,6 +238,12 @@ async function loadAllData() {
         consumos = [];
         consumoTotalMes = 0;
       }
+      try {
+        consumoUsuarios = await apiRequest('/consumo/usuarios');
+      } catch (e) {
+        console.error('Erro ao carregar usuários do consumo:', e);
+        consumoUsuarios = [];
+      }
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -289,6 +297,9 @@ function nav(screen) {
     if (currentUser.role === 'dono') {
       renderConsumoDono();
     } else {
+      consumoUsuarioId = currentUser.id;
+      const label = document.getElementById('c-quem-label');
+      if (label) label.textContent = currentUser.nome || 'Quem consumiu';
       loadPastelData().then(() => {
         renderConsumo();
         renderConsumoItens();
@@ -2004,6 +2015,47 @@ function closeConsumoDonoDetalhe(e) {
   document.getElementById('consumo-detalhe-modal').classList.remove('show');
 }
 
+// ==================== QUEM CONSUMIU (funcionário) ====================
+async function openConsumoQuem() {
+  try {
+    consumoUsuarios = await apiRequest('/consumo/usuarios');
+  } catch (e) {
+    toast('Erro ao carregar usuários!', false);
+    return;
+  }
+
+  const body = document.getElementById('consumo-quem-body');
+  if (!consumoUsuarios.length) {
+    body.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum funcionário cadastrado.</div>';
+  } else {
+    body.innerHTML = consumoUsuarios.map(u => `
+      <div class="consumo-quem-row${u.id === consumoUsuarioId ? ' active' : ''}" onclick="selectConsumoQuem(${u.id})">
+        <div class="consumo-quem-avatar"><i class="ti ti-user-circle"></i></div>
+        <div class="consumo-quem-info">
+          <div class="consumo-quem-nome">${u.nome}</div>
+          <div class="consumo-quem-user">@${u.usuario}</div>
+        </div>
+        ${u.id === consumoUsuarioId ? '<i class="ti ti-check consumo-quem-check"></i>' : ''}
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('consumo-quem-modal').classList.add('show');
+}
+
+function selectConsumoQuem(id) {
+  consumoUsuarioId = id;
+  const u = consumoUsuarios.find(x => x.id === id);
+  const label = document.getElementById('c-quem-label');
+  if (label) label.textContent = u ? u.nome : 'Selecionar quem consumiu';
+  closeConsumoQuem();
+}
+
+function closeConsumoQuem(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('consumo-quem-modal').classList.remove('show');
+}
+
 function renderConsumoCategorias() {
   const el = document.getElementById('c-categorias');
   if (!el) return;
@@ -2177,11 +2229,15 @@ async function addConsumo() {
   const totalConsumo = consumoItens.reduce((acumulador, item) => {
     return acumulador + (item.qtd * item.precoUnitario);
   }, 0);
-  const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
 
-  if (totalConsumo > disponivel) {
-    toast(`Limite do mês excedido! Disponível: ${fmtMoeda(disponivel)}`, false);
-    return;
+  // Limite validado no cliente apenas quando é o próprio funcionário logado;
+  // para outro usuário o servidor valida e retorna o saldo disponível.
+  if (!consumoUsuarioId || consumoUsuarioId === currentUser.id) {
+    const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
+    if (totalConsumo > disponivel) {
+      toast(`Limite do mês excedido! Disponível: ${fmtMoeda(disponivel)}`, false);
+      return;
+    }
   }
 
   try {
@@ -2189,7 +2245,8 @@ async function addConsumo() {
       method: 'POST',
       body: JSON.stringify({
         itens: consumoItens,
-        obs
+        obs,
+        usuario_id: consumoUsuarioId || currentUser.id
       })
     });
 
@@ -2227,16 +2284,6 @@ function renderConsumoBars() {
   if (valSide) valSide.textContent = fmtMoeda(usado);
   const restSide = document.getElementById('consumo-bar-restante');
   if (restSide) restSide.textContent = restText;
-
-  // Card de status na tela de consumo
-  const fillC = document.getElementById('c-bar-fill');
-  if (fillC) fillC.style.width = pct + '%';
-  const usadoEl = document.getElementById('c-usado');
-  if (usadoEl) usadoEl.textContent = fmtMoeda(usado);
-  const restC = document.getElementById('c-restante');
-  if (restC) restC.textContent = restText;
-  const countC = document.getElementById('c-count');
-  if (countC) countC.textContent = `${consumos.length} ${consumos.length === 1 ? 'consumo' : 'consumos'}`;
 }
 
 // ==================== USUÁRIOS ====================
