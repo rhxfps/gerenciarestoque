@@ -822,7 +822,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
 .toast {
   position: fixed;
-  bottom: 28px;
+  bottom: 48px;
   right: 20px;
   display: flex;
   align-items: center;
@@ -1593,7 +1593,7 @@ tbody tr:hover td { background: var(--blue-50); }
   th, td { padding: 9px 10px; }
 
   /* toast bottom nav safe area */
-  .toast { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; justify-content: center; }
+  .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; justify-content: center; }
 
   /* ---- PDV on mobile: stacked layout ---- */
   .content:has(#screen-vendas.active),
