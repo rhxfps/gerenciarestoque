@@ -103,6 +103,14 @@ function toast(msg, ok = true) {
   setTimeout(() => t.classList.remove('show'), 2400);
 }
 
+function toastWarn(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = '#d97706';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3400);
+}
+
 // Format date
 function fmt(d) {
   const date = new Date(d);
@@ -2353,10 +2361,22 @@ function renderConsumoItens() {
 
 function atualizaConsumoPreview() {
   const preview = document.getElementById('c-total-preview');
+  const warnEl = document.getElementById('c-limite-warn');
   const total = consumoItens.reduce((acumulador, item) => {
     return acumulador + (item.qtd * item.precoUnitario);
   }, 0);
   if (preview) preview.textContent = fmtMoeda(total);
+
+  // Aviso quando o carrinho passa do limite do mês (somente para o próprio usuário)
+  if (!consumoUsuarioId || consumoUsuarioId === currentUser.id) {
+    const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
+    const acima = total > disponivel;
+    if (preview) preview.classList.toggle('over-limit', acima);
+    if (warnEl) warnEl.style.display = acima ? 'flex' : 'none';
+  } else {
+    if (preview) preview.classList.remove('over-limit');
+    if (warnEl) warnEl.style.display = 'none';
+  }
 }
 
 async function addConsumo() {
@@ -2370,18 +2390,18 @@ async function addConsumo() {
     return acumulador + (item.qtd * item.precoUnitario);
   }, 0);
 
-  // Limite validado no cliente apenas quando é o próprio funcionário logado;
-  // para outro usuário o servidor valida e retorna o saldo disponível.
+  // Não bloqueia: apenas notifica quando estiver passando do limite
+  let acimaLimite = false;
   if (!consumoUsuarioId || consumoUsuarioId === currentUser.id) {
     const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
-    if (totalConsumo > disponivel) {
-      toast(`Limite do mês excedido! Disponível: ${fmtMoeda(disponivel)}`, false);
-      return;
+    acimaLimite = totalConsumo > disponivel;
+    if (acimaLimite) {
+      toastWarn(`Atenção! Você está passando do seu limite de ${fmtMoeda(LIMITE_CONSUMO)} do mês.`);
     }
   }
 
   try {
-    await apiRequest('/consumo', {
+    const resp = await apiRequest('/consumo', {
       method: 'POST',
       body: JSON.stringify({
         itens: consumoItens,
@@ -2400,7 +2420,11 @@ async function addConsumo() {
     renderConsumoItens();
     atualizaConsumoPreview();
     renderConsumoBars();
-    toast('Consumo registrado com sucesso!');
+    if (resp?.acimaLimite || acimaLimite) {
+      toastWarn('Consumo registrado acima do limite mensal!');
+    } else {
+      toast('Consumo registrado com sucesso!');
+    }
   } catch (error) {
     toast(error.message || 'Erro ao registrar consumo!', false);
     console.error(error);

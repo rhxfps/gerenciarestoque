@@ -520,13 +520,7 @@ app.post('/api/consumo', autenticar, async (req, res) => {
       .gte('data', inicio.toISOString());
 
     const jaUsado = (consumosMes || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
-
-    if (jaUsado + total > LIMITE_CONSUMO_MENSAL) {
-      const disponivel = Math.max(LIMITE_CONSUMO_MENSAL - jaUsado, 0);
-      return res.status(400).json({
-        error: `Limite de consumo do mês excedido. Disponível: R$ ${disponivel.toFixed(2)}`
-      });
-    }
+    const acimaLimite = jaUsado + total > LIMITE_CONSUMO_MENSAL;
 
     // Inserir consumo
     const { data: consumo, error: consumoError } = await supabase
@@ -576,7 +570,7 @@ app.post('/api/consumo', autenticar, async (req, res) => {
       }
     }
 
-    res.json({ ...consumo, itens });
+    res.json({ ...consumo, itens, acimaLimite });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
