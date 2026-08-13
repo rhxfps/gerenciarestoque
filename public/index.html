@@ -252,8 +252,8 @@
           <button class="estoque-view-btn active" id="estoque-btn-dashboard" onclick="setEstoqueView('dashboard')">
             <i class="ti ti-layout-dashboard"></i> Dashboard
           </button>
-          <button class="estoque-view-btn" id="estoque-btn-tabela" onclick="setEstoqueView('tabela')">
-            <i class="ti ti-table"></i> Só Produtos
+          <button class="estoque-view-btn" id="estoque-btn-produtos" onclick="setEstoqueView('produtos')">
+            <i class="ti ti-table"></i> Produtos
           </button>
         </div>
 
@@ -293,30 +293,32 @@
           </div>
         </div>
 
-        <!-- ── TABELA (sempre visível) ── -->
-        <div class="card">
-          <div class="estoque-tabela-header">
-            <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>
-            <div class="estoque-busca-wrap">
-              <i class="ti ti-search estoque-busca-icon"></i>
-              <input
-                type="text"
-                id="estoque-busca"
-                class="estoque-busca-input"
-                placeholder="Buscar produto..."
-                oninput="filtrarEstoque()"
-              >
-              <span id="estoque-busca-count" class="estoque-busca-count"></span>
+        <!-- ── ABA PRODUTOS ── -->
+        <div id="estoque-view-produtos" style="display:none">
+          <div class="card">
+            <div class="estoque-tabela-header">
+              <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>
+              <div class="estoque-busca-wrap">
+                <i class="ti ti-search estoque-busca-icon"></i>
+                <input
+                  type="text"
+                  id="estoque-busca"
+                  class="estoque-busca-input"
+                  placeholder="Buscar produto..."
+                  oninput="filtrarEstoque()"
+                >
+                <span id="estoque-busca-count" class="estoque-busca-count"></span>
+              </div>
             </div>
+
+            <!-- Filtro por categoria -->
+            <div class="estoque-cats" id="estoque-cats"></div>
+
+            <table>
+              <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd</th><th>Status</th></tr></thead>
+              <tbody id="estoque-produtos-quantidades"></tbody>
+            </table>
           </div>
-
-          <!-- Filtro por categoria -->
-          <div class="estoque-cats" id="estoque-cats"></div>
-
-          <table>
-            <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd</th><th>Status</th></tr></thead>
-            <tbody id="estoque-produtos-quantidades"></tbody>
-          </table>
         </div>
       </div>
 

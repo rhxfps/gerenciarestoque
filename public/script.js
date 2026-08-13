@@ -823,8 +823,9 @@ function setEstoqueView(view) {
   estoqueViewAtiva = view;
   localStorage.setItem('estoqueView', view);
   document.getElementById('estoque-btn-dashboard').classList.toggle('active', view === 'dashboard');
-  document.getElementById('estoque-btn-tabela').classList.toggle('active', view === 'tabela');
+  document.getElementById('estoque-btn-produtos').classList.toggle('active', view === 'produtos');
   document.getElementById('estoque-view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+  document.getElementById('estoque-view-produtos').style.display = view === 'produtos' ? 'block' : 'none';
 }
 
 function renderEstoqueCats() {
