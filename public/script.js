@@ -246,6 +246,8 @@ async function loadAllData() {
       apiRequest('/vendas')
     ]);
 
+    preencherFiltroProduto();
+
     if (currentUser.role === 'dono') {
       const [usr, caixaRes, consumoFunc, meuConsumo] = await Promise.all([
         apiRequest('/usuarios').catch(() => []),
@@ -395,9 +397,12 @@ function selectRegTipo(tipo) {
 
 // ==================== LISTA DE VENDAS ====================
 function renderListaVendas() {
-  const periodo  = document.getElementById('vl-filtro-periodo')?.value || 'semana';
-  const pagFiltro = document.getElementById('vl-filtro-pag')?.value || '';
+  const periodo    = document.getElementById('vl-filtro-periodo')?.value || 'semana';
+  const pagFiltro  = document.getElementById('vl-filtro-pag')?.value || '';
   const tipoFiltro = document.getElementById('vl-filtro-tipo')?.value || '';
+  const prodFiltro = document.getElementById('vl-filtro-produto')?.value || '';
+  const deVal      = document.getElementById('vl-filtro-de')?.value || '';
+  const ateVal     = document.getElementById('vl-filtro-ate')?.value || '';
 
   const hoje = new Date();
   hoje.setHours(23, 59, 59, 999);
@@ -408,30 +413,66 @@ function renderListaVendas() {
   const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
 
-  let lista = [...vendas].sort((a, b) => new Date(b.data) - new Date(a.data));
+  // Período personalizado (De/Até) tem prioridade sobre o preset
+  const inicioDe = deVal ? new Date(deVal + 'T00:00:00') : null;
+  const fimAte   = ateVal ? new Date(ateVal + 'T23:59:59.999') : null;
 
-  if (periodo === 'hoje')   lista = lista.filter(v => new Date(v.data) >= inicioDia);
-  if (periodo === 'semana') lista = lista.filter(v => new Date(v.data) >= segunda);
-  if (periodo === 'mes')    lista = lista.filter(v => new Date(v.data) >= primeiroDiaMes);
-  if (pagFiltro)  lista = lista.filter(v => v.pagamento === pagFiltro);
-  if (tipoFiltro) lista = lista.filter(v => tipoFiltro === 'delivery' ? v.delivery : !v.delivery);
+  const filtroPeriodo = v => {
+    const d = new Date(v.data);
+    if (inicioDe) {
+      if (d < inicioDe) return false;
+    } else if (periodo === 'hoje') {
+      if (d < inicioDia) return false;
+    } else if (periodo === 'semana') {
+      if (d < segunda) return false;
+    } else if (periodo === 'mes') {
+      if (d < primeiroDiaMes) return false;
+    }
+    if (fimAte && d > fimAte) return false;
+    return true;
+  };
 
-  const totalFat   = lista.reduce((s, v) => s + (v.total || 0), 0);
-  const ticketMed  = lista.length ? totalFat / lista.length : 0;
+  const lista = [...vendas].sort((a, b) => new Date(b.data) - new Date(a.data)).filter(filtroPeriodo);
 
-  document.getElementById('vl-count').textContent  = `${lista.length} venda(s)`;
-  document.getElementById('vl-kpi-qtd').textContent  = lista.length;
-  document.getElementById('vl-kpi-total').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalFat);
-  document.getElementById('vl-kpi-ticket').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(ticketMed);
+  // Filtros que não dependem do produto (usados no ranking)
+  const filtroBasico = v => {
+    if (pagFiltro && v.pagamento !== pagFiltro) return false;
+    if (tipoFiltro && (tipoFiltro === 'delivery' ? !v.delivery : v.delivery)) return false;
+    return true;
+  };
+  const listaRanking = lista.filter(filtroBasico);
+
+  // Filtro por produto
+  let listaFiltrada = listaRanking;
+  if (prodFiltro) {
+    listaFiltrada = listaRanking.filter(v =>
+      v.itens?.length ? v.itens.some(i => i.produto_nome === prodFiltro) : v.produto_nome === prodFiltro
+    );
+  }
+
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  const totalFat   = listaFiltrada.reduce((s, v) => s + (v.total || 0), 0);
+  const ticketMed  = listaFiltrada.length ? totalFat / listaFiltrada.length : 0;
+  const unidades   = listaFiltrada.reduce((s, v) => s + (v.itens?.length
+    ? v.itens.reduce((a, i) => a + (i.qtd || 0), 0)
+    : (v.qtd || 1)), 0);
+
+  document.getElementById('vl-count').textContent       = `${listaFiltrada.length} venda(s)`;
+  document.getElementById('vl-kpi-qtd').textContent     = listaFiltrada.length;
+  document.getElementById('vl-kpi-total').textContent   = fmt$(totalFat);
+  document.getElementById('vl-kpi-ticket').textContent  = fmt$(ticketMed);
+  document.getElementById('vl-kpi-unid').textContent    = unidades;
+
+  renderListaRanking(listaRanking, prodFiltro);
 
   const container = document.getElementById('vl-lista');
-  if (!lista.length) {
+  if (!listaFiltrada.length) {
     container.innerHTML = '<div class="empty"><i class="ti ti-receipt"></i>Nenhuma venda no período selecionado.</div>';
     return;
   }
 
-  container.innerHTML = lista.map(v => {
-    const total = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v.total || 0);
+  container.innerHTML = listaFiltrada.map(v => {
+    const total = fmt$(v.total);
     const pagBadge = v.pagamento === 'dinheiro'
       ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
       : '<span class="badge badge-blue"><i class="ti ti-credit-card"></i> Cartão</span>';
@@ -441,9 +482,10 @@ function renderListaVendas() {
 
     let prodResumo = '';
     if (v.itens?.length) {
+      const unidVenda = v.itens.reduce((a, i) => a + (i.qtd || 0), 0);
       prodResumo = v.itens.length === 1
         ? `${v.itens[0].produto_nome} × ${v.itens[0].qtd}`
-        : `${v.itens.length} itens`;
+        : `${v.itens.length} itens · ${unidVenda} un.`;
     } else if (v.produto_nome) {
       prodResumo = `${v.produto_nome} × ${v.qtd || 1}`;
     }
@@ -472,6 +514,84 @@ function renderListaVendas() {
         </div>
       </div>`;
   }).join('');
+}
+
+function renderListaRanking(lista, prodFiltro) {
+  const el = document.getElementById('vl-ranking');
+  const subEl = document.getElementById('vl-ranking-sub');
+  if (!el) return;
+
+  const agrup = {};
+  lista.forEach(v => {
+    if (v.itens?.length) {
+      v.itens.forEach(i => {
+        const key = i.produto_nome;
+        if (!agrup[key]) agrup[key] = { qtd: 0, total: 0 };
+        agrup[key].qtd += i.qtd || 0;
+        agrup[key].total += (i.preco_unitario || 0) * (i.qtd || 0);
+      });
+    } else if (v.produto_nome) {
+      const key = v.produto_nome;
+      if (!agrup[key]) agrup[key] = { qtd: 0, total: 0 };
+      agrup[key].qtd += v.qtd || 1;
+      agrup[key].total += v.total || 0;
+    }
+  });
+
+  const ranking = Object.entries(agrup).sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 8);
+  const maxQtd = ranking.length ? ranking[0][1].qtd : 0;
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+  if (subEl) {
+    const totalUnid = ranking.reduce((s, [, d]) => s + d.qtd, 0);
+    subEl.textContent = totalUnid ? `· ${totalUnid} unidades` : '';
+  }
+
+  if (!ranking.length) {
+    el.innerHTML = '<div class="empty"><i class="ti ti-trophy"></i>Sem vendas no período.</div>';
+    return;
+  }
+
+  el.innerHTML = ranking.map(([nome, d]) => {
+    const hl = prodFiltro && nome === prodFiltro;
+    return `
+      <div class="dash-rank-item${hl ? ' dash-rank-item--hl' : ''}" onclick="selectRankingProduto('${nome.replace(/'/g, "\\'")}')">
+        <div class="dash-rank-header">
+          <span class="dash-rank-name"><i class="ti ti-cup" style="color:var(--blue)"></i> ${nome}</span>
+          <span class="dash-rank-val">×${d.qtd} <small>${fmt$(d.total)}</small></span>
+        </div>
+        <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${maxQtd ? Math.round((d.qtd / maxQtd) * 100) : 0}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+function selectRankingProduto(nome) {
+  const sel = document.getElementById('vl-filtro-produto');
+  if (sel) {
+    if (!Array.from(sel.options).some(o => o.value === nome)) {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = nome;
+      sel.appendChild(opt);
+    }
+    sel.value = nome;
+    renderListaVendas();
+  }
+}
+
+function preencherFiltroProduto() {
+  const sel = document.getElementById('vl-filtro-produto');
+  if (!sel) return;
+  const prods = new Set();
+  vendas.forEach(v => {
+    if (v.itens?.length) v.itens.forEach(i => prods.add(i.produto_nome));
+    else if (v.produto_nome) prods.add(v.produto_nome);
+  });
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">Todos os produtos</option>' +
+    [...prods].sort((a, b) => a.localeCompare(b, 'pt-BR')).map(p =>
+      `<option value="${p.replace(/"/g, '&quot;')}">${p}</option>`).join('');
+  sel.value = atual;
 }
 
 function openVendaDetalhe(vendaId) {

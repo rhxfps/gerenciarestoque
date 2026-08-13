@@ -662,6 +662,20 @@
                 <option value="delivery">Delivery</option>
               </select>
             </div>
+            <div class="vl-filtro-group">
+              <label>Produto</label>
+              <select id="vl-filtro-produto" onchange="renderListaVendas()">
+                <option value="">Todos os produtos</option>
+              </select>
+            </div>
+            <div class="vl-filtro-group">
+              <label>De</label>
+              <input type="date" id="vl-filtro-de" onchange="renderListaVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Até</label>
+              <input type="date" id="vl-filtro-ate" onchange="renderListaVendas()">
+            </div>
             <span id="vl-count" class="vl-count"></span>
           </div>
         </div>
@@ -692,6 +706,20 @@
               <span class="vl-kpi-sub">por venda</span>
             </div>
           </div>
+          <div class="vl-kpi">
+            <div class="vl-kpi-icon"><i class="ti ti-box"></i></div>
+            <div class="vl-kpi-body">
+              <span class="vl-kpi-label">Unidades</span>
+              <span class="vl-kpi-value" id="vl-kpi-unid">0</span>
+              <span class="vl-kpi-sub">itens vendidos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mais vendidos no período -->
+        <div class="card vl-ranking-card">
+          <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos no período <span id="vl-ranking-sub" class="card-title-sub"></span></div>
+          <div id="vl-ranking" class="dash-ranking"></div>
         </div>
 
         <!-- Lista de vendas -->

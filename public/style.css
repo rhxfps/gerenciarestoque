@@ -2842,11 +2842,14 @@ tbody tr:hover td { background: var(--blue-50); }
   color: var(--text-muted);
 }
 
-.vl-filtro-group select {
+.vl-filtro-group select,
+.vl-filtro-group input[type="date"] {
   width: 145px;
   padding: 8px 12px;
   font-size: 13px;
   border-radius: var(--radius-md);
+  font-family: inherit;
+  color: var(--text-primary);
 }
 
 .vl-count {
@@ -2864,7 +2867,7 @@ tbody tr:hover td { background: var(--blue-50); }
 /* KPI strip — coloridos como o dashboard */
 .vl-kpi-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 1.25rem;
 }
@@ -2939,6 +2942,32 @@ tbody tr:hover td { background: var(--blue-50); }
 .vl-kpi-sub {
   font-size: 10px;
   color: rgba(255,255,255,.55);
+}
+
+/* ranking de produtos vendidos */
+.vl-ranking-card {
+  margin-bottom: 1.25rem;
+}
+.card-title-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.dash-rank-item--hl {
+  background: rgba(37,99,235,.07);
+  border: 1px solid rgba(37,99,235,.45);
+  border-radius: var(--radius-md);
+}
+.dash-rank-item--hl .dash-rank-name { color: var(--blue); font-weight: 800; }
+.dash-rank-val small {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 /* ============================================================
@@ -3196,14 +3225,13 @@ tbody tr:hover td { background: var(--blue-50); }
    ============================================================ */
 @media (max-width: 720px) {
   .vl-kpi-row { grid-template-columns: 1fr 1fr; }
-  .vl-kpi:last-child { grid-column: 1 / -1; }
 }
 
 @media (max-width: 600px) {
   .vl-kpi-row { grid-template-columns: 1fr; }
-  .vl-kpi:last-child { grid-column: auto; }
   .vl-filtros-row { gap: 8px; }
-  .vl-filtro-group select { width: 120px; }
+  .vl-filtro-group select,
+  .vl-filtro-group input[type="date"] { width: 120px; }
   .vl-card-right { display: none; }
   .vl-card-top { flex-wrap: nowrap; }
 }
