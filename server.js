@@ -372,6 +372,38 @@ app.post('/api/movimentacoes', autenticar, async (req, res) => {
 });
 
 // ==================== VENDAS ====================
+// Descontar 1 copo do estoque por açaí vendido/consumido (tamanho em ml)
+async function baixarCopoAcai(item, obs = 'Açaí') {
+  const nome = String(item.produtoNome || '').toLowerCase();
+  if (!nome.startsWith('açaí') && !nome.startsWith('acai')) return;
+
+  const m = nome.match(/(\d+)\s*ml/);
+  if (!m) return;
+
+  const ml = m[1];
+  const { data: copo } = await supabase
+    .from('produtos')
+    .select('id, qtd')
+    .eq('nome', `Copo ${ml}ml`)
+    .maybeSingle();
+  if (!copo) return;
+
+  await supabase
+    .from('produtos')
+    .update({ qtd: Math.max(parseFloat(copo.qtd || 0) - item.qtd, 0) })
+    .eq('id', copo.id);
+
+  await supabase
+    .from('movimentacoes')
+    .insert([{
+      tipo: 'saida',
+      produto_id: copo.id,
+      produto_nome: `Copo ${ml}ml`,
+      qtd: item.qtd,
+      obs
+    }]);
+}
+
 app.get('/api/vendas', autenticar, async (req, res) => {
   try {
     const { data: vendas, error: vendasError } = await supabase
@@ -446,6 +478,8 @@ app.post('/api/vendas', autenticar, async (req, res) => {
             obs: `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}`
           }]);
       }
+
+      await baixarCopoAcai(item, `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}`);
     }
 
     res.json({ ...venda, itens });
@@ -579,6 +613,8 @@ app.post('/api/consumo', autenticar, async (req, res) => {
             obs: 'Consumo funcionário'
           }]);
       }
+
+      await baixarCopoAcai(item, 'Consumo funcionário');
     }
 
     res.json({ ...consumo, itens, acimaLimite });
