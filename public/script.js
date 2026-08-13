@@ -471,7 +471,16 @@ function renderListaVendas() {
     return;
   }
 
-  container.innerHTML = listaFiltrada.map(v => {
+  let html = '';
+  let ultimoDia = null;
+  listaFiltrada.forEach(v => {
+    const dia = new Date(v.data);
+    const chaveDia = dia.toDateString();
+    if (chaveDia !== ultimoDia) {
+      ultimoDia = chaveDia;
+      html += `<div class="vl-dia"><i class="ti ti-calendar"></i>${rotuloDia(dia)}</div>`;
+    }
+
     const total = fmt$(v.total);
     const pagBadge = v.pagamento === 'dinheiro'
       ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
@@ -481,28 +490,34 @@ function renderListaVendas() {
       : '<span class="badge badge-gray"><i class="ti ti-shopping-bag"></i> Balcão</span>';
 
     let prodResumo = '';
+    let nUnid = 0;
     if (v.itens?.length) {
-      const unidVenda = v.itens.reduce((a, i) => a + (i.qtd || 0), 0);
+      nUnid = v.itens.reduce((a, i) => a + (i.qtd || 0), 0);
       prodResumo = v.itens.length === 1
         ? `${v.itens[0].produto_nome} × ${v.itens[0].qtd}`
-        : `${v.itens.length} itens · ${unidVenda} un.`;
+        : `${v.itens.length} itens · ${nUnid} un.`;
     } else if (v.produto_nome) {
-      prodResumo = `${v.produto_nome} × ${v.qtd || 1}`;
+      nUnid = v.qtd || 1;
+      prodResumo = `${v.produto_nome} × ${nUnid}`;
     }
 
     const numVenda = v.id ? `#${String(v.id).padStart(4,'0')}` : '';
     const pagClass = v.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
 
-    return `
+    html += `
       <div class="vl-card ${pagClass}" onclick="openVendaDetalhe(${v.id})">
         <div class="vl-card-inner">
           <div class="vl-card-left">
             <div class="vl-card-top">
               <span class="vl-card-valor">${total}</span>
               ${numVenda ? `<span class="vl-card-num">${numVenda}</span>` : ''}
+              ${nUnid ? `<span class="vl-card-num vl-card-unid"><i class="ti ti-box"></i> ${nUnid} un.</span>` : ''}
             </div>
             <div class="vl-card-prod">${prodResumo}</div>
-            <div class="vl-card-data"><i class="ti ti-clock"></i>${fmt(v.data)}</div>
+            <div class="vl-card-data">
+              <i class="ti ti-clock"></i>${fmt(v.data)}
+              ${v.plataforma ? `<span class="vl-card-plataforma"><i class="ti ti-device-mobile"></i>${v.plataforma}</span>` : ''}
+            </div>
           </div>
           <div class="vl-card-right">
             <div class="vl-card-badges">
@@ -513,7 +528,18 @@ function renderListaVendas() {
           </div>
         </div>
       </div>`;
-  }).join('');
+  });
+
+  container.innerHTML = html;
+}
+
+function rotuloDia(d) {
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const ontem = new Date(hoje); ontem.setDate(ontem.getDate() - 1);
+  const dia = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (dia.getTime() === hoje.getTime()) return 'Hoje';
+  if (dia.getTime() === ontem.getTime()) return 'Ontem';
+  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
 }
 
 function renderListaRanking(lista, prodFiltro) {
@@ -598,44 +624,58 @@ function openVendaDetalhe(vendaId) {
   const venda = vendas.find(v => v.id === vendaId);
   if (!venda) return;
 
-  const total = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(venda.total || 0);
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  const total = fmt$(venda.total);
   const pagBadge = venda.pagamento === 'dinheiro'
-    ? '<span class="badge badge-green">Dinheiro</span>'
-    : '<span class="badge badge-blue">Cartão</span>';
+    ? '<span class="badge badge-green"><i class="ti ti-cash"></i> Dinheiro</span>'
+    : '<span class="badge badge-blue"><i class="ti ti-credit-card"></i> Cartão</span>';
   const tipoBadge = venda.delivery
-    ? '<span class="badge badge-amber">Delivery</span>'
-    : '<span class="badge badge-gray">Balcão</span>';
+    ? '<span class="badge badge-amber"><i class="ti ti-delivery"></i> Delivery</span>'
+    : '<span class="badge badge-gray"><i class="ti ti-shopping-bag"></i> Balcão</span>';
 
-  let itensHTML = '';
+  let itens = [];
   if (venda.itens?.length) {
-    itensHTML = venda.itens.map(i => {
-      const sub = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format((i.preco_unitario || 0) * i.qtd);
-      return `<div class="vd-item">
-        <span class="vd-item-nome">${i.produto_nome}${i.recheio ? ` <small>(${i.recheio})</small>` : ''}</span>
-        <span class="vd-item-qty">× ${i.qtd}</span>
-        <span class="vd-item-sub">${sub}</span>
-      </div>`;
-    }).join('');
+    itens = venda.itens;
   } else if (venda.produto_nome) {
-    const sub = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(venda.total || 0);
-    itensHTML = `<div class="vd-item">
-      <span class="vd-item-nome">${venda.produto_nome}</span>
-      <span class="vd-item-qty">× ${venda.qtd || 1}</span>
-      <span class="vd-item-sub">${sub}</span>
-    </div>`;
+    itens = [{ produto_nome: venda.produto_nome, qtd: venda.qtd || 1, preco_unitario: venda.total || 0 }];
   }
 
+  const nItens = itens.length;
+  const nUnid = itens.reduce((s, i) => s + (i.qtd || 0), 0);
+
+  const itensHTML = itens.length
+    ? itens.map(i => {
+        const sub = fmt$((i.preco_unitario || 0) * i.qtd);
+        return `<div class="vd-item">
+          <div class="vd-item-ico"><i class="ti ti-basket"></i></div>
+          <span class="vd-item-nome">${i.produto_nome}${i.recheio ? `<small>${i.recheio}</small>` : ''}</span>
+          <span class="vd-item-qty">× ${i.qtd}</span>
+          <span class="vd-item-sub">${sub}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty" style="padding:1rem">Sem detalhes de itens</div>';
+
+  const numVenda = venda.id ? `#${String(venda.id).padStart(4,'0')}` : 'Venda';
+  const dt = new Date(venda.data);
+  const dataHora = `${dt.toLocaleDateString('pt-BR')} às ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
   document.getElementById('venda-detalhe-body').innerHTML = `
-    <div class="vd-meta">
-      <div class="vd-meta-row"><i class="ti ti-clock"></i> ${fmt(venda.data)}</div>
-      <div class="vd-meta-row">${pagBadge} ${tipoBadge}</div>
-      ${venda.plataforma ? `<div class="vd-meta-row"><i class="ti ti-device-mobile"></i> ${venda.plataforma}</div>` : ''}
-      ${venda.obs ? `<div class="vd-meta-row"><i class="ti ti-note"></i> ${venda.obs}</div>` : ''}
+    <div class="vd-strip">
+      <div class="vd-strip-left">
+        <div class="vd-strip-num">${numVenda}</div>
+        <div class="vd-strip-data"><i class="ti ti-clock"></i>${dataHora}</div>
+        ${venda.plataforma ? `<div class="vd-strip-data"><i class="ti ti-device-mobile"></i>${venda.plataforma}</div>` : ''}
+      </div>
+      <div class="vd-strip-right">
+        <div class="vd-strip-total">${total}</div>
+        <div class="vd-strip-badges">${pagBadge} ${tipoBadge}</div>
+      </div>
     </div>
-    <div class="vd-itens-title">Itens</div>
-    <div class="vd-itens">${itensHTML || '<div class="empty" style="padding:1rem">Sem detalhes de itens</div>'}</div>
+    ${venda.obs ? `<div class="vd-obs"><i class="ti ti-note"></i> ${venda.obs}</div>` : ''}
+    <div class="vd-itens-title">Itens <span>${nItens} item(ns) · ${nUnid} un.</span></div>
+    <div class="vd-itens">${itensHTML}</div>
     <div class="vd-total">
-      <span>Total</span>
+      <span>Total da venda</span>
       <strong>${total}</strong>
     </div>`;
 
