@@ -38,7 +38,7 @@ let consumoTotalMes = 0;
 let consumoFuncionarios = [];
 let consumoUsuarios = [];
 let consumoUsuarioId = null;
-let consumoViewAtiva = 'visao';
+let adminTipoAtivo = 'usuarios';
 const LIMITE_CONSUMO = 100;
 
 const API_URL = '/api';
@@ -292,6 +292,7 @@ const titles = {
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
   consumo:      'Consumo',
+  admin:        'Admin',
   usuarios:     'Usuários'
 };
 
@@ -308,9 +309,19 @@ function nav(screen) {
     return;
   }
 
+  // Usuários agora fica dentro do Admin
+  if (screen === 'usuarios') {
+    adminTipoAtivo = 'usuarios';
+    screen = 'admin';
+  }
+
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen));
   document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === screen));
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === `screen-${screen}`));
+  const adminSection = document.getElementById('nav-admin-section');
+  if (adminSection) adminSection.classList.toggle('active', screen === 'admin');
+  const mobileAdmin = document.getElementById('mobile-admin-section');
+  if (mobileAdmin) mobileAdmin.classList.toggle('active', screen === 'admin');
   document.getElementById('topbar-title').textContent = titles[screen] || screen;
 
   if (screen === 'dashboard')    renderDashboardProfissional();
@@ -319,25 +330,19 @@ function nav(screen) {
   if (screen === 'lista-vendas') renderListaVendas();
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
-  if (screen === 'usuarios')     renderUsuarios();
+  if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
-    const toggle = document.getElementById('consumo-view-toggle');
-    if (toggle) toggle.style.display = (currentUser.role === 'dono') ? 'flex' : 'none';
-    if (currentUser.role === 'dono') {
-      setConsumoView(consumoViewAtiva);
-    } else {
-      consumoUsuarioId = currentUser.id;
-      const label = document.getElementById('c-quem-label');
-      if (label) label.textContent = currentUser.nome || 'Quem consumiu';
-      Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
-        renderConsumo();
-        renderConsumoItens();
-        atualizaConsumoPreview();
-        renderConsumoBars();
-      });
-    }
+    consumoUsuarioId = currentUser.id;
+    const label = document.getElementById('c-quem-label');
+    if (label) label.textContent = currentUser.nome || 'Quem consumiu';
+    Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
+      renderConsumo();
+      renderConsumoItens();
+      atualizaConsumoPreview();
+      renderConsumoBars();
+    });
   }
   if (screen === 'vendas') {
     vendaItens = [];
@@ -2353,52 +2358,27 @@ async function addVenda() {
   }
 }
 
-// ==================== CONSUMO (funcionários) ====================
-// Alterna a visão do dono: Minha compra (registrar consumo sem limite) ou Visão geral
-function setConsumoView(v) {
-  consumoViewAtiva = v;
-  const btnCompra = document.getElementById('consumo-toggle-compra');
-  const btnVisao = document.getElementById('consumo-toggle-visao');
-  if (btnCompra) btnCompra.classList.toggle('active', v === 'compra');
-  if (btnVisao) btnVisao.classList.toggle('active', v === 'visao');
-
-  if (v === 'compra') {
-    consumoItens = [];
-    consumoCategoriaAtiva = 'Todos';
-    consumoUsuarioId = currentUser.id;
-    const label = document.getElementById('c-quem-label');
-    if (label) label.textContent = currentUser.nome || 'Quem consumiu';
-    Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
-      renderConsumo();
-      renderConsumoItens();
-      atualizaConsumoPreview();
-      renderConsumoBars();
-    });
-  } else {
-    renderConsumoDono();
-  }
+// ==================== ADMIN (Usuários + Consumo do dono) ====================
+// Alterna a aba do Admin: Usuários ou Consumo (visão geral)
+function selectAdminTipo(tipo) {
+  adminTipoAtivo = tipo;
+  document.getElementById('admin-btn-usuarios').classList.toggle('active', tipo === 'usuarios');
+  document.getElementById('admin-btn-consumo').classList.toggle('active', tipo === 'consumo');
+  document.getElementById('admin-view-usuarios').style.display = tipo === 'usuarios' ? 'block' : 'none';
+  document.getElementById('admin-view-consumo').style.display = tipo === 'consumo' ? 'block' : 'none';
+  if (tipo === 'usuarios') renderUsuarios();
+  if (tipo === 'consumo') renderConsumoDono();
 }
 
 function renderConsumo() {
   const sc = document.getElementById('screen-consumo');
   if (sc) sc.classList.add('pdv-mode');
-  const funcView = document.getElementById('consumo-funcionario-view');
-  const donoView = document.getElementById('consumo-dono-view');
-  if (funcView) funcView.style.display = 'flex';
-  if (donoView) donoView.style.display = 'none';
   renderConsumoCategorias();
   renderConsumoGrid();
   renderConsumoBars();
 }
 
 async function renderConsumoDono() {
-  const sc = document.getElementById('screen-consumo');
-  if (sc) sc.classList.remove('pdv-mode');
-  const funcView = document.getElementById('consumo-funcionario-view');
-  const donoView = document.getElementById('consumo-dono-view');
-  if (funcView) funcView.style.display = 'none';
-  if (donoView) donoView.style.display = 'block';
-
   try {
     consumoFuncionarios = await apiRequest('/consumo/funcionarios');
   } catch (e) {

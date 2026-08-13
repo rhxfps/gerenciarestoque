@@ -59,9 +59,9 @@
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
-      <div class="nav-section" id="nav-admin-section"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
-      <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
+      <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
       <div class="nav-item" data-screen="usuarios" id="nav-usuarios"><i class="ti ti-users"></i> <span>Usuários</span></div>
+      <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="user-info">
@@ -116,7 +116,7 @@
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
-      <div class="mobile-nav-section" id="mobile-admin-section"><i class="ti ti-shield-cog"></i> Admin</div>
+      <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
       <div class="mobile-nav-item" data-screen="usuarios"><i class="ti ti-users"></i> Usuários</div>
     </nav>
@@ -928,18 +928,132 @@
         </div>
       </div>
 
-      <!-- CONSUMO (funcionários) -->
-      <div class="screen" id="screen-consumo">
-
-        <!-- Toggle do dono: Minha compra / Visão geral -->
-        <div class="consumo-view-toggle" id="consumo-view-toggle" style="display:none">
-          <button type="button" class="consumo-view-btn" id="consumo-toggle-compra" onclick="setConsumoView('compra')">
-            <i class="ti ti-wallet"></i> Minha compra
+      <!-- ADMIN (dono): Usuários + Consumo -->
+      <div class="screen" id="screen-admin">
+        <div class="reg-toggle">
+          <button class="reg-toggle-btn active" id="admin-btn-usuarios" onclick="selectAdminTipo('usuarios')">
+            <i class="ti ti-users"></i> Usuários
           </button>
-          <button type="button" class="consumo-view-btn" id="consumo-toggle-visao" onclick="setConsumoView('visao')">
-            <i class="ti ti-users"></i> Visão geral
+          <button class="reg-toggle-btn" id="admin-btn-consumo" onclick="selectAdminTipo('consumo')">
+            <i class="ti ti-wallet"></i> Consumo
           </button>
         </div>
+
+        <div id="admin-view-usuarios">
+          <div class="card">
+            <div class="section-header">
+              <h2>Usuários do sistema</h2>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span id="u-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <button class="btn btn-primary" onclick="toggleFormUsuario()" id="btn-toggle-form-usuario">
+                  <i class="ti ti-plus"></i> Novo usuário
+                </button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Nome</th><th>Usuário</th><th>Role</th><th></th></tr></thead>
+              <tbody id="tabela-usuarios"></tbody>
+            </table>
+            </div>
+            <div id="usuarios-empty" class="empty" style="display:none"><i class="ti ti-users"></i>Nenhum usuário cadastrado.</div>
+          </div>
+
+          <!-- Formulário de Novo Usuário -->
+          <div class="card" style="margin-top:1.25rem;display:none" id="card-form-usuario">
+            <div class="card-title"><i class="ti ti-plus"></i> Novo usuário</div>
+            <div class="form-row-2">
+              <div class="form-group"><label>Nome</label><input type="text" id="u-nome" placeholder="Nome completo"></div>
+              <div class="form-group"><label>Usuário</label><input type="text" id="u-email" placeholder="nome_de_usuario"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Senha</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" id="u-senha" placeholder="********" style="flex: 1;">
+                  <button class="btn" onclick="toggleUsuarioSenha('u-senha', 'u-icone-senha')">
+                    <i class="ti ti-eye" id="u-icone-senha"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group"><label>Role</label><select id="u-role">
+                <option value="funcionario">Funcionário</option>
+                <option value="dono">Dono</option>
+              </select></div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="addUsuario()"><i class="ti ti-check"></i> Cadastrar usuário</button>
+              <button class="btn" onclick="toggleFormUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Formulário de Edição de Usuário -->
+          <div class="card" style="margin-top:1.25rem;display:none" id="card-form-editar-usuario">
+            <div class="card-title"><i class="ti ti-edit"></i> Editar usuário</div>
+            <input type="hidden" id="editar-u-id">
+            <div class="form-row-2">
+              <div class="form-group"><label>Nome</label><input type="text" id="editar-u-nome" placeholder="Nome completo"></div>
+              <div class="form-group"><label>Usuário</label><input type="text" id="editar-u-usuario" placeholder="nome_de_usuario"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Senha</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" id="editar-u-senha" placeholder="Deixe vazio para manter a mesma senha" style="flex: 1;">
+                  <button class="btn" onclick="toggleUsuarioSenha('editar-u-senha', 'editar-u-icone-senha')">
+                    <i class="ti ti-eye" id="editar-u-icone-senha"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group"><label>Role</label><select id="editar-u-role">
+                <option value="funcionario">Funcionário</option>
+                <option value="dono">Dono</option>
+              </select></div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="editarUsuario()"><i class="ti ti-check"></i> Salvar alterações</button>
+              <button class="btn" onclick="cancelarEdicaoUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-view-consumo" style="display:none">
+          <div class="dash-kpi-grid">
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Usuários</span>
+                <span class="dash-kpi-value" id="cd-count">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-wallet"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Consumido no mês</span>
+                <span class="dash-kpi-value" id="cd-total">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Total de todos</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Média por usuário</span>
+                <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
+            <div class="cd-grid" id="cd-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONSUMO (funcionários) -->
+      <div class="screen" id="screen-consumo">
 
         <!-- ===== VISÃO DO FUNCIONÁRIO (compra) ===== -->
         <div id="consumo-funcionario-view">
@@ -1028,41 +1142,6 @@
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- ===== VISÃO DO DONO (consumo dos usuários) ===== -->
-        <div id="consumo-dono-view" style="display:none">
-          <div class="dash-kpi-grid">
-            <div class="dash-kpi dash-kpi--blue">
-              <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Usuários</span>
-                <span class="dash-kpi-value" id="cd-count">0</span>
-                <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
-              </div>
-            </div>
-            <div class="dash-kpi dash-kpi--indigo">
-              <div class="dash-kpi-icon"><i class="ti ti-wallet"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Consumido no mês</span>
-                <span class="dash-kpi-value" id="cd-total">R$ 0,00</span>
-                <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Total de todos</span>
-              </div>
-            </div>
-            <div class="dash-kpi dash-kpi--violet">
-              <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Média por usuário</span>
-                <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
-                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
-            <div class="cd-grid" id="cd-grid"></div>
           </div>
         </div>
 
@@ -1201,85 +1280,6 @@
           </div>
         </div>
 
-      </div>
-
-      <!-- USUÁRIOS -->
-      <div class="screen" id="screen-usuarios">
-        <div class="card">
-          <div class="section-header">
-            <h2>Usuários do sistema</h2>
-            <div style="display:flex;gap:10px;align-items:center">
-              <span id="u-count" style="font-size:12px;color:var(--text-secondary)"></span>
-              <button class="btn btn-primary" onclick="toggleFormUsuario()" id="btn-toggle-form-usuario">
-                <i class="ti ti-plus"></i> Novo usuário
-              </button>
-            </div>
-          </div>
-          <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Nome</th><th>Usuário</th><th>Role</th><th></th></tr></thead>
-            <tbody id="tabela-usuarios"></tbody>
-          </table>
-          </div>
-          <div id="usuarios-empty" class="empty" style="display:none"><i class="ti ti-users"></i>Nenhum usuário cadastrado.</div>
-        </div>
-        
-        <!-- Formulário de Novo Usuário -->
-        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-usuario">
-          <div class="card-title"><i class="ti ti-plus"></i> Novo usuário</div>
-          <div class="form-row-2">
-            <div class="form-group"><label>Nome</label><input type="text" id="u-nome" placeholder="Nome completo"></div>
-            <div class="form-group"><label>Usuário</label><input type="text" id="u-email" placeholder="nome_de_usuario"></div>
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label>Senha</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="password" id="u-senha" placeholder="********" style="flex: 1;">
-                <button class="btn" onclick="toggleUsuarioSenha('u-senha', 'u-icone-senha')">
-                  <i class="ti ti-eye" id="u-icone-senha"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-group"><label>Role</label><select id="u-role">
-              <option value="funcionario">Funcionário</option>
-              <option value="dono">Dono</option>
-            </select></div>
-          </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-primary" onclick="addUsuario()"><i class="ti ti-check"></i> Cadastrar usuário</button>
-            <button class="btn" onclick="toggleFormUsuario()"><i class="ti ti-x"></i> Cancelar</button>
-          </div>
-        </div>
-
-        <!-- Formulário de Edição de Usuário -->
-        <div class="card" style="margin-top:1.25rem;display:none" id="card-form-editar-usuario">
-          <div class="card-title"><i class="ti ti-edit"></i> Editar usuário</div>
-          <input type="hidden" id="editar-u-id">
-          <div class="form-row-2">
-            <div class="form-group"><label>Nome</label><input type="text" id="editar-u-nome" placeholder="Nome completo"></div>
-            <div class="form-group"><label>Usuário</label><input type="text" id="editar-u-usuario" placeholder="nome_de_usuario"></div>
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label>Senha</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="password" id="editar-u-senha" placeholder="Deixe vazio para manter a mesma senha" style="flex: 1;">
-                <button class="btn" onclick="toggleUsuarioSenha('editar-u-senha', 'editar-u-icone-senha')">
-                  <i class="ti ti-eye" id="editar-u-icone-senha"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-group"><label>Role</label><select id="editar-u-role">
-              <option value="funcionario">Funcionário</option>
-              <option value="dono">Dono</option>
-            </select></div>
-          </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-primary" onclick="editarUsuario()"><i class="ti ti-check"></i> Salvar alterações</button>
-            <button class="btn" onclick="cancelarEdicaoUsuario()"><i class="ti ti-x"></i> Cancelar</button>
-          </div>
-        </div>
       </div>
 
     </div>
