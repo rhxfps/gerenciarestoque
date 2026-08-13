@@ -822,17 +822,17 @@ tbody tr:hover td { background: var(--blue-50); }
 
 .toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 28px;
   right: 20px;
   display: flex;
   align-items: center;
   gap: 10px;
   background: #fff;
-  color: var(--text-primary);
-  padding: 10px 16px 10px 10px;
+  color: #0f172a;
+  padding: 12px 16px 12px 12px;
   border-radius: 14px;
   border-left: 4px solid var(--blue);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   opacity: 0;
   transform: translateY(14px) scale(.97);
@@ -840,7 +840,7 @@ tbody tr:hover td { background: var(--blue-50); }
   pointer-events: none;
   z-index: 99999;
   box-shadow: 0 12px 32px rgba(15, 23, 42, .22);
-  max-width: min(360px, calc(100vw - 40px));
+  max-width: min(380px, calc(100vw - 40px));
 }
 .toast.show { opacity: 1; transform: translateY(0) scale(1); }
 .toast .toast-ic {
@@ -854,7 +854,7 @@ tbody tr:hover td { background: var(--blue-50); }
   flex-shrink: 0;
   background: var(--blue);
 }
-.toast .toast-msg { min-width: 0; line-height: 1.4; }
+.toast .toast-msg { min-width: 0; line-height: 1.4; overflow-wrap: break-word; }
 .toast-success { border-left-color: #1D9E75; }
 .toast-success .toast-ic { background: #1D9E75; }
 .toast-error { border-left-color: #E5484D; }
@@ -1593,7 +1593,7 @@ tbody tr:hover td { background: var(--blue-50); }
   th, td { padding: 9px 10px; }
 
   /* toast bottom nav safe area */
-  .toast { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; justify-content: center; }
+  .toast { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; justify-content: center; }
 
   /* ---- PDV on mobile: stacked layout ---- */
   .content:has(#screen-vendas.active),
@@ -2111,6 +2111,13 @@ tbody tr:hover td { background: var(--blue-50); }
   --sidebar-hover:  rgba(59,130,246,.15);
   --sidebar-active: rgba(59,130,246,.25);
   --sidebar-border: rgba(59,130,246,.12);
+}
+
+/* dark: toast legível */
+[data-theme="dark"] .toast {
+  background: #1f2937;
+  color: #f1f5f9;
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
 }
 
 /* dark: sidebar accent */
