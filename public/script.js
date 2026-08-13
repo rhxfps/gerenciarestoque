@@ -396,6 +396,29 @@ function selectRegTipo(tipo) {
 }
 
 // ==================== LISTA DE VENDAS ====================
+// Acesso rápido por período (chips)
+function setListaPeriodo(p) {
+  const sel = document.getElementById('vl-filtro-periodo');
+  if (sel) sel.value = p;
+  // Limpa o período personalizado para não conflitar com o preset
+  const de = document.getElementById('vl-filtro-de');
+  const ate = document.getElementById('vl-filtro-ate');
+  if (de) de.value = '';
+  if (ate) ate.value = '';
+  atualizarChipsPeriodo();
+  renderListaVendas();
+}
+
+function atualizarChipsPeriodo() {
+  const deVal = document.getElementById('vl-filtro-de')?.value;
+  const ateVal = document.getElementById('vl-filtro-ate')?.value;
+  const periodo = document.getElementById('vl-filtro-periodo')?.value || 'semana';
+  const personalizado = deVal || ateVal;
+  document.querySelectorAll('.vl-chip').forEach(c => {
+    c.classList.toggle('active', !personalizado && c.dataset.periodo === periodo);
+  });
+}
+
 function renderListaVendas() {
   // Preferência salva do ranking
   const storedRank = localStorage.getItem('vl-mostrar-ranking');
@@ -404,6 +427,7 @@ function renderListaVendas() {
     if (chk) chk.checked = storedRank === '1';
   }
   toggleListaRanking();
+  atualizarChipsPeriodo();
 
   const periodo    = document.getElementById('vl-filtro-periodo')?.value || 'semana';
   const pagFiltro  = document.getElementById('vl-filtro-pag')?.value || '';

@@ -639,12 +639,18 @@
           <div class="vl-filtros-row">
             <div class="vl-filtro-group">
               <label>Período</label>
-              <select id="vl-filtro-periodo" onchange="renderListaVendas()">
+              <select id="vl-filtro-periodo" style="display:none">
                 <option value="hoje">Hoje</option>
                 <option value="semana" selected>Esta semana</option>
                 <option value="mes">Este mês</option>
                 <option value="tudo">Tudo</option>
               </select>
+              <div class="vl-chips">
+                <button type="button" class="vl-chip" data-periodo="hoje" onclick="setListaPeriodo('hoje')">Hoje</button>
+                <button type="button" class="vl-chip" data-periodo="semana" onclick="setListaPeriodo('semana')">7 dias</button>
+                <button type="button" class="vl-chip" data-periodo="mes" onclick="setListaPeriodo('mes')">1 mês</button>
+                <button type="button" class="vl-chip" data-periodo="tudo" onclick="setListaPeriodo('tudo')">Tudo</button>
+              </div>
             </div>
             <div class="vl-filtro-group">
               <label>Pagamento</label>
