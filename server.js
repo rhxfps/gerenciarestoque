@@ -543,6 +543,54 @@ app.post('/api/consumo', autenticar, async (req, res) => {
   }
 });
 
+app.get('/api/consumo/funcionarios', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  try {
+    const agora = new Date();
+    const inicio = inicioDoMesLocal(agora);
+
+    const { data: funcionarios, error: funcError } = await supabase
+      .from('usuarios')
+      .select('id, nome, usuario')
+      .eq('role', 'funcionario')
+      .order('nome');
+
+    if (funcError) throw funcError;
+
+    const resultado = [];
+    for (const f of funcionarios || []) {
+      const { data: consumos, error: consError } = await supabase
+        .from('consumos')
+        .select('*')
+        .eq('usuario_id', f.id)
+        .gte('data', inicio.toISOString())
+        .lte('data', agora.toISOString())
+        .order('data', { ascending: false });
+
+      if (consError) throw consError;
+
+      const comItens = [];
+      for (const c of consumos || []) {
+        const { data: itens } = await supabase
+          .from('consumo_itens')
+          .select('*')
+          .eq('consumo_id', c.id);
+        comItens.push({ ...c, itens: itens || [] });
+      }
+
+      const totalMes = (consumos || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
+      resultado.push({ ...f, totalMes, consumos: comItens });
+    }
+
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== CAIXA ====================
 app.get('/api/caixa', autenticar, async (req, res) => {
   try {

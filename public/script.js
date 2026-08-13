@@ -35,6 +35,7 @@ let consumoItens = [];
 let consumoCategoriaAtiva = 'Todos';
 let consumos = [];
 let consumoTotalMes = 0;
+let consumoFuncionarios = [];
 const LIMITE_CONSUMO = 100;
 
 const API_URL = '/api';
@@ -192,9 +193,7 @@ function updateMenuByRole() {
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) {
-      if (item === 'consumo') {
-        el.style.display = isDono ? 'none' : 'block';
-      } else if (item === 'vendas' || item === 'caixa') {
+      if (item === 'consumo' || item === 'vendas' || item === 'caixa') {
         el.style.display = 'block';
       } else {
         el.style.display = isDono ? 'block' : 'none';
@@ -206,12 +205,6 @@ function updateMenuByRole() {
   if (userRoleEl) {
     userRoleEl.textContent = currentUser.role === 'dono' ? 'Dono' : 'Funcionário';
   }
-
-  document.querySelectorAll('.mobile-nav-item').forEach(el => {
-    if (el.dataset.screen === 'consumo') {
-      el.style.display = currentUser.role === 'dono' ? 'none' : 'block';
-    }
-  });
 }
 
 // Carregar todos os dados
@@ -227,6 +220,12 @@ async function loadAllData() {
       usuarios = await apiRequest('/usuarios');
       const caixaResponse = await apiRequest('/caixa');
       caixas = caixaResponse.historico || [];
+      try {
+        consumoFuncionarios = await apiRequest('/consumo/funcionarios');
+      } catch (e) {
+        console.error('Erro ao carregar consumo dos funcionários:', e);
+        consumoFuncionarios = [];
+      }
     } else {
       try {
         const consumoResponse = await apiRequest('/consumo');
@@ -261,7 +260,7 @@ const titles = {
 
 function nav(screen) {
   if (screen === 'consumo') {
-    if (currentUser.role !== 'funcionario') {
+    if (currentUser.role !== 'dono' && currentUser.role !== 'funcionario') {
       toast('Acesso negado!', false);
       nav('vendas');
       return;
@@ -289,12 +288,16 @@ function nav(screen) {
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
-    loadPastelData().then(() => {
-      renderConsumo();
-      renderConsumoItens();
-      atualizaConsumoPreview();
-      renderConsumoBars();
-    });
+    if (currentUser.role === 'dono') {
+      renderConsumoDono();
+    } else {
+      loadPastelData().then(() => {
+        renderConsumo();
+        renderConsumoItens();
+        atualizaConsumoPreview();
+        renderConsumoBars();
+      });
+    }
   }
   if (screen === 'vendas') {
     vendaItens = [];
@@ -1920,9 +1923,112 @@ async function addVenda() {
 
 // ==================== CONSUMO (funcionários) ====================
 function renderConsumo() {
+  const sc = document.getElementById('screen-consumo');
+  if (sc) sc.classList.add('pdv-mode');
+  const funcView = document.getElementById('consumo-funcionario-view');
+  const donoView = document.getElementById('consumo-dono-view');
+  if (funcView) funcView.style.display = 'flex';
+  if (donoView) donoView.style.display = 'none';
   renderConsumoCategorias();
   renderConsumoGrid();
   renderConsumoBars();
+}
+
+async function renderConsumoDono() {
+  const sc = document.getElementById('screen-consumo');
+  if (sc) sc.classList.remove('pdv-mode');
+  const funcView = document.getElementById('consumo-funcionario-view');
+  const donoView = document.getElementById('consumo-dono-view');
+  if (funcView) funcView.style.display = 'none';
+  if (donoView) donoView.style.display = 'block';
+
+  try {
+    consumoFuncionarios = await apiRequest('/consumo/funcionarios');
+  } catch (e) {
+    console.error('Erro ao carregar consumo dos funcionários:', e);
+    consumoFuncionarios = [];
+  }
+
+  const totalGeral = consumoFuncionarios.reduce((s, f) => s + (f.totalMes || 0), 0);
+  const media = consumoFuncionarios.length ? totalGeral / consumoFuncionarios.length : 0;
+
+  document.getElementById('cd-count').textContent = consumoFuncionarios.length;
+  document.getElementById('cd-total').textContent = fmtMoeda(totalGeral);
+  document.getElementById('cd-media').textContent = fmtMoeda(media);
+
+  const grid = document.getElementById('cd-grid');
+  if (!consumoFuncionarios.length) {
+    grid.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum funcionário cadastrado ainda.</div>';
+    return;
+  }
+
+  grid.innerHTML = consumoFuncionarios.map(f => {
+    const pct = Math.min(((f.totalMes || 0) / LIMITE_CONSUMO) * 100, 100);
+    const restante = Math.max(LIMITE_CONSUMO - (f.totalMes || 0), 0);
+    const nConsumos = f.consumos?.length || 0;
+    const limite = (f.totalMes || 0) >= LIMITE_CONSUMO
+      ? '<span class="badge badge-red">Limite atingido</span>'
+      : (nConsumos ? `<span class="badge badge-blue">${nConsumos} consumo${nConsumos === 1 ? '' : 's'}</span>` : '');
+    return `
+      <div class="cd-card" onclick="openConsumoDonoDetalhe(${f.id})">
+        <div class="cd-card-top">
+          <div class="cd-avatar"><i class="ti ti-user-circle"></i></div>
+          <div class="cd-info">
+            <div class="cd-nome">${f.nome}</div>
+            <div class="cd-user">@${f.usuario}</div>
+          </div>
+          <div class="cd-valor">${fmtMoeda(f.totalMes || 0)}</div>
+        </div>
+        <div class="progress-bar cd-progress">
+          <div class="progress-fill" style="width:${pct}%;background:var(--blue)"></div>
+        </div>
+        <div class="cd-card-foot">
+          <span>${fmtMoeda(restante)} restantes</span>
+          <span>${limite}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openConsumoDonoDetalhe(usuarioId) {
+  const f = consumoFuncionarios.find(x => x.id === usuarioId);
+  if (!f) return;
+
+  document.getElementById('cd-detalhe-nome').textContent = f.nome;
+  document.getElementById('cd-detalhe-total').textContent = fmtMoeda(f.totalMes || 0);
+
+  const body = document.getElementById('consumo-detalhe-body');
+  if (!f.consumos?.length) {
+    body.innerHTML = '<div class="empty"><i class="ti ti-wallet"></i>Nenhum consumo registrado neste mês.</div>';
+  } else {
+    body.innerHTML = f.consumos.map(c => {
+      const itensHTML = (c.itens || []).map(i => {
+        const sub = fmtMoeda((i.preco_unitario || 0) * i.qtd);
+        return `<div class="vd-item">
+          <span class="vd-item-nome">${i.produto_nome}${i.recheio ? ` <small>(${i.recheio})</small>` : ''}</span>
+          <span class="vd-item-qty">× ${i.qtd}</span>
+          <span class="vd-item-sub">${sub}</span>
+        </div>`;
+      }).join('') || '<div class="empty" style="padding:.5rem">Sem itens</div>';
+
+      return `
+        <div class="cd-consumo">
+          <div class="cd-consumo-header">
+            <span><i class="ti ti-clock"></i> ${fmt(c.data)}</span>
+            <strong>${fmtMoeda(c.total || 0)}</strong>
+          </div>
+          ${c.obs ? `<div class="cd-consumo-obs"><i class="ti ti-note"></i> ${c.obs}</div>` : ''}
+          <div class="vd-itens">${itensHTML}</div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('consumo-detalhe-modal').classList.add('show');
+}
+
+function closeConsumoDonoDetalhe(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('consumo-detalhe-modal').classList.remove('show');
 }
 
 function renderConsumoCategorias() {

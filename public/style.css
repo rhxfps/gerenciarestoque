@@ -286,6 +286,96 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
 }
 .consumo-status-foot span:first-child { font-weight: 700; color: var(--green); }
 
+/* ---- visão do dono: consumo dos funcionários ---- */
+.cd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 0.5rem;
+}
+.cd-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.cd-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--blue);
+}
+.cd-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cd-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cd-avatar i { font-size: 22px; color: var(--blue); }
+.cd-info { flex: 1; min-width: 0; }
+.cd-nome { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cd-user { font-size: 11px; color: var(--text-muted); }
+.cd-valor { font-size: 16px; font-weight: 800; color: var(--blue); white-space: nowrap; }
+.cd-progress { margin-top: 0; }
+.cd-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.cd-card-foot span:first-child { font-weight: 600; }
+
+/* modal detalhe do consumo (dono) */
+.consumo-detalhe-content { max-width: 480px; }
+.consumo-detalhe-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: var(--blue-light);
+  border-radius: var(--radius-md);
+  margin: 0 1.25rem 0.75rem;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.consumo-detalhe-total strong { font-size: 18px; color: var(--blue); }
+.cd-consumo {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.cd-consumo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.cd-consumo-header strong { font-size: 15px; color: var(--blue); }
+.cd-consumo-obs {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
 /* ============================================================
    TOPBAR
    ============================================================ */
@@ -765,6 +855,29 @@ tbody tr:hover td { background: var(--blue-50); }
   display: flex !important;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
+}
+
+/* PDV da tela de consumo (mesmo tratamento da tela de vendas) */
+.content:has(#screen-consumo.pdv-mode.active) {
+  max-width: none;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  height: calc(100dvh - 56px);
+  overflow: hidden;
+}
+
+#screen-consumo.pdv-mode.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+#screen-consumo.pdv-mode.active #consumo-funcionario-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   min-height: 0;
 }
 
@@ -1300,6 +1413,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
   .content { padding: 1rem; }
   .content:has(#screen-vendas.active) { padding: 0.5rem 0.75rem; height: calc(100dvh - 56px); }
+  .content:has(#screen-consumo.pdv-mode.active) { padding: 0.5rem 0.75rem; height: calc(100dvh - 56px); }
 }
 
 /* ============================================================
@@ -1342,13 +1456,15 @@ tbody tr:hover td { background: var(--blue-50); }
   .toast { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; max-width: none; text-align: center; }
 
   /* ---- PDV on mobile: stacked layout ---- */
-  .content:has(#screen-vendas.active) {
+  .content:has(#screen-vendas.active),
+  .content:has(#screen-consumo.pdv-mode.active) {
     padding: 0;
     height: auto;
     overflow: visible;
   }
 
-  #screen-vendas.active {
+  #screen-vendas.active,
+  #screen-consumo.pdv-mode.active {
     display: flex !important;
     flex-direction: column;
     height: auto;
@@ -1378,13 +1494,18 @@ tbody tr:hover td { background: var(--blue-50); }
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 
-  /* cart */
+  /* cart — fixo no rodapé para não precisar descer a página */
   .vendas-carrinho {
     height: auto;
     max-height: none;
     overflow: visible;
     border-radius: var(--radius-md);
     padding: 0.75rem !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    background: var(--bg-primary);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.12);
   }
 
   .vendas-carrinho-body {
