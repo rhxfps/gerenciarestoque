@@ -38,6 +38,7 @@ let consumoTotalMes = 0;
 let consumoFuncionarios = [];
 let consumoUsuarios = [];
 let consumoUsuarioId = null;
+let consumoViewAtiva = 'visao';
 const LIMITE_CONSUMO = 100;
 
 const API_URL = '/api';
@@ -246,14 +247,17 @@ async function loadAllData() {
     ]);
 
     if (currentUser.role === 'dono') {
-      const [usr, caixaRes, consumoFunc] = await Promise.all([
+      const [usr, caixaRes, consumoFunc, meuConsumo] = await Promise.all([
         apiRequest('/usuarios').catch(() => []),
         apiRequest('/caixa').catch(() => ({ historico: [] })),
-        apiRequest('/consumo/funcionarios').catch(() => [])
+        apiRequest('/consumo/funcionarios').catch(() => []),
+        apiRequest('/consumo').catch(() => ({ consumos: [], totalMes: 0 }))
       ]);
       usuarios = usr || [];
       caixas = (caixaRes && caixaRes.historico) || [];
       consumoFuncionarios = consumoFunc || [];
+      consumos = (meuConsumo && meuConsumo.consumos) || [];
+      consumoTotalMes = (meuConsumo && meuConsumo.totalMes) || 0;
     } else {
       const [consumoRes, consumoUsr] = await Promise.all([
         apiRequest('/consumo').catch(() => ({ consumos: [], totalMes: 0 })),
@@ -311,8 +315,10 @@ function nav(screen) {
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
+    const toggle = document.getElementById('consumo-view-toggle');
+    if (toggle) toggle.style.display = (currentUser.role === 'dono') ? 'flex' : 'none';
     if (currentUser.role === 'dono') {
-      renderConsumoDono();
+      setConsumoView(consumoViewAtiva);
     } else {
       consumoUsuarioId = currentUser.id;
       const label = document.getElementById('c-quem-label');
@@ -2134,6 +2140,31 @@ async function addVenda() {
 }
 
 // ==================== CONSUMO (funcionários) ====================
+// Alterna a visão do dono: Minha compra (registrar consumo sem limite) ou Visão geral
+function setConsumoView(v) {
+  consumoViewAtiva = v;
+  const btnCompra = document.getElementById('consumo-toggle-compra');
+  const btnVisao = document.getElementById('consumo-toggle-visao');
+  if (btnCompra) btnCompra.classList.toggle('active', v === 'compra');
+  if (btnVisao) btnVisao.classList.toggle('active', v === 'visao');
+
+  if (v === 'compra') {
+    consumoItens = [];
+    consumoCategoriaAtiva = 'Todos';
+    consumoUsuarioId = currentUser.id;
+    const label = document.getElementById('c-quem-label');
+    if (label) label.textContent = currentUser.nome || 'Quem consumiu';
+    Promise.all([loadPastelData(), loadAcaiData()]).then(() => {
+      renderConsumo();
+      renderConsumoItens();
+      atualizaConsumoPreview();
+      renderConsumoBars();
+    });
+  } else {
+    renderConsumoDono();
+  }
+}
+
 function renderConsumo() {
   const sc = document.getElementById('screen-consumo');
   if (sc) sc.classList.add('pdv-mode');
@@ -2170,32 +2201,38 @@ async function renderConsumoDono() {
 
   const grid = document.getElementById('cd-grid');
   if (!consumoFuncionarios.length) {
-    grid.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum funcionário cadastrado ainda.</div>';
+    grid.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum usuário cadastrado ainda.</div>';
     return;
   }
 
   grid.innerHTML = consumoFuncionarios.map(f => {
-    const pct = Math.min(((f.totalMes || 0) / LIMITE_CONSUMO) * 100, 100);
-    const restante = Math.max(LIMITE_CONSUMO - (f.totalMes || 0), 0);
+    const isDono = f.role === 'dono';
     const nConsumos = f.consumos?.length || 0;
-    const limite = (f.totalMes || 0) >= LIMITE_CONSUMO
-      ? '<span class="badge badge-red">Limite atingido</span>'
-      : (nConsumos ? `<span class="badge badge-blue">${nConsumos} consumo${nConsumos === 1 ? '' : 's'}</span>` : '');
+    const pct = isDono ? 0 : Math.min(((f.totalMes || 0) / LIMITE_CONSUMO) * 100, 100);
+    const restante = isDono ? 0 : Math.max(LIMITE_CONSUMO - (f.totalMes || 0), 0);
+    const limite = isDono
+      ? '<span class="badge badge-blue">Sem limite</span>'
+      : ((f.totalMes || 0) >= LIMITE_CONSUMO
+        ? '<span class="badge badge-red">Limite atingido</span>'
+        : (nConsumos ? `<span class="badge badge-blue">${nConsumos} consumo${nConsumos === 1 ? '' : 's'}</span>` : ''));
     return `
       <div class="cd-card" onclick="openConsumoDonoDetalhe(${f.id})">
         <div class="cd-card-top">
-          <div class="cd-avatar"><i class="ti ti-user-circle"></i></div>
+          <div class="cd-avatar">${isDono ? '<i class="ti ti-crown"></i>' : '<i class="ti ti-user-circle"></i>'}</div>
           <div class="cd-info">
-            <div class="cd-nome">${f.nome}</div>
+            <div class="cd-nome">${f.nome}${isDono ? ' <span class="cd-role-tag">Dono</span>' : ''}</div>
             <div class="cd-user">@${f.usuario}</div>
           </div>
           <div class="cd-valor">${fmtMoeda(f.totalMes || 0)}</div>
         </div>
+        ${isDono ? '' : `
         <div class="progress-bar cd-progress">
           <div class="progress-fill" style="width:${pct}%;background:var(--blue)"></div>
-        </div>
+        </div>`}
         <div class="cd-card-foot">
-          <span>${fmtMoeda(restante)} restantes</span>
+          <span>${isDono
+            ? (nConsumos ? `${nConsumos} consumo${nConsumos === 1 ? '' : 's'} no mês` : 'Nenhum consumo no mês')
+            : `${fmtMoeda(restante)} restantes`}</span>
           <span>${limite}</span>
         </div>
       </div>`;
@@ -2254,7 +2291,7 @@ async function openConsumoQuem() {
 
   const body = document.getElementById('consumo-quem-body');
   if (!consumoUsuarios.length) {
-    body.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum funcionário cadastrado.</div>';
+    body.innerHTML = '<div class="empty"><i class="ti ti-users"></i>Nenhum usuário cadastrado.</div>';
   } else {
     body.innerHTML = consumoUsuarios.map(u => `
       <div class="consumo-quem-row${u.id === consumoUsuarioId ? ' active' : ''}" onclick="selectConsumoQuem(${u.id})">
@@ -2447,8 +2484,8 @@ function atualizaConsumoPreview() {
   }, 0);
   if (preview) preview.textContent = fmtMoeda(total);
 
-  // Aviso quando o carrinho passa do limite do mês (somente para o próprio usuário)
-  if (!consumoUsuarioId || consumoUsuarioId === currentUser.id) {
+  // Aviso quando o carrinho passa do limite do mês (somente funcionários, para o próprio usuário)
+  if (currentUser.role === 'funcionario' && (!consumoUsuarioId || consumoUsuarioId === currentUser.id)) {
     const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
     const acima = total > disponivel;
     if (preview) preview.classList.toggle('over-limit', acima);
@@ -2470,9 +2507,9 @@ async function addConsumo() {
     return acumulador + (item.qtd * item.precoUnitario);
   }, 0);
 
-  // Não bloqueia: apenas notifica quando estiver passando do limite
+  // Não bloqueia: apenas notifica quando estiver passando do limite (só funcionários têm limite)
   let acimaLimite = false;
-  if (!consumoUsuarioId || consumoUsuarioId === currentUser.id) {
+  if (currentUser.role === 'funcionario' && (!consumoUsuarioId || consumoUsuarioId === currentUser.id)) {
     const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
     acimaLimite = totalConsumo > disponivel;
     if (acimaLimite) {
@@ -2513,14 +2550,17 @@ async function addConsumo() {
 
 function renderConsumoBars() {
   const usado = consumoTotalMes || 0;
-  const pct = Math.min((usado / LIMITE_CONSUMO) * 100, 100);
-  const restante = Math.max(LIMITE_CONSUMO - usado, 0);
-  const restText = restante > 0 ? `${fmtMoeda(restante)} restantes` : 'Limite atingido';
+  const temLimite = currentUser.role === 'funcionario';
+  const pct = temLimite ? Math.min((usado / LIMITE_CONSUMO) * 100, 100) : (usado > 0 ? 100 : 0);
+  const restante = temLimite ? Math.max(LIMITE_CONSUMO - usado, 0) : 0;
+  const restText = temLimite
+    ? (restante > 0 ? `${fmtMoeda(restante)} restantes` : 'Limite atingido')
+    : 'Sem limite mensal';
 
   // Barra na sidebar (parte da account)
   const wrapper = document.getElementById('consumo-bar-wrapper');
   if (wrapper) {
-    wrapper.style.display = currentUser.role === 'funcionario' ? 'block' : 'none';
+    wrapper.style.display = (currentUser.role === 'funcionario' || currentUser.role === 'dono') ? 'block' : 'none';
   }
   const fillSide = document.getElementById('consumo-bar-fill');
   if (fillSide) fillSide.style.width = pct + '%';

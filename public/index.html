@@ -894,6 +894,16 @@
       <!-- CONSUMO (funcionários) -->
       <div class="screen" id="screen-consumo">
 
+        <!-- Toggle do dono: Minha compra / Visão geral -->
+        <div class="consumo-view-toggle" id="consumo-view-toggle" style="display:none">
+          <button type="button" class="consumo-view-btn" id="consumo-toggle-compra" onclick="setConsumoView('compra')">
+            <i class="ti ti-wallet"></i> Minha compra
+          </button>
+          <button type="button" class="consumo-view-btn" id="consumo-toggle-visao" onclick="setConsumoView('visao')">
+            <i class="ti ti-users"></i> Visão geral
+          </button>
+        </div>
+
         <!-- ===== VISÃO DO FUNCIONÁRIO (compra) ===== -->
         <div id="consumo-funcionario-view">
 
@@ -984,15 +994,15 @@
           </div>
         </div>
 
-        <!-- ===== VISÃO DO DONO (consumo dos funcionários) ===== -->
+        <!-- ===== VISÃO DO DONO (consumo dos usuários) ===== -->
         <div id="consumo-dono-view" style="display:none">
           <div class="dash-kpi-grid">
             <div class="dash-kpi dash-kpi--blue">
               <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
               <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Funcionários</span>
+                <span class="dash-kpi-label">Usuários</span>
                 <span class="dash-kpi-value" id="cd-count">0</span>
-                <span class="dash-kpi-sub"><i class="ti ti-user"></i> com benefício</span>
+                <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
               </div>
             </div>
             <div class="dash-kpi dash-kpi--indigo">
@@ -1006,7 +1016,7 @@
             <div class="dash-kpi dash-kpi--violet">
               <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
               <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Média por funcionário</span>
+                <span class="dash-kpi-label">Média por usuário</span>
                 <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
                 <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
               </div>
@@ -1014,7 +1024,7 @@
           </div>
 
           <div class="card">
-            <div class="card-title"><i class="ti ti-receipt"></i> Consumo dos funcionários (mês atual)</div>
+            <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
             <div class="cd-grid" id="cd-grid"></div>
           </div>
         </div>

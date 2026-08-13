@@ -547,7 +547,7 @@ app.get('/api/consumo', autenticar, async (req, res) => {
 });
 
 app.post('/api/consumo', autenticar, async (req, res) => {
-  if (req.usuario.role !== 'funcionario') {
+  if (req.usuario.role !== 'funcionario' && req.usuario.role !== 'dono') {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
@@ -557,8 +557,9 @@ app.post('/api/consumo', autenticar, async (req, res) => {
     return res.status(400).json({ error: 'Adicione pelo menos um item' });
   }
 
-  // Quem consumiu (padrão: o próprio funcionário logado)
+  // Quem consumiu (padrão: o próprio usuário logado)
   let consumidorId = req.usuario.id;
+  let consumidorRole = req.usuario.role;
   if (usuario_id) {
     const { data: alvo, error: alvoError } = await supabase
       .from('usuarios')
@@ -566,16 +567,17 @@ app.post('/api/consumo', autenticar, async (req, res) => {
       .eq('id', usuario_id)
       .single();
 
-    if (alvoError || !alvo || alvo.role !== 'funcionario') {
+    if (alvoError || !alvo || !['funcionario', 'dono'].includes(alvo.role)) {
       return res.status(400).json({ error: 'Usuário inválido para consumo' });
     }
     consumidorId = alvo.id;
+    consumidorRole = alvo.role;
   }
 
   const total = itens.reduce((s, i) => s + (parseFloat(i.qtd || 0) * parseFloat(i.precoUnitario || 0)), 0);
 
   try {
-    // Verificar limite mensal do usuário que consumiu
+    // Verificar limite mensal do usuário que consumiu (donos não têm limite)
     const inicio = inicioDoMesLocal();
     const { data: consumosMes } = await supabase
       .from('consumos')
@@ -584,7 +586,7 @@ app.post('/api/consumo', autenticar, async (req, res) => {
       .gte('data', inicio.toISOString());
 
     const jaUsado = (consumosMes || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
-    const acimaLimite = jaUsado + total > LIMITE_CONSUMO_MENSAL;
+    const acimaLimite = consumidorRole === 'funcionario' && (jaUsado + total > LIMITE_CONSUMO_MENSAL);
 
     // Inserir consumo
     const { data: consumo, error: consumoError } = await supabase
@@ -624,7 +626,7 @@ app.get('/api/consumo/usuarios', autenticar, async (req, res) => {
     const { data: funcionarios, error } = await supabase
       .from('usuarios')
       .select('id, nome, usuario')
-      .eq('role', 'funcionario')
+      .in('role', ['funcionario', 'dono'])
       .order('nome');
 
     if (error) throw error;
@@ -646,8 +648,8 @@ app.get('/api/consumo/funcionarios', autenticar, async (req, res) => {
 
     const { data: funcionarios, error: funcError } = await supabase
       .from('usuarios')
-      .select('id, nome, usuario')
-      .eq('role', 'funcionario')
+      .select('id, nome, usuario, role')
+      .in('role', ['funcionario', 'dono'])
       .order('nome');
 
     if (funcError) throw funcError;
