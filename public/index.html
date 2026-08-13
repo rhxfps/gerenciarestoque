@@ -871,16 +871,20 @@
           </div>
 
           <div class="acai-section">
-            <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos (opcional)</div>
+            <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos <span class="acai-section-count" id="acai-comp-count">(opcional)</span></div>
             <div class="acai-complementos" id="acai-complementos"></div>
           </div>
 
           <div class="acai-footer">
+            <div class="acai-footer-selecao">
+              <span>Seleção</span>
+              <strong id="acai-selecao-texto">Nenhum tamanho</strong>
+            </div>
             <div class="acai-footer-total">
               <span>Total</span>
               <strong id="acai-total-preview">R$ 0,00</strong>
             </div>
-            <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()">
+            <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()" disabled>
               <i class="ti ti-check"></i> Adicionar
             </button>
           </div>

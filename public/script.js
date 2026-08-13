@@ -246,31 +246,22 @@ async function loadAllData() {
     ]);
 
     if (currentUser.role === 'dono') {
-      usuarios = await apiRequest('/usuarios');
-      const caixaResponse = await apiRequest('/caixa');
-      caixas = caixaResponse.historico || [];
-      try {
-        consumoFuncionarios = await apiRequest('/consumo/funcionarios');
-      } catch (e) {
-        console.error('Erro ao carregar consumo dos funcionários:', e);
-        consumoFuncionarios = [];
-      }
+      const [usr, caixaRes, consumoFunc] = await Promise.all([
+        apiRequest('/usuarios').catch(() => []),
+        apiRequest('/caixa').catch(() => ({ historico: [] })),
+        apiRequest('/consumo/funcionarios').catch(() => [])
+      ]);
+      usuarios = usr || [];
+      caixas = (caixaRes && caixaRes.historico) || [];
+      consumoFuncionarios = consumoFunc || [];
     } else {
-      try {
-        const consumoResponse = await apiRequest('/consumo');
-        consumos = consumoResponse.consumos || [];
-        consumoTotalMes = consumoResponse.totalMes || 0;
-      } catch (e) {
-        console.error('Erro ao carregar consumo:', e);
-        consumos = [];
-        consumoTotalMes = 0;
-      }
-      try {
-        consumoUsuarios = await apiRequest('/consumo/usuarios');
-      } catch (e) {
-        console.error('Erro ao carregar usuários do consumo:', e);
-        consumoUsuarios = [];
-      }
+      const [consumoRes, consumoUsr] = await Promise.all([
+        apiRequest('/consumo').catch(() => ({ consumos: [], totalMes: 0 })),
+        apiRequest('/consumo/usuarios').catch(() => [])
+      ]);
+      consumos = (consumoRes && consumoRes.consumos) || [];
+      consumoTotalMes = (consumoRes && consumoRes.totalMes) || 0;
+      consumoUsuarios = consumoUsr || [];
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -1838,15 +1829,20 @@ function openAcaiModal(modo = 'vendas') {
     return;
   }
 
-  tEl.innerHTML = acaiData.tamanhos.map(t => `
-    <button type="button" class="acai-tam-btn"
-      onclick="selectAcaiTamanho(${t.id})" data-id="${t.id}">
-      <span class="acai-tam-nome">${t.nome}</span>
-      <span class="acai-tam-preco">${fmtMoeda(t.preco || 0)}</span>
-    </button>`).join('');
+  tEl.innerHTML = acaiData.tamanhos.map(t => {
+    const ml = (String(t.nome).match(/(\d+)\s*ml/i) || [])[1];
+    return `
+      <button type="button" class="acai-tam-btn"
+        onclick="selectAcaiTamanho(${t.id})" data-id="${t.id}">
+        <span class="acai-tam-check"><i class="ti ti-check"></i></span>
+        <span class="acai-tam-ml">${ml ? ml + 'ml' : t.nome}</span>
+        <span class="acai-tam-preco">${fmtMoeda(t.preco || 0)}</span>
+      </button>`;
+  }).join('');
 
   cEl.innerHTML = acaiData.complementos.map(c => `
     <button type="button" class="acai-comp-btn" onclick="toggleAcaiComplemento(${c.id})" data-id="${c.id}">
+      <i class="ti ti-check acai-comp-check"></i>
       <span class="acai-comp-nome">${c.nome}</span>
       <span class="acai-comp-preco">${c.preco > 0 ? `+${fmtMoeda(c.preco)}` : 'Grátis'}</span>
     </button>
@@ -1885,14 +1881,28 @@ function toggleAcaiComplemento(id) {
 function atualizaAcaiPreview() {
   const t = acaiData.tamanhos.find(x => x.id === acaiTamanhoId);
   let total = t ? (t.preco || 0) : 0;
-  acaiComplementosSel.forEach(id => {
-    const c = acaiData.complementos.find(x => x.id === id);
-    if (c) total += (c.preco || 0);
-  });
+  const compsSel = acaiData.complementos.filter(c => acaiComplementosSel.includes(c.id));
+  compsSel.forEach(c => total += (c.preco || 0));
   const el = document.getElementById('acai-total-preview');
   if (el) el.textContent = fmtMoeda(total);
   const btn = document.getElementById('acai-add-btn');
   if (btn) btn.disabled = !t;
+
+  const cnt = document.getElementById('acai-comp-count');
+  if (cnt) cnt.textContent = compsSel.length
+    ? `(${compsSel.length} selecionado${compsSel.length > 1 ? 's' : ''})`
+    : '(opcional)';
+
+  const sel = document.getElementById('acai-selecao-texto');
+  if (sel) {
+    if (!t) {
+      sel.textContent = 'Nenhum tamanho';
+    } else {
+      const partes = [String(t.nome).replace(/^açaí\s*/i, '')];
+      if (compsSel.length) partes.push(`${compsSel.length} complemento${compsSel.length > 1 ? 's' : ''}`);
+      sel.textContent = partes.join(' · ');
+    }
+  }
 }
 
 function addAcaiToVenda() {

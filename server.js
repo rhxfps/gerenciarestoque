@@ -36,7 +36,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('*')
+      .select('id, usuario, senha, nome, role')
       .eq('usuario', usuario)
       .maybeSingle();
 
@@ -372,38 +372,82 @@ app.post('/api/movimentacoes', autenticar, async (req, res) => {
 });
 
 // ==================== VENDAS ====================
-// Descontar 1 copo do estoque por açaí vendido/consumido (tamanho em ml)
-async function baixarCopoAcai(item, obs = 'Açaí') {
-  const nome = String(item.produtoNome || '').toLowerCase();
-  if (!nome.startsWith('açaí') && !nome.startsWith('acai')) return;
+// Baixa de estoque otimizada: busca produtos e copos de açaí em poucas
+// consultas e executa atualizações + movimentações em paralelo/lote.
+async function baixarEstoqueItens(itens, obs) {
+  // Produtos dos itens em UMA consulta
+  const ids = [...new Set(itens.map(i => i.produtoId))];
+  const estoqueMap = new Map();
+  if (ids.length) {
+    const { data: prods } = await supabase
+      .from('produtos')
+      .select('id, qtd, tipo, nome, categoria')
+      .in('id', ids);
+    for (const p of prods || []) estoqueMap.set(p.id, p);
+  }
 
-  const m = nome.match(/(\d+)\s*ml/);
-  if (!m) return;
+  // Itens de açaí → copos (embalagens) correspondentes
+  const acaiPorProduto = new Map(); // produtoId -> ml
+  for (const item of itens) {
+    const nome = String(item.produtoNome || '').toLowerCase();
+    if (!nome.startsWith('açaí') && !nome.startsWith('acai')) continue;
+    const m = nome.match(/(\d+)\s*ml/);
+    if (m) acaiPorProduto.set(item.produtoId, m[1]);
+  }
 
-  const ml = m[1];
-  // Aceita "Copo 500 ML", "Copo 500ml", "copo 500 ml", etc.
-  const { data: copos } = await supabase
-    .from('produtos')
-    .select('id, qtd, nome')
-    .ilike('nome', `copo ${ml}%ml`)
-    .limit(1);
-  const copo = copos?.[0];
-  if (!copo) return;
+  const copoPorMl = new Map(); // ml -> produto copo
+  if (acaiPorProduto.size) {
+    const { data: copos } = await supabase
+      .from('produtos')
+      .select('id, qtd, nome, tipo, categoria')
+      .ilike('nome', 'copo %ml');
+    for (const c of copos || []) {
+      const m = c.nome.toLowerCase().match(/^copo\s+(\d+)/);
+      if (m && !copoPorMl.has(m[1])) {
+        copoPorMl.set(m[1], c);
+        estoqueMap.set(c.id, c);
+      }
+    }
+  }
 
-  await supabase
-    .from('produtos')
-    .update({ qtd: Math.max(parseFloat(copo.qtd || 0) - item.qtd, 0) })
-    .eq('id', copo.id);
+  // Agregar deduções por produto (evita corrida e consultas repetidas)
+  const deducoes = new Map(); // id -> { qtd, nome }
+  for (const item of itens) {
+    const p = estoqueMap.get(item.produtoId);
+    const isPastel = item.recheio || p?.tipo === 'pastel' ||
+      (p?.nome && p.nome.toLowerCase() === 'pastel');
+    const isAcai = p?.categoria === 'Açaí' || p?.tipo === 'acai';
 
-  await supabase
-    .from('movimentacoes')
-    .insert([{
-      tipo: 'saida',
-      produto_id: copo.id,
-      produto_nome: copo.nome,
-      qtd: item.qtd,
-      obs
-    }]);
+    let idAlvo = null;
+    if (p && !isPastel && !isAcai) {
+      idAlvo = item.produtoId;
+    } else {
+      const ml = acaiPorProduto.get(item.produtoId);
+      const copo = ml ? copoPorMl.get(ml) : null;
+      if (copo) idAlvo = copo.id;
+    }
+
+    if (idAlvo == null) continue;
+    const d = deducoes.get(idAlvo) || { qtd: 0, nome: p ? p.nome : item.produtoNome };
+    d.qtd += item.qtd;
+    deducoes.set(idAlvo, d);
+  }
+
+  // Atualizar estoques e registrar movimentações em paralelo (lote)
+  const ops = [];
+  const movimentacoes = [];
+  for (const [id, d] of deducoes) {
+    const base = estoqueMap.get(id);
+    ops.push(supabase
+      .from('produtos')
+      .update({ qtd: Math.max(parseFloat(base?.qtd || 0) - d.qtd, 0) })
+      .eq('id', id));
+    movimentacoes.push({ tipo: 'saida', produto_id: id, produto_nome: d.nome, qtd: d.qtd, obs });
+  }
+  if (movimentacoes.length) {
+    ops.push(supabase.from('movimentacoes').insert(movimentacoes));
+  }
+  await Promise.all(ops);
 }
 
 app.get('/api/vendas', autenticar, async (req, res) => {
@@ -414,19 +458,25 @@ app.get('/api/vendas', autenticar, async (req, res) => {
       .order('data', { ascending: false });
     if (vendasError) throw vendasError;
 
-    const vendasComItens = [];
-    for (const venda of vendas) {
+    // Itens de todas as vendas em UMA consulta (evita N+1)
+    const ids = (vendas || []).map(v => v.id);
+    const itensPorVenda = new Map();
+    if (ids.length) {
       const { data: itens, error: itensError } = await supabase
         .from('venda_itens')
         .select('*')
-        .eq('venda_id', venda.id);
-      if (itensError) console.error(itensError);
-      vendasComItens.push({ ...venda, itens: itens || [] });
+        .in('venda_id', ids);
+      if (itensError) throw itensError;
+      for (const it of itens || []) {
+        const arr = itensPorVenda.get(it.venda_id) || [];
+        arr.push(it);
+        itensPorVenda.set(it.venda_id, arr);
+      }
     }
 
-    res.json(vendasComItens);
+    res.json((vendas || []).map(v => ({ ...v, itens: itensPorVenda.get(v.id) || [] })));
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -442,48 +492,21 @@ app.post('/api/vendas', autenticar, async (req, res) => {
       .single();
     if (vendaError) throw vendaError;
 
-    // Inserir itens de venda, atualizar estoque e adicionar movimentações
-    for (const item of itens) {
-      const itemData = {
-        venda_id: venda.id,
-        produto_id: item.produtoId,
-        produto_nome: item.produtoNome,
-        qtd: item.qtd,
-        preco_unitario: item.precoUnitario
-      };
-      if (item.recheio) itemData.recheio = item.recheio;
+    // Inserir todos os itens de venda em lote
+    const itensData = itens.map(item => ({
+      venda_id: venda.id,
+      produto_id: item.produtoId,
+      produto_nome: item.produtoNome,
+      qtd: item.qtd,
+      preco_unitario: item.precoUnitario,
+      ...(item.recheio ? { recheio: item.recheio } : {})
+    }));
+    const { error: itensError } = await supabase.from('venda_itens').insert(itensData);
+    if (itensError) throw itensError;
 
-      await supabase.from('venda_itens').insert([itemData]);
-
-      const { data: produtoAtual } = await supabase
-        .from('produtos')
-        .select('qtd, tipo, nome, categoria')
-        .eq('id', item.produtoId)
-        .single();
-
-      const isPastel = item.recheio || produtoAtual?.tipo === 'pastel' ||
-        (produtoAtual?.nome && produtoAtual.nome.toLowerCase() === 'pastel');
-      const isAcai = produtoAtual?.categoria === 'Açaí' || produtoAtual?.tipo === 'acai';
-
-      if (!isPastel && !isAcai && produtoAtual) {
-        await supabase
-          .from('produtos')
-          .update({ qtd: produtoAtual.qtd - item.qtd })
-          .eq('id', item.produtoId);
-
-        await supabase
-          .from('movimentacoes')
-          .insert([{
-            tipo: 'saida',
-            produto_id: item.produtoId,
-            produto_nome: item.produtoNome,
-            qtd: item.qtd,
-            obs: `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}`
-          }]);
-      }
-
-      await baixarCopoAcai(item, `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}`);
-    }
+    // Baixar estoque + copos de açaí + movimentações de forma otimizada
+    const obsVenda = `Venda ${delivery ? `(${plataforma || ''})` : 'balcão'} - ${pagamento}`;
+    await baixarEstoqueItens(itens, obsVenda);
 
     res.json({ ...venda, itens });
   } catch (error) {
@@ -505,7 +528,7 @@ app.get('/api/consumo', autenticar, async (req, res) => {
 
     const { data: consumos, error } = await supabase
       .from('consumos')
-      .select('*')
+      .select('*, consumo_itens(*)')
       .eq('usuario_id', req.usuario.id)
       .gte('data', inicio.toISOString())
       .lte('data', agora.toISOString())
@@ -513,14 +536,7 @@ app.get('/api/consumo', autenticar, async (req, res) => {
 
     if (error) throw error;
 
-    const consumosComItens = [];
-    for (const c of consumos || []) {
-      const { data: itens } = await supabase
-        .from('consumo_itens')
-        .select('*')
-        .eq('consumo_id', c.id);
-      consumosComItens.push({ ...c, itens: itens || [] });
-    }
+    const consumosComItens = (consumos || []).map(c => ({ ...c, itens: c.consumo_itens || [] }));
 
     const totalMes = (consumos || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
 
@@ -578,48 +594,20 @@ app.post('/api/consumo', autenticar, async (req, res) => {
       .single();
     if (consumoError) throw consumoError;
 
-    // Inserir itens, baixar estoque e registrar movimentação
-    for (const item of itens) {
-      const itemData = {
-        consumo_id: consumo.id,
-        produto_id: item.produtoId,
-        produto_nome: item.produtoNome,
-        qtd: item.qtd,
-        preco_unitario: item.precoUnitario
-      };
-      if (item.recheio) itemData.recheio = item.recheio;
+    // Inserir todos os itens de consumo em lote
+    const itensData = itens.map(item => ({
+      consumo_id: consumo.id,
+      produto_id: item.produtoId,
+      produto_nome: item.produtoNome,
+      qtd: item.qtd,
+      preco_unitario: item.precoUnitario,
+      ...(item.recheio ? { recheio: item.recheio } : {})
+    }));
+    const { error: itensError } = await supabase.from('consumo_itens').insert(itensData);
+    if (itensError) throw itensError;
 
-      await supabase.from('consumo_itens').insert([itemData]);
-
-      const { data: produtoAtual } = await supabase
-        .from('produtos')
-        .select('qtd, tipo, nome, categoria')
-        .eq('id', item.produtoId)
-        .single();
-
-      const isPastel = item.recheio || produtoAtual?.tipo === 'pastel' ||
-        (produtoAtual?.nome && produtoAtual.nome.toLowerCase() === 'pastel');
-      const isAcai = produtoAtual?.categoria === 'Açaí' || produtoAtual?.tipo === 'acai';
-
-      if (!isPastel && !isAcai && produtoAtual) {
-        await supabase
-          .from('produtos')
-          .update({ qtd: produtoAtual.qtd - item.qtd })
-          .eq('id', item.produtoId);
-
-        await supabase
-          .from('movimentacoes')
-          .insert([{
-            tipo: 'saida',
-            produto_id: item.produtoId,
-            produto_nome: item.produtoNome,
-            qtd: item.qtd,
-            obs: 'Consumo funcionário'
-          }]);
-      }
-
-      await baixarCopoAcai(item, 'Consumo funcionário');
-    }
+    // Baixar estoque + copos de açaí + movimentações de forma otimizada
+    await baixarEstoqueItens(itens, 'Consumo funcionário');
 
     res.json({ ...consumo, itens, acimaLimite });
   } catch (error) {
@@ -664,29 +652,49 @@ app.get('/api/consumo/funcionarios', autenticar, async (req, res) => {
 
     if (funcError) throw funcError;
 
+    if (!funcionarios?.length) return res.json([]);
+
+    const funcIds = funcionarios.map(f => f.id);
+
+    // Consumos de todos os funcionários em UMA consulta
+    const { data: consumos, error: consError } = await supabase
+      .from('consumos')
+      .select('*')
+      .in('usuario_id', funcIds)
+      .gte('data', inicio.toISOString())
+      .lte('data', agora.toISOString())
+      .order('data', { ascending: false });
+
+    if (consError) throw consError;
+
+    // Itens de todos os consumos em UMA consulta
+    const consumoIds = [...new Set((consumos || []).map(c => c.id))];
+    const itensPorConsumo = new Map();
+    if (consumoIds.length) {
+      const { data: itens, error: itensError } = await supabase
+        .from('consumo_itens')
+        .select('*')
+        .in('consumo_id', consumoIds);
+      if (itensError) throw itensError;
+      for (const it of itens || []) {
+        const arr = itensPorConsumo.get(it.consumo_id) || [];
+        arr.push(it);
+        itensPorConsumo.set(it.consumo_id, arr);
+      }
+    }
+
+    const consumosPorFunc = new Map();
+    for (const c of consumos || []) {
+      const arr = consumosPorFunc.get(c.usuario_id) || [];
+      arr.push({ ...c, itens: itensPorConsumo.get(c.id) || [] });
+      consumosPorFunc.set(c.usuario_id, arr);
+    }
+
     const resultado = [];
     for (const f of funcionarios || []) {
-      const { data: consumos, error: consError } = await supabase
-        .from('consumos')
-        .select('*')
-        .eq('usuario_id', f.id)
-        .gte('data', inicio.toISOString())
-        .lte('data', agora.toISOString())
-        .order('data', { ascending: false });
-
-      if (consError) throw consError;
-
-      const comItens = [];
-      for (const c of consumos || []) {
-        const { data: itens } = await supabase
-          .from('consumo_itens')
-          .select('*')
-          .eq('consumo_id', c.id);
-        comItens.push({ ...c, itens: itens || [] });
-      }
-
-      const totalMes = (consumos || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
-      resultado.push({ ...f, totalMes, consumos: comItens });
+      const cs = consumosPorFunc.get(f.id) || [];
+      const totalMes = cs.reduce((s, c) => s + parseFloat(c.total || 0), 0);
+      resultado.push({ ...f, totalMes, consumos: cs });
     }
 
     res.json(resultado);
@@ -731,23 +739,24 @@ app.get('/api/caixa', autenticar, async (req, res) => {
     let totalRetiradas = 0;
     let retiradas = [];
     if (ultimoCaixa && !ultimoCaixa.data_fechamento) {
-      const { data: vendasData, error: errorVendas } = await supabase
-        .from('vendas')
-        .select('total')
-        .eq('pagamento', 'dinheiro')
-        .gte('data', ultimoCaixa.data_abertura);
-      
-      if (!errorVendas && vendasData) {
-        totalVendasDinheiro = vendasData.reduce((sum, v) => sum + v.total, 0);
+      const [vendasRes, retiradasRes] = await Promise.all([
+        supabase
+          .from('vendas')
+          .select('total')
+          .eq('pagamento', 'dinheiro')
+          .gte('data', ultimoCaixa.data_abertura),
+        supabase
+          .from('caixa_retiradas')
+          .select('*, usuario:usuario_id(nome)')
+          .eq('caixa_id', ultimoCaixa.id)
+          .order('data', { ascending: false })
+      ]);
+
+      if (!vendasRes.error && vendasRes.data) {
+        totalVendasDinheiro = vendasRes.data.reduce((sum, v) => sum + v.total, 0);
       }
 
-      const { data: retiradasData } = await supabase
-        .from('caixa_retiradas')
-        .select('*, usuario:usuario_id(nome)')
-        .eq('caixa_id', ultimoCaixa.id)
-        .order('data', { ascending: false });
-
-      retiradas = retiradasData || [];
+      retiradas = retiradasRes.data || [];
       totalRetiradas = retiradas.reduce((s, r) => s + parseFloat(r.valor), 0);
     }
 
