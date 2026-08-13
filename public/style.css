@@ -203,6 +203,89 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
   border-color: rgba(255,255,255,.35);
 }
 
+/* consumo bar na sidebar (parte da account) */
+.consumo-bar-wrapper {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--sidebar-border);
+}
+.consumo-bar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.consumo-bar-top span {
+  font-size: 11px;
+  color: rgba(255,255,255,.75);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.consumo-bar-top span i { color: var(--blue-200); }
+.consumo-bar-top strong {
+  font-size: 12px;
+  color: #ffffff;
+}
+.consumo-bar-wrapper .progress-bar {
+  background: rgba(255,255,255,.20);
+  margin-top: 8px;
+}
+.consumo-bar-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: rgba(255,255,255,.55);
+}
+.consumo-bar-foot span:first-child { color: var(--blue-200); }
+
+/* card de status da tela de consumo */
+.consumo-status {
+  margin-bottom: 1.5rem;
+}
+.consumo-status-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.consumo-status-title {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.consumo-status-title i { color: var(--blue); }
+.consumo-status-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.consumo-status-nums {
+  text-align: right;
+  white-space: nowrap;
+}
+.consumo-status-nums strong { font-size: 18px; color: var(--blue); }
+.consumo-status-nums span { font-size: 12px; color: var(--text-secondary); }
+.consumo-progress-lg {
+  height: 10px;
+  margin-top: 12px;
+}
+.consumo-status-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.consumo-status-foot span:first-child { font-weight: 700; color: var(--green); }
+
 /* ============================================================
    TOPBAR
    ============================================================ */

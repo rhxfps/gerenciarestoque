@@ -61,6 +61,7 @@
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
+      <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
       <div class="nav-item" data-screen="usuarios" id="nav-usuarios"><i class="ti ti-users"></i> <span>Usuários</span></div>
     </nav>
     <div class="sidebar-footer">
@@ -71,6 +72,19 @@
         <div class="user-details">
           <span id="user-name" class="user-name">Usuário</span>
           <span id="user-role" class="user-role">Funcionário</span>
+        </div>
+      </div>
+      <div class="consumo-bar-wrapper" id="consumo-bar-wrapper" style="display:none">
+        <div class="consumo-bar-top">
+          <span><i class="ti ti-wallet"></i> Consumo do mês</span>
+          <strong id="consumo-bar-valor">R$ 0,00</strong>
+        </div>
+        <div class="progress-bar consumo-progress">
+          <div class="progress-fill" id="consumo-bar-fill" style="width:0%;background:var(--blue-200)"></div>
+        </div>
+        <div class="consumo-bar-foot">
+          <span id="consumo-bar-restante">R$ 100,00 restantes</span>
+          <span>R$ 100,00</span>
         </div>
       </div>
       <button class="btn btn-danger btn-sm" onclick="logout()" style="width:100%;margin-top:12px">
@@ -105,6 +119,7 @@
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
+      <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
       <div class="mobile-nav-item" data-screen="usuarios"><i class="ti ti-users"></i> Usuários</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
@@ -828,6 +843,97 @@
             </div>
             <p class="pastel-modal-preco">A partir de <strong>R$ 4,00</strong></p>
             <div class="pastel-recheios-grid" id="salgados-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONSUMO (funcionários) -->
+      <div class="screen" id="screen-consumo">
+
+        <!-- Status do limite mensal -->
+        <div class="card consumo-status">
+          <div class="consumo-status-top">
+            <div>
+              <div class="consumo-status-title"><i class="ti ti-wallet"></i> Consumo do mês</div>
+              <div class="consumo-status-sub">Você tem <strong>R$ 100,00</strong> de consumo por mês</div>
+            </div>
+            <div class="consumo-status-nums">
+              <strong id="c-usado">R$ 0,00</strong>
+              <span>/ R$ 100,00</span>
+            </div>
+          </div>
+          <div class="progress-bar consumo-progress consumo-progress-lg">
+            <div class="progress-fill" id="c-bar-fill" style="width:0%;background:var(--blue)"></div>
+          </div>
+          <div class="consumo-status-foot">
+            <span id="c-restante">R$ 100,00 restantes</span>
+            <span id="c-count">0 consumo(s)</span>
+          </div>
+        </div>
+
+        <div class="vendas-layout">
+
+          <!-- Coluna: produtos -->
+          <div class="card vendas-picker">
+            <div class="vendas-picker-header">
+              <div class="search-wrapper vendas-search">
+                <i class="ti ti-search vendas-search-icon"></i>
+                <input type="text" id="c-busca" placeholder="Buscar produto..." oninput="renderConsumoGrid()">
+              </div>
+              <div class="vendas-categorias" id="c-categorias"></div>
+            </div>
+
+            <!-- Botões de atalho: Pastel e Salgados -->
+            <div class="vendas-atalhos">
+              <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal('consumo')">
+                <span class="vendas-atalho-emoji">🥟</span>
+                <span class="vendas-atalho-info">
+                  <strong>Pastel</strong>
+                  <small>Escolher recheio · R$ 14,00</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-salgados" onclick="openSalgadosModal('consumo')">
+                <span class="vendas-atalho-emoji">🍡</span>
+                <span class="vendas-atalho-info">
+                  <strong>Salgados</strong>
+                  <small id="c-salgados-sub">Ver opções</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+            </div>
+
+            <div class="vendas-produtos-grid" id="c-produtos-grid"></div>
+          </div>
+
+          <!-- Coluna: consumo -->
+          <div class="card vendas-carrinho">
+            <div class="vendas-carrinho-header">
+              <h3><i class="ti ti-wallet"></i> Consumo</h3>
+              <span class="vendas-carrinho-count" id="c-carrinho-count">0 itens</span>
+            </div>
+
+            <div class="vendas-carrinho-body">
+              <div id="c-itens-empty" class="empty vendas-empty">Toque nos produtos para adicionar</div>
+              <div id="c-itens-container" class="vendas-itens-list"></div>
+            </div>
+
+            <div class="vendas-carrinho-footer">
+              <div class="form-group vendas-obs">
+                <label>Observação (opcional)</label>
+                <input type="text" id="c-obs" placeholder="Ex: Almoço de hoje...">
+              </div>
+
+              <div class="total-section vendas-total">
+                <div class="total-label">Total</div>
+                <div class="total-value" id="c-total-preview">R$ 0,00</div>
+              </div>
+
+              <button class="btn btn-primary vendas-finalizar" onclick="addConsumo()">
+                <i class="ti ti-check"></i> Registrar Consumo
+              </button>
+            </div>
           </div>
         </div>
       </div>

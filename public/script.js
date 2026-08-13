@@ -30,6 +30,13 @@ let vendasListenersAdicionados = false;
 let currentUser = null;
 let authToken = null;
 
+// Consumo de funcionários
+let consumoItens = [];
+let consumoCategoriaAtiva = 'Todos';
+let consumos = [];
+let consumoTotalMes = 0;
+const LIMITE_CONSUMO = 100;
+
 const API_URL = '/api';
 
 // Carregar token do localStorage
@@ -172,6 +179,7 @@ function showApp() {
   document.getElementById('app-container').style.display = 'flex';
   document.getElementById('user-name').textContent = currentUser.nome;
   updateMenuByRole();
+  renderConsumoBars();
   nav('dashboard');
 }
 
@@ -179,12 +187,14 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'historico', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'usuarios'];
+  const navItems = ['dashboard', 'estoque', 'produtos', 'registrar', 'historico', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo', 'usuarios'];
   
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) {
-      if (item === 'vendas' || item === 'caixa') {
+      if (item === 'consumo') {
+        el.style.display = isDono ? 'none' : 'block';
+      } else if (item === 'vendas' || item === 'caixa') {
         el.style.display = 'block';
       } else {
         el.style.display = isDono ? 'block' : 'none';
@@ -196,6 +206,12 @@ function updateMenuByRole() {
   if (userRoleEl) {
     userRoleEl.textContent = currentUser.role === 'dono' ? 'Dono' : 'Funcionário';
   }
+
+  document.querySelectorAll('.mobile-nav-item').forEach(el => {
+    if (el.dataset.screen === 'consumo') {
+      el.style.display = currentUser.role === 'dono' ? 'none' : 'block';
+    }
+  });
 }
 
 // Carregar todos os dados
@@ -211,6 +227,16 @@ async function loadAllData() {
       usuarios = await apiRequest('/usuarios');
       const caixaResponse = await apiRequest('/caixa');
       caixas = caixaResponse.historico || [];
+    } else {
+      try {
+        const consumoResponse = await apiRequest('/consumo');
+        consumos = consumoResponse.consumos || [];
+        consumoTotalMes = consumoResponse.totalMes || 0;
+      } catch (e) {
+        console.error('Erro ao carregar consumo:', e);
+        consumos = [];
+        consumoTotalMes = 0;
+      }
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -229,11 +255,18 @@ const titles = {
   relatorio:    'Relatório semanal',
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
+  consumo:      'Consumo',
   usuarios:     'Usuários'
 };
 
 function nav(screen) {
-  if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && currentUser.role !== 'dono') {
+  if (screen === 'consumo') {
+    if (currentUser.role !== 'funcionario') {
+      toast('Acesso negado!', false);
+      nav('vendas');
+      return;
+    }
+  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
@@ -253,6 +286,16 @@ function nav(screen) {
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'usuarios')     renderUsuarios();
+  if (screen === 'consumo') {
+    consumoItens = [];
+    consumoCategoriaAtiva = 'Todos';
+    loadPastelData().then(() => {
+      renderConsumo();
+      renderConsumoItens();
+      atualizaConsumoPreview();
+      renderConsumoBars();
+    });
+  }
   if (screen === 'vendas') {
     vendaItens = [];
     vendaCategoriaAtiva = 'Todos';
@@ -1554,7 +1597,7 @@ function quickAddProduto(produtoId) {
   atualizaPreview();
 }
 
-function openPastelModal() {
+function openPastelModal(modo = 'vendas') {
   const modal = document.getElementById('pastel-modal');
   const grid = document.getElementById('pastel-recheios-grid');
   if (!modal || !grid) return;
@@ -1564,7 +1607,7 @@ function openPastelModal() {
     : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
 
   grid.innerHTML = recheios.map(r => `
-    <button type="button" class="pastel-recheio-btn" onclick="addPastelToVenda('${r.nome.replace(/'/g, "\\'")}')">
+    <button type="button" class="pastel-recheio-btn" onclick="addPastelToVenda('${r.nome.replace(/'/g, "\\'")}', '${modo}')">
       ${r.nome}
     </button>
   `).join('');
@@ -1578,7 +1621,8 @@ function closePastelModal(e) {
   if (modal) modal.classList.remove('show');
 }
 
-function addPastelToVenda(recheio) {
+function addPastelToVenda(recheio, modo = 'vendas') {
+  const itens = modo === 'consumo' ? consumoItens : vendaItens;
   const pastel = produtos.find(isProdutoPastel);
   const produtoId = pastelData.produtoId || pastel?.id;
   const preco = pastelData.preco || pastel?.preco || 14;
@@ -1588,11 +1632,11 @@ function addPastelToVenda(recheio) {
     return;
   }
 
-  const existing = vendaItens.find(i => i.produtoId === produtoId && i.recheio === recheio);
+  const existing = itens.find(i => i.produtoId === produtoId && i.recheio === recheio);
   if (existing) {
     existing.qtd += 1;
   } else {
-    vendaItens.push({
+    itens.push({
       produtoId,
       produtoNome: `Pastel (${recheio})`,
       qtd: 1,
@@ -1602,8 +1646,13 @@ function addPastelToVenda(recheio) {
   }
 
   closePastelModal();
-  renderVendaItens();
-  atualizaPreview();
+  if (modo === 'consumo') {
+    renderConsumoItens();
+    atualizaConsumoPreview();
+  } else {
+    renderVendaItens();
+    atualizaPreview();
+  }
   toast(`Pastel ${recheio} adicionado!`);
 }
 
@@ -1612,7 +1661,7 @@ function isSalgado(p) {
   return p.categoria && p.categoria.toLowerCase() === 'salgados';
 }
 
-function openSalgadosModal() {
+function openSalgadosModal(modo = 'vendas') {
   const modal = document.getElementById('salgados-modal');
   const grid  = document.getElementById('salgados-grid');
   if (!modal || !grid) return;
@@ -1626,7 +1675,7 @@ function openSalgadosModal() {
       const semEstoque = p.qtd <= 0;
       return `
         <button type="button" class="pastel-recheio-btn salgado-btn${semEstoque ? ' salgado-sem-estoque' : ''}"
-          onclick="addSalgadoToVenda(${p.id})" ${semEstoque ? 'disabled' : ''}>
+          onclick="addSalgadoToVenda(${p.id}, '${modo}')" ${semEstoque ? 'disabled' : ''}>
           <span class="salgado-nome">${p.nome}</span>
           <span class="salgado-preco">${fmtMoeda(p.preco || 0)}</span>
           ${semEstoque ? '<span class="salgado-badge">Sem estoque</span>' : `<span class="salgado-estoque">${p.qtd} un.</span>`}
@@ -1643,7 +1692,8 @@ function closeSalgadosModal(e) {
   if (modal) modal.classList.remove('show');
 }
 
-function addSalgadoToVenda(produtoId) {
+function addSalgadoToVenda(produtoId, modo = 'vendas') {
+  const itens = modo === 'consumo' ? consumoItens : vendaItens;
   const produto = produtos.find(p => p.id === produtoId);
   if (!produto) return;
 
@@ -1652,7 +1702,7 @@ function addSalgadoToVenda(produtoId) {
     return;
   }
 
-  const existing = vendaItens.find(i => i.produtoId === produtoId && !i.recheio);
+  const existing = itens.find(i => i.produtoId === produtoId && !i.recheio);
   if (existing) {
     if (existing.qtd + 1 > produto.qtd) {
       toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
@@ -1660,7 +1710,7 @@ function addSalgadoToVenda(produtoId) {
     }
     existing.qtd += 1;
   } else {
-    vendaItens.push({
+    itens.push({
       produtoId: produto.id,
       produtoNome: produto.nome,
       qtd: 1,
@@ -1669,8 +1719,13 @@ function addSalgadoToVenda(produtoId) {
   }
 
   closeSalgadosModal();
-  renderVendaItens();
-  atualizaPreview();
+  if (modo === 'consumo') {
+    renderConsumoItens();
+    atualizaConsumoPreview();
+  } else {
+    renderVendaItens();
+    atualizaPreview();
+  }
   toast(`${produto.nome} adicionado!`);
 }
 
@@ -1861,6 +1916,248 @@ async function addVenda() {
     toast(error.message || 'Erro ao registrar venda!', false);
     console.error(error);
   }
+}
+
+// ==================== CONSUMO (funcionários) ====================
+function renderConsumo() {
+  renderConsumoCategorias();
+  renderConsumoGrid();
+  renderConsumoBars();
+}
+
+function renderConsumoCategorias() {
+  const el = document.getElementById('c-categorias');
+  if (!el) return;
+  el.innerHTML = getCategoriasVenda().map(cat => `
+    <button type="button" class="vendas-cat-btn${cat === consumoCategoriaAtiva ? ' active' : ''}"
+      onclick="selectConsumoCategoria('${cat.replace(/'/g, "\\'")}')">${cat}</button>
+  `).join('');
+}
+
+function selectConsumoCategoria(cat) {
+  consumoCategoriaAtiva = cat;
+  renderConsumoCategorias();
+  renderConsumoGrid();
+}
+
+function renderConsumoGrid() {
+  const grid = document.getElementById('c-produtos-grid');
+  if (!grid) return;
+
+  const busca = (document.getElementById('c-busca')?.value || '').toLowerCase().trim();
+  let lista = produtosVenda();
+
+  if (consumoCategoriaAtiva !== 'Todos') {
+    lista = lista.filter(p => p.categoria === consumoCategoriaAtiva);
+  }
+  if (busca) {
+    lista = lista.filter(p =>
+      p.nome.toLowerCase().includes(busca) ||
+      (p.categoria && p.categoria.toLowerCase().includes(busca))
+    );
+  }
+
+  lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+  if (!lista.length) {
+    grid.innerHTML = '<div class="vendas-grid-empty">Nenhum produto encontrado</div>';
+    return;
+  }
+
+  grid.innerHTML = lista.map(p => {
+    const semEstoque = p.qtd <= 0;
+    const preco = p.preco ? fmtMoeda(p.preco) : '—';
+    return `
+      <button type="button" class="vendas-prod-btn${semEstoque ? ' sem-estoque' : ''}"
+        onclick="consumoQuickAdd(${p.id})" ${semEstoque ? 'disabled' : ''}>
+        <span class="vendas-prod-nome">${p.nome}</span>
+        <span class="vendas-prod-preco">${preco}</span>
+        ${semEstoque ? '<span class="vendas-prod-badge">Sem estoque</span>' : ''}
+      </button>
+    `;
+  }).join('');
+}
+
+function consumoQuickAdd(produtoId) {
+  const produto = produtos.find(p => p.id === produtoId);
+  if (!produto || isProdutoPastel(produto)) return;
+
+  if (produto.qtd <= 0) {
+    toast('Produto sem estoque!', false);
+    return;
+  }
+
+  const existing = consumoItens.find(i => i.produtoId === produtoId && !i.recheio);
+  if (existing) {
+    if (existing.qtd + 1 > produto.qtd) {
+      toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
+      return;
+    }
+    existing.qtd += 1;
+  } else {
+    consumoItens.push({
+      produtoId: produto.id,
+      produtoNome: produto.nome,
+      qtd: 1,
+      precoUnitario: produto.preco || 0
+    });
+  }
+
+  renderConsumoItens();
+  atualizaConsumoPreview();
+}
+
+function consumoChangeQty(index, delta) {
+  const item = consumoItens[index];
+  if (!item) return;
+
+  const novo = item.qtd + delta;
+  if (novo <= 0) {
+    consumoItens.splice(index, 1);
+    renderConsumoItens();
+    atualizaConsumoPreview();
+    return;
+  }
+
+  if (!item.recheio) {
+    const produto = produtos.find(p => p.id === item.produtoId);
+    if (produto && novo > produto.qtd) {
+      toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
+      return;
+    }
+  }
+
+  item.qtd = novo;
+  renderConsumoItens();
+  atualizaConsumoPreview();
+}
+
+function consumoRemoveItem(index) {
+  consumoItens.splice(index, 1);
+  renderConsumoItens();
+  atualizaConsumoPreview();
+}
+
+function renderConsumoItens() {
+  const container = document.getElementById('c-itens-container');
+  const empty = document.getElementById('c-itens-empty');
+  const countEl = document.getElementById('c-carrinho-count');
+  const totalItens = consumoItens.reduce((s, i) => s + i.qtd, 0);
+
+  if (countEl) countEl.textContent = `${totalItens} ${totalItens === 1 ? 'item' : 'itens'}`;
+
+  if (!consumoItens.length) {
+    if (container) container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+
+  container.innerHTML = consumoItens.map((item, index) => {
+    const totalItem = item.qtd * item.precoUnitario;
+    return `
+      <div class="venda-item-card">
+        <div class="venda-item-top">
+          <div class="venda-item-info">
+            <div class="venda-item-name">${item.produtoNome}</div>
+            <div class="venda-item-meta">${fmtMoeda(item.precoUnitario)} / un</div>
+          </div>
+          <button type="button" class="venda-item-remove" onclick="consumoRemoveItem(${index})">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+        <div class="venda-item-bottom">
+          <div class="venda-item-qty">
+            <button type="button" onclick="consumoChangeQty(${index}, -1)"><i class="ti ti-minus"></i></button>
+            <span>${item.qtd}</span>
+            <button type="button" onclick="consumoChangeQty(${index}, 1)"><i class="ti ti-plus"></i></button>
+          </div>
+          <div class="venda-item-total">${fmtMoeda(totalItem)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function atualizaConsumoPreview() {
+  const preview = document.getElementById('c-total-preview');
+  const total = consumoItens.reduce((acumulador, item) => {
+    return acumulador + (item.qtd * item.precoUnitario);
+  }, 0);
+  if (preview) preview.textContent = fmtMoeda(total);
+}
+
+async function addConsumo() {
+  if (!consumoItens.length) {
+    toast('Adicione pelo menos um item!', false);
+    return;
+  }
+
+  const obs = document.getElementById('c-obs').value.trim();
+  const totalConsumo = consumoItens.reduce((acumulador, item) => {
+    return acumulador + (item.qtd * item.precoUnitario);
+  }, 0);
+  const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
+
+  if (totalConsumo > disponivel) {
+    toast(`Limite do mês excedido! Disponível: ${fmtMoeda(disponivel)}`, false);
+    return;
+  }
+
+  try {
+    await apiRequest('/consumo', {
+      method: 'POST',
+      body: JSON.stringify({
+        itens: consumoItens,
+        obs
+      })
+    });
+
+    await loadAllData();
+    consumoItens = [];
+    consumoCategoriaAtiva = 'Todos';
+    const busca = document.getElementById('c-busca');
+    if (busca) busca.value = '';
+    document.getElementById('c-obs').value = '';
+    renderConsumo();
+    renderConsumoItens();
+    atualizaConsumoPreview();
+    renderConsumoBars();
+    toast('Consumo registrado com sucesso!');
+  } catch (error) {
+    toast(error.message || 'Erro ao registrar consumo!', false);
+    console.error(error);
+  }
+}
+
+function renderConsumoBars() {
+  const usado = consumoTotalMes || 0;
+  const pct = Math.min((usado / LIMITE_CONSUMO) * 100, 100);
+  const restante = Math.max(LIMITE_CONSUMO - usado, 0);
+  const restText = restante > 0 ? `${fmtMoeda(restante)} restantes` : 'Limite atingido';
+
+  // Barra na sidebar (parte da account)
+  const wrapper = document.getElementById('consumo-bar-wrapper');
+  if (wrapper) {
+    wrapper.style.display = currentUser.role === 'funcionario' ? 'block' : 'none';
+  }
+  const fillSide = document.getElementById('consumo-bar-fill');
+  if (fillSide) fillSide.style.width = pct + '%';
+  const valSide = document.getElementById('consumo-bar-valor');
+  if (valSide) valSide.textContent = fmtMoeda(usado);
+  const restSide = document.getElementById('consumo-bar-restante');
+  if (restSide) restSide.textContent = restText;
+
+  // Card de status na tela de consumo
+  const fillC = document.getElementById('c-bar-fill');
+  if (fillC) fillC.style.width = pct + '%';
+  const usadoEl = document.getElementById('c-usado');
+  if (usadoEl) usadoEl.textContent = fmtMoeda(usado);
+  const restC = document.getElementById('c-restante');
+  if (restC) restC.textContent = restText;
+  const countC = document.getElementById('c-count');
+  if (countC) countC.textContent = `${consumos.length} ${consumos.length === 1 ? 'consumo' : 'consumos'}`;
 }
 
 // ==================== USUÁRIOS ====================

@@ -419,6 +419,130 @@ app.post('/api/vendas', autenticar, async (req, res) => {
   }
 });
 
+// ==================== CONSUMO (funcionários) ====================
+const LIMITE_CONSUMO_MENSAL = 100;
+
+function inicioDoMesLocal(agora = new Date()) {
+  return new Date(agora.getFullYear(), agora.getMonth(), 1);
+}
+
+app.get('/api/consumo', autenticar, async (req, res) => {
+  try {
+    const agora = new Date();
+    const inicio = inicioDoMesLocal(agora);
+
+    const { data: consumos, error } = await supabase
+      .from('consumos')
+      .select('*')
+      .eq('usuario_id', req.usuario.id)
+      .gte('data', inicio.toISOString())
+      .lte('data', agora.toISOString())
+      .order('data', { ascending: false });
+
+    if (error) throw error;
+
+    const consumosComItens = [];
+    for (const c of consumos || []) {
+      const { data: itens } = await supabase
+        .from('consumo_itens')
+        .select('*')
+        .eq('consumo_id', c.id);
+      consumosComItens.push({ ...c, itens: itens || [] });
+    }
+
+    const totalMes = (consumos || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
+
+    res.json({ consumos: consumosComItens, totalMes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/consumo', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'funcionario') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  const { itens, obs } = req.body;
+
+  if (!itens || !Array.isArray(itens) || !itens.length) {
+    return res.status(400).json({ error: 'Adicione pelo menos um item' });
+  }
+
+  const total = itens.reduce((s, i) => s + (parseFloat(i.qtd || 0) * parseFloat(i.precoUnitario || 0)), 0);
+
+  try {
+    // Verificar limite mensal
+    const inicio = inicioDoMesLocal();
+    const { data: consumosMes } = await supabase
+      .from('consumos')
+      .select('total')
+      .eq('usuario_id', req.usuario.id)
+      .gte('data', inicio.toISOString());
+
+    const jaUsado = (consumosMes || []).reduce((s, c) => s + parseFloat(c.total || 0), 0);
+
+    if (jaUsado + total > LIMITE_CONSUMO_MENSAL) {
+      const disponivel = Math.max(LIMITE_CONSUMO_MENSAL - jaUsado, 0);
+      return res.status(400).json({
+        error: `Limite de consumo do mês excedido. Disponível: R$ ${disponivel.toFixed(2)}`
+      });
+    }
+
+    // Inserir consumo
+    const { data: consumo, error: consumoError } = await supabase
+      .from('consumos')
+      .insert([{ usuario_id: req.usuario.id, total, obs: obs || null }])
+      .select()
+      .single();
+    if (consumoError) throw consumoError;
+
+    // Inserir itens, baixar estoque e registrar movimentação
+    for (const item of itens) {
+      const itemData = {
+        consumo_id: consumo.id,
+        produto_id: item.produtoId,
+        produto_nome: item.produtoNome,
+        qtd: item.qtd,
+        preco_unitario: item.precoUnitario
+      };
+      if (item.recheio) itemData.recheio = item.recheio;
+
+      await supabase.from('consumo_itens').insert([itemData]);
+
+      const { data: produtoAtual } = await supabase
+        .from('produtos')
+        .select('qtd, tipo, nome')
+        .eq('id', item.produtoId)
+        .single();
+
+      const isPastel = item.recheio || produtoAtual?.tipo === 'pastel' ||
+        (produtoAtual?.nome && produtoAtual.nome.toLowerCase() === 'pastel');
+
+      if (!isPastel && produtoAtual) {
+        await supabase
+          .from('produtos')
+          .update({ qtd: produtoAtual.qtd - item.qtd })
+          .eq('id', item.produtoId);
+
+        await supabase
+          .from('movimentacoes')
+          .insert([{
+            tipo: 'saida',
+            produto_id: item.produtoId,
+            produto_nome: item.produtoNome,
+            qtd: item.qtd,
+            obs: 'Consumo funcionário'
+          }]);
+      }
+    }
+
+    res.json({ ...consumo, itens });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== CAIXA ====================
 app.get('/api/caixa', autenticar, async (req, res) => {
   try {
