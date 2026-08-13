@@ -641,16 +641,17 @@ function renderProdutos() {
   const tb = document.getElementById('tabela-produtos');
   const em = document.getElementById('produtos-empty');
   const ct = document.getElementById('p-count');
-  ct.textContent = `${produtos.length} produto(s)`;
+  const lista = produtos.filter(p => !isProdutoAcai(p));
+  ct.textContent = `${lista.length} produto(s)`;
   
-  if (!produtos.length) {
+  if (!lista.length) {
     tb.innerHTML = '';
     em.style.display = 'block';
     return;
   }
   em.style.display = 'none';
   
-  tb.innerHTML = produtos.map(p => {
+  tb.innerHTML = lista.map(p => {
     const low = p.qtd <= p.qtd_minima;
     const badge = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
     const precoFormatado = p.preco ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco) : '—';
@@ -839,7 +840,7 @@ function setEstoqueView(view) {
 function renderEstoqueCats() {
   const el = document.getElementById('estoque-cats');
   if (!el) return;
-  const cats = ['Todas', ...new Set(produtos.map(p => p.categoria).filter(Boolean))].sort((a, b) => {
+  const cats = ['Todas', ...new Set(produtos.filter(p => !isProdutoAcai(p)).map(p => p.categoria).filter(Boolean))].sort((a, b) => {
     if (a === 'Todas') return -1;
     if (b === 'Todas') return 1;
     return a.localeCompare(b, 'pt-BR');
@@ -860,9 +861,9 @@ function selectEstoqueCat(cat) {
 function renderEstoque() {
   setEstoqueView(estoqueViewAtiva);
   renderEstoqueCats();
-  const low = produtos.filter(p => p.qtd <= p.qtd_minima);
+  const low = produtos.filter(p => !isProdutoAcai(p) && p.qtd <= p.qtd_minima);
   
-  document.getElementById('estoque-total-produtos').textContent = produtos.length;
+  document.getElementById('estoque-total-produtos').textContent = produtos.filter(p => !isProdutoAcai(p)).length;
   const semEnt = movimentacoes.filter(m => m.tipo === 'entrada' && semanaAtual(m.data)).reduce((a, m) => a + m.qtd, 0);
   const semSai = movimentacoes.filter(m => m.tipo === 'saida' && semanaAtual(m.data)).reduce((a, m) => a + m.qtd, 0);
   document.getElementById('estoque-entradas').textContent = semEnt;
@@ -904,7 +905,7 @@ function filtrarEstoque() {
   const count = document.getElementById('estoque-busca-count');
   if (!dpq) return;
 
-  let lista = produtos;
+  let lista = produtos.filter(p => !isProdutoAcai(p));
 
   // filtro categoria
   if (estoqueCatAtiva && estoqueCatAtiva !== 'Todas') {
@@ -1374,11 +1375,12 @@ function renderRelVendas() {
 
 function renderRelEstoque() {
   const rt = document.getElementById('r-tabela');
-  if (!produtos.length) {
+  const lista = produtos.filter(p => !isProdutoAcai(p));
+  if (!lista.length) {
     rt.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-secondary)">Sem produtos cadastrados</td></tr>';
     return;
   }
-  rt.innerHTML = produtos.map(p => {
+  rt.innerHTML = lista.map(p => {
     const low = p.qtd <= p.qtd_minima;
     const badge = low ? '<span class="badge badge-red">Repor</span>' : '<span class="badge badge-green">Normal</span>';
     const preco = p.preco ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(p.preco) : '—';
@@ -1508,8 +1510,13 @@ function isProdutoPastel(p) {
   return p.tipo === 'pastel' || (p.nome && p.nome.toLowerCase() === 'pastel');
 }
 
+function isProdutoAcai(p) {
+  return p.tipo === 'acai' || (p.categoria && p.categoria.toLowerCase() === 'açaí');
+}
+
 function isSoEstoque(p) {
   if (isProdutoPastel(p)) return true;
+  if (isProdutoAcai(p)) return true;
   if (!p.categoria) return false;
   return CATEGORIAS_SO_ESTOQUE.has(p.categoria.toLowerCase());
 }
@@ -1831,16 +1838,12 @@ function openAcaiModal(modo = 'vendas') {
     return;
   }
 
-  tEl.innerHTML = acaiData.tamanhos.map(t => {
-    const semEstoque = t.qtd <= 0;
-    return `
-      <button type="button" class="acai-tam-btn${semEstoque ? ' sem-estoque' : ''}"
-        onclick="selectAcaiTamanho(${t.id})" data-id="${t.id}" ${semEstoque ? 'disabled' : ''}>
-        <span class="acai-tam-nome">${t.nome}</span>
-        <span class="acai-tam-preco">${fmtMoeda(t.preco || 0)}</span>
-        ${semEstoque ? '<span class="acai-tam-badge">Sem estoque</span>' : ''}
-      </button>`;
-  }).join('');
+  tEl.innerHTML = acaiData.tamanhos.map(t => `
+    <button type="button" class="acai-tam-btn"
+      onclick="selectAcaiTamanho(${t.id})" data-id="${t.id}">
+      <span class="acai-tam-nome">${t.nome}</span>
+      <span class="acai-tam-preco">${fmtMoeda(t.preco || 0)}</span>
+    </button>`).join('');
 
   cEl.innerHTML = acaiData.complementos.map(c => `
     <button type="button" class="acai-comp-btn" onclick="toggleAcaiComplemento(${c.id})" data-id="${c.id}">
@@ -1899,12 +1902,6 @@ function addAcaiToVenda() {
     return;
   }
 
-  const produto = produtos.find(p => p.id === t.id);
-  if (produto && produto.qtd <= 0) {
-    toast('Açaí sem estoque!', false);
-    return;
-  }
-
   const itens = acaiModo === 'consumo' ? consumoItens : vendaItens;
   const comps = acaiData.complementos.filter(c => acaiComplementosSel.includes(c.id));
   const compsNome = comps.map(c => c.nome).join(' + ');
@@ -1915,10 +1912,6 @@ function addAcaiToVenda() {
 
   const existing = itens.find(i => i.produtoId === t.id && (i.complementos || '') === compsNome);
   if (existing) {
-    if (produto && existing.qtd + 1 > produto.qtd) {
-      toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
-      return;
-    }
     existing.qtd += 1;
   } else {
     itens.push({

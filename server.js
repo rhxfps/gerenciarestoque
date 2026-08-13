@@ -457,14 +457,15 @@ app.post('/api/vendas', autenticar, async (req, res) => {
 
       const { data: produtoAtual } = await supabase
         .from('produtos')
-        .select('qtd, tipo, nome')
+        .select('qtd, tipo, nome, categoria')
         .eq('id', item.produtoId)
         .single();
 
       const isPastel = item.recheio || produtoAtual?.tipo === 'pastel' ||
         (produtoAtual?.nome && produtoAtual.nome.toLowerCase() === 'pastel');
+      const isAcai = produtoAtual?.categoria === 'Açaí' || produtoAtual?.tipo === 'acai';
 
-      if (!isPastel && produtoAtual) {
+      if (!isPastel && !isAcai && produtoAtual) {
         await supabase
           .from('produtos')
           .update({ qtd: produtoAtual.qtd - item.qtd })
@@ -592,14 +593,15 @@ app.post('/api/consumo', autenticar, async (req, res) => {
 
       const { data: produtoAtual } = await supabase
         .from('produtos')
-        .select('qtd, tipo, nome')
+        .select('qtd, tipo, nome, categoria')
         .eq('id', item.produtoId)
         .single();
 
       const isPastel = item.recheio || produtoAtual?.tipo === 'pastel' ||
         (produtoAtual?.nome && produtoAtual.nome.toLowerCase() === 'pastel');
+      const isAcai = produtoAtual?.categoria === 'Açaí' || produtoAtual?.tipo === 'acai';
 
-      if (!isPastel && produtoAtual) {
+      if (!isPastel && !isAcai && produtoAtual) {
         await supabase
           .from('produtos')
           .update({ qtd: produtoAtual.qtd - item.qtd })
