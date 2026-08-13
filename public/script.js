@@ -1592,22 +1592,58 @@ function quickAddProduto(produtoId) {
   atualizaPreview();
 }
 
+let pastelSelecionados = [];
+let pastelModo = 'vendas';
+
 function openPastelModal(modo = 'vendas') {
   const modal = document.getElementById('pastel-modal');
+  if (!modal) return;
+
+  pastelModo = modo;
+  pastelSelecionados = [];
+  renderPastelModal();
+
+  modal.classList.add('show');
+}
+
+function renderPastelModal() {
   const grid = document.getElementById('pastel-recheios-grid');
-  if (!modal || !grid) return;
+  if (!grid) return;
 
   const recheios = pastelData.recheios?.length
     ? pastelData.recheios
     : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
 
   grid.innerHTML = recheios.map(r => `
-    <button type="button" class="pastel-recheio-btn" onclick="addPastelToVenda('${r.nome.replace(/'/g, "\\'")}', '${modo}')">
+    <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
+      onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
       ${r.nome}
     </button>
   `).join('');
 
-  modal.classList.add('show');
+  const texto = document.getElementById('pastel-selecao-texto');
+  if (texto) texto.textContent = pastelSelecionados.length ? pastelSelecionados.join(' + ') : 'Nenhum sabor';
+
+  const btn = document.getElementById('pastel-add-btn');
+  if (btn) btn.disabled = pastelSelecionados.length === 0;
+}
+
+function togglePastelRecheio(nome) {
+  const idx = pastelSelecionados.indexOf(nome);
+  if (idx >= 0) {
+    pastelSelecionados.splice(idx, 1);
+  } else if (pastelSelecionados.length >= 2) {
+    toast('Máximo de 2 sabores por pastel!', false);
+    return;
+  } else {
+    pastelSelecionados.push(nome);
+  }
+  renderPastelModal();
+}
+
+function confirmPastelAdd() {
+  if (!pastelSelecionados.length) return;
+  addPastelToVenda(pastelSelecionados.join('+'), pastelModo);
 }
 
 function closePastelModal(e) {
