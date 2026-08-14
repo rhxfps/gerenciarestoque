@@ -1016,36 +1016,59 @@
         </div>
 
         <div id="admin-view-consumo" style="display:none">
-          <div class="dash-kpi-grid">
-            <div class="dash-kpi dash-kpi--blue">
-              <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Usuários</span>
-                <span class="dash-kpi-value" id="cd-count">0</span>
-                <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
+
+          <div class="reg-toggle">
+            <button class="reg-toggle-btn active" id="ac-btn-visao" onclick="selectAdminConsumo('visao')">
+              <i class="ti ti-chart-bar"></i> Visão geral
+            </button>
+            <button class="reg-toggle-btn" id="ac-btn-gerenciar" onclick="selectAdminConsumo('gerenciar')">
+              <i class="ti ti-user-cog"></i> Gerenciar consumo
+            </button>
+          </div>
+
+          <!-- ===== VISÃO GERAL ===== -->
+          <div id="ac-visao-view">
+            <div class="dash-kpi-grid">
+              <div class="dash-kpi dash-kpi--blue">
+                <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Usuários</span>
+                  <span class="dash-kpi-value" id="cd-count">0</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
+                </div>
+              </div>
+              <div class="dash-kpi dash-kpi--indigo">
+                <div class="dash-kpi-icon"><i class="ti ti-wallet"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Consumido no mês</span>
+                  <span class="dash-kpi-value" id="cd-total">R$ 0,00</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Total de todos</span>
+                </div>
+              </div>
+              <div class="dash-kpi dash-kpi--violet">
+                <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Média por usuário</span>
+                  <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
+                </div>
               </div>
             </div>
-            <div class="dash-kpi dash-kpi--indigo">
-              <div class="dash-kpi-icon"><i class="ti ti-wallet"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Consumido no mês</span>
-                <span class="dash-kpi-value" id="cd-total">R$ 0,00</span>
-                <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Total de todos</span>
-              </div>
-            </div>
-            <div class="dash-kpi dash-kpi--violet">
-              <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
-              <div class="dash-kpi-body">
-                <span class="dash-kpi-label">Média por usuário</span>
-                <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
-                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
-              </div>
+
+            <div class="card">
+              <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
+              <div class="cd-grid" id="cd-grid"></div>
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
-            <div class="cd-grid" id="cd-grid"></div>
+          <!-- ===== GERENCIAR CONSUMO ===== -->
+          <div id="ac-gerenciar-view" style="display:none">
+            <div class="card ac-gerenciar-card">
+              <div class="card-title"><i class="ti ti-user-cog"></i> Gerenciar consumo dos usuários</div>
+              <p class="ac-gerenciar-sub">Selecione um usuário para adicionar ou remover consumos do mês.</p>
+              <div class="ac-user-picker" id="ac-user-picker"></div>
+            </div>
+            <div id="ac-manage-panel"></div>
           </div>
         </div>
       </div>
@@ -1148,63 +1171,17 @@
       <!-- Modal detalhe do consumo (dono) -->
       <div class="modal-overlay" id="consumo-detalhe-modal" onclick="closeConsumoDonoDetalhe(event)">
         <div class="modal-content consumo-detalhe-content" onclick="event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="ti ti-wallet"></i> Consumo de <span id="cd-detalhe-nome">—</span></h3>
-            <button class="modal-close" onclick="closeConsumoDonoDetalhe()"><i class="ti ti-x"></i></button>
+          <div class="cd-strip">
+            <button class="vd-close" onclick="closeConsumoDonoDetalhe()"><i class="ti ti-x"></i></button>
+            <div class="vd-strip-top">
+              <div class="vd-strip-num"><i class="ti ti-wallet"></i> Consumo de <span id="cd-detalhe-nome">—</span></div>
+            </div>
+            <div class="cd-strip-total">
+              <span>Total no mês</span>
+              <strong id="cd-detalhe-total">R$ 0,00</strong>
+            </div>
           </div>
-          <div class="consumo-detalhe-total">
-            <span>Total no mês</span>
-            <strong id="cd-detalhe-total">R$ 0,00</strong>
-          </div>
-          <div id="consumo-detalhe-body"></div>
-        </div>
-      </div>
-
-      <!-- Modal admin: adicionar consumo ao usuário -->
-      <div class="modal-overlay" id="admin-add-consumo-modal" onclick="closeAdminAddConsumo(event)">
-        <div class="modal-content admin-add-content" onclick="event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="ti ti-wallet"></i> Adicionar consumo de <span id="aac-nome">—</span></h3>
-            <button class="modal-close" onclick="closeAdminAddConsumo()"><i class="ti ti-x"></i></button>
-          </div>
-          <input type="hidden" id="aac-usuario-id">
-          <div class="form-row">
-            <div class="form-group" style="flex:2"><label>Produto</label><select id="aac-produto"></select></div>
-            <div class="form-group" style="flex:1"><label>Qtd</label><input type="number" id="aac-qtd" value="1" min="0.001" step="0.001"></div>
-          </div>
-          <button class="btn btn-primary" style="width:100%" onclick="adminAddItemLista()">
-            <i class="ti ti-plus"></i> Adicionar item à lista
-          </button>
-          <div class="vendas-carrinho-body" style="margin-top:12px">
-            <div id="aac-itens-empty" class="empty vendas-empty">Nenhum item adicionado</div>
-            <div id="aac-itens-list" class="vendas-itens-list"></div>
-          </div>
-          <div class="total-section" style="margin:12px 0">
-            <div class="total-label">Total</div>
-            <div class="total-value" id="aac-total">R$ 0,00</div>
-          </div>
-          <div class="form-group" style="margin-bottom:12px">
-            <label>Observação (opcional)</label>
-            <input type="text" id="aac-obs" placeholder="Ex: Ajuste manual...">
-          </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="confirmarAdminAddConsumo()">
-            <i class="ti ti-check"></i> Registrar consumo
-          </button>
-        </div>
-      </div>
-
-      <!-- Modal admin: remover consumo do usuário -->
-      <div class="modal-overlay" id="admin-del-consumo-modal" onclick="closeAdminDelConsumo(event)">
-        <div class="modal-content consumo-detalhe-content" onclick="event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="ti ti-trash"></i> Remover consumo de <span id="adc-nome">—</span></h3>
-            <button class="modal-close" onclick="closeAdminDelConsumo()"><i class="ti ti-x"></i></button>
-          </div>
-          <div class="consumo-detalhe-total">
-            <span>Total no mês</span>
-            <strong id="adc-total">R$ 0,00</strong>
-          </div>
-          <div id="admin-del-body"></div>
+          <div class="cd-detalhe-body" id="consumo-detalhe-body"></div>
         </div>
       </div>
 
