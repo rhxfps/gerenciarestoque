@@ -1518,6 +1518,50 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 .modal-close:hover { background: var(--red-bg); color: var(--red); border-color: #fca5a5; }
 
+/* ===== Modal de confirmação (aceitar/recusar) ===== */
+.confirm-content {
+  max-width: 380px;
+  text-align: center;
+  padding: 1.75rem 1.5rem 1.5rem;
+  overflow: hidden;
+}
+.confirm-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+}
+#confirm-modal.danger .confirm-icon {
+  background: var(--red-bg);
+  color: var(--red);
+}
+.confirm-content h3 {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.confirm-content p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.35rem;
+}
+.confirm-actions .btn { flex: 1; justify-content: center; }
+.confirm-actions .btn-danger { box-shadow: 0 2px 8px rgba(220,38,38,.3); }
+
+/* Modal editar produto */
+
 .pastel-modal-preco {
   padding: 0.6rem 1.25rem 0.75rem;
   font-size: 13px;

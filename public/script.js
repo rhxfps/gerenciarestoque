@@ -98,6 +98,36 @@ async function apiRequest(endpoint, options = {}) {
 // Toast notification
 let toastTimer = null;
 
+// ==================== CONFIRMAÇÃO NO SITE (aceitar/recusar) ====================
+let confirmCallback = null;
+
+function showConfirm({ title = 'Tem certeza?', message = '', confirmText = 'Confirmar', cancelText = 'Cancelar', danger = true, icon = 'ti ti-alert-triangle', onConfirm = null } = {}) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').textContent = message;
+  document.getElementById('confirm-icon').innerHTML = `<i class="${icon}"></i>`;
+  document.getElementById('confirm-ok-btn').innerHTML = `<i class="ti ti-check"></i> ${confirmText}`;
+  document.getElementById('confirm-cancel-btn').innerHTML = `<i class="ti ti-x"></i> ${cancelText}`;
+  const ok = document.getElementById('confirm-ok-btn');
+  ok.classList.toggle('btn-danger', danger);
+  ok.classList.toggle('btn-primary', !danger);
+  document.getElementById('confirm-modal').classList.toggle('danger', danger);
+  confirmCallback = onConfirm;
+  document.getElementById('confirm-modal').classList.add('show');
+}
+
+function closeConfirmModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  confirmCallback = null;
+  document.getElementById('confirm-modal').classList.remove('show');
+}
+
+function confirmOk() {
+  const cb = confirmCallback;
+  confirmCallback = null;
+  document.getElementById('confirm-modal').classList.remove('show');
+  if (cb) cb();
+}
+
 function toast(msg, ok = true) {
   const tipo = ok === true ? 'success' : ok === false ? 'error' : ok;
   showToast(msg, tipo);
@@ -797,17 +827,22 @@ async function addProduto() {
 }
 
 async function deleteProduto(id) {
-  if (!confirm('Remover este produto? Esta ação não pode ser desfeita.')) return;
-  
-  try {
-    await apiRequest(`/produtos/${id}`, { method: 'DELETE' });
-    await loadAllData();
-    renderProdutos();
-    toast('Produto removido com sucesso!');
-  } catch (error) {
-    toast(error.message || 'Erro ao remover produto!', false);
-    console.error(error);
-  }
+  showConfirm({
+    title: 'Remover produto',
+    message: 'Remover este produto? Esta ação não pode ser desfeita.',
+    confirmText: 'Remover',
+    onConfirm: async () => {
+      try {
+        await apiRequest(`/produtos/${id}`, { method: 'DELETE' });
+        await loadAllData();
+        renderProdutos();
+        toast('Produto removido com sucesso!');
+      } catch (error) {
+        toast(error.message || 'Erro ao remover produto!', false);
+        console.error(error);
+      }
+    }
+  });
 }
 
 function openEditarProduto(id) {
@@ -2709,17 +2744,24 @@ async function refreshConsumoFuncionarios() {
 async function zerarConsumo(usuarioId) {
   const f = consumoFuncionarios.find(x => x.id === usuarioId);
   if (!f) return;
-  if (!confirm(`Zerar todo o consumo do mês de ${f.nome}? Essa ação não pode ser desfeita.`)) return;
-  try {
-    await apiRequest(`/consumo/admin/zerar/${usuarioId}`, { method: 'DELETE' });
-    toast('Consumo zerado!');
-    await refreshConsumoFuncionarios();
-    renderConsumoDono();
-    renderAcUserPicker();
-    renderAcManage();
-  } catch (e) {
-    toast(e.message || 'Erro ao zerar consumo', false);
-  }
+  showConfirm({
+    title: 'Zerar consumo',
+    message: `Zerar todo o consumo do mês de ${f.nome}? Essa ação não pode ser desfeita.`,
+    confirmText: 'Zerar',
+    icon: 'ti ti-eraser',
+    onConfirm: async () => {
+      try {
+        await apiRequest(`/consumo/admin/zerar/${usuarioId}`, { method: 'DELETE' });
+        toast('Consumo zerado!');
+        await refreshConsumoFuncionarios();
+        renderConsumoDono();
+        renderAcUserPicker();
+        renderAcManage();
+      } catch (e) {
+        toast(e.message || 'Erro ao zerar consumo', false);
+      }
+    }
+  });
 }
 
 // ==================== QUEM CONSUMIU (funcionário) ====================
@@ -3087,17 +3129,22 @@ async function addUsuario() {
 }
 
 async function deleteUsuario(id) {
-  if (!confirm('Remover este usuário? Esta ação não pode ser desfeita.')) return;
-  
-  try {
-    await apiRequest(`/usuarios/${id}`, { method: 'DELETE' });
-    await loadAllData();
-    renderUsuarios();
-    toast('Usuário removido com sucesso!');
-  } catch (error) {
-    toast(error.message || 'Erro ao remover usuário!', false);
-    console.error(error);
-  }
+  showConfirm({
+    title: 'Remover usuário',
+    message: 'Remover este usuário? Esta ação não pode ser desfeita.',
+    confirmText: 'Remover',
+    onConfirm: async () => {
+      try {
+        await apiRequest(`/usuarios/${id}`, { method: 'DELETE' });
+        await loadAllData();
+        renderUsuarios();
+        toast('Usuário removido com sucesso!');
+      } catch (error) {
+        toast(error.message || 'Erro ao remover usuário!', false);
+        console.error(error);
+      }
+    }
+  });
 }
 
 function editarUsuarioForm(u) {

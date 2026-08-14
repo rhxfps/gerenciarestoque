@@ -1307,6 +1307,18 @@
 
     </div>
   </main>
+      <div class="modal-overlay" id="confirm-modal" onclick="closeConfirmModal(event)">
+        <div class="modal-content confirm-content" onclick="event.stopPropagation()">
+          <div class="confirm-icon" id="confirm-icon"><i class="ti ti-alert-triangle"></i></div>
+          <h3 id="confirm-title">Tem certeza?</h3>
+          <p id="confirm-message"></p>
+          <div class="confirm-actions">
+            <button class="btn" id="confirm-cancel-btn" onclick="closeConfirmModal()"><i class="ti ti-x"></i> Cancelar</button>
+            <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmOk()"><i class="ti ti-check"></i> Confirmar</button>
+          </div>
+        </div>
+      </div>
+
 </div>
 
 <div class="toast" id="toast">
