@@ -412,6 +412,16 @@ async function baixarEstoqueItens(itens, obs) {
 
   // Agregar deduções por produto (evita corrida e consultas repetidas)
   const deducoes = new Map(); // id -> { qtd, nome }
+
+  // Buscar "Massa de Pastel" para baixar estoque a cada pastel vendido
+  const { data: massaProd } = await supabase
+    .from('produtos')
+    .select('id, qtd')
+    .ilike('nome', 'massa de pastel')
+    .limit(1)
+    .maybeSingle();
+  if (massaProd) estoqueMap.set(massaProd.id, { ...massaProd, nome: 'Massa de Pastel' });
+
   for (const item of itens) {
     const p = estoqueMap.get(item.produtoId);
     const isPastel = item.recheio || p?.tipo === 'pastel' ||
@@ -427,10 +437,18 @@ async function baixarEstoqueItens(itens, obs) {
       if (copo) idAlvo = copo.id;
     }
 
-    if (idAlvo == null) continue;
-    const d = deducoes.get(idAlvo) || { qtd: 0, nome: p ? p.nome : item.produtoNome };
-    d.qtd += item.qtd;
-    deducoes.set(idAlvo, d);
+    if (idAlvo != null) {
+      const d = deducoes.get(idAlvo) || { qtd: 0, nome: p ? p.nome : item.produtoNome };
+      d.qtd += item.qtd;
+      deducoes.set(idAlvo, d);
+    }
+
+    // Cada pastel desconta 1 unidade de Massa de Pastel
+    if (isPastel && massaProd) {
+      const dm = deducoes.get(massaProd.id) || { qtd: 0, nome: 'Massa de Pastel' };
+      dm.qtd += item.qtd;
+      deducoes.set(massaProd.id, dm);
+    }
   }
 
   // Atualizar estoques e registrar movimentações em paralelo (lote)
@@ -515,7 +533,7 @@ app.post('/api/vendas', autenticar, async (req, res) => {
 });
 
 // ==================== CONSUMO (funcionários) ====================
-const LIMITE_CONSUMO_MENSAL = 100;
+const LIMITE_CONSUMO_MENSAL = 50;
 
 function inicioDoMesLocal(agora = new Date()) {
   return new Date(agora.getFullYear(), agora.getMonth(), 1);
