@@ -479,6 +479,8 @@ function renderListaVendas() {
   const prodFiltro = document.getElementById('vl-filtro-produto')?.value || '';
   const deVal      = document.getElementById('vl-filtro-de')?.value || '';
   const ateVal     = document.getElementById('vl-filtro-ate')?.value || '';
+  const horaDeVal  = document.getElementById('vl-filtro-hora-de')?.value || '';
+  const horaAteVal = document.getElementById('vl-filtro-hora-ate')?.value || '';
 
   const hoje = new Date();
   hoje.setHours(23, 59, 59, 999);
@@ -505,6 +507,22 @@ function renderListaVendas() {
       if (d < primeiroDiaMes) return false;
     }
     if (fimAte && d > fimAte) return false;
+
+    // Filtro por horário
+    if (horaDeVal || horaAteVal) {
+      const h = d.getHours();
+      const m = d.getMinutes();
+      const mins = h * 60 + m;
+      if (horaDeVal) {
+        const [hd, md] = horaDeVal.split(':').map(Number);
+        if (mins < hd * 60 + md) return false;
+      }
+      if (horaAteVal) {
+        const [ha, ma] = horaAteVal.split(':').map(Number);
+        if (mins > ha * 60 + ma) return false;
+      }
+    }
+
     return true;
   };
 
