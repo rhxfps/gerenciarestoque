@@ -2810,6 +2810,46 @@ async function zerarConsumo(usuarioId) {
   });
 }
 
+async function baixarBackup() {
+  const btn = document.getElementById('btn-backup');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i> Gerando...';
+
+  try {
+    const token = localStorage.getItem('token');
+    const resp = await fetch('/api/admin/backup', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || 'Erro ao gerar backup');
+    }
+
+    const blob = await resp.blob();
+    const disposition = resp.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?(.+?)"?$/);
+    const filename = match ? match[1] : 'backup_gerenciarstock.sql';
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast('Backup baixado com sucesso!');
+  } catch (e) {
+    toast(e.message || 'Erro ao baixar backup', false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
 // ==================== QUEM CONSUMIU (funcionário) ====================
 async function openConsumoQuem() {
   try {

@@ -938,6 +938,16 @@
 
       <!-- ADMIN (dono): Usuários + Consumo -->
       <div class="screen" id="screen-admin">
+        <div class="card admin-backup-card">
+          <div class="section-header">
+            <h2><i class="ti ti-database"></i> Backup do banco</h2>
+            <button class="btn btn-primary" id="btn-backup" onclick="baixarBackup()">
+              <i class="ti ti-download"></i> Baixar backup SQL
+            </button>
+          </div>
+          <p class="admin-backup-desc">Gera um arquivo .sql completo (schema + dados) para restaurar o banco de dados.</p>
+        </div>
+
         <div class="reg-toggle">
           <button class="reg-toggle-btn active" id="admin-btn-usuarios" onclick="selectAdminTipo('usuarios')">
             <i class="ti ti-users"></i> Usuários

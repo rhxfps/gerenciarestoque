@@ -231,6 +231,32 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
   background: rgba(255,255,255,.18);
 }
 
+/* Admin: card de backup */
+.admin-backup-card {
+  border: 1.5px dashed var(--border-mid);
+  background: var(--bg-secondary);
+}
+.admin-backup-card .section-header {
+  padding: 0;
+  border-bottom: none;
+}
+.admin-backup-card .section-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.admin-backup-card .section-header h2 i {
+  color: var(--blue);
+}
+.admin-backup-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0 0;
+  opacity: .7;
+}
+
 /* sidebar footer */
 .sidebar-footer {
   padding: 1rem 1.25rem;

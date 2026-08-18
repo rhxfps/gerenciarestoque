@@ -1071,6 +1071,208 @@ app.get('/api/caixa/retiradas', autenticar, async (req, res) => {
   }
 });
 
+// ==================== BACKUP DO BANCO DE DADOS ====================
+
+const BACKUP_TABLES = [
+  {
+    name: 'usuarios',
+    create: `CREATE TABLE IF NOT EXISTS usuarios (
+  id SERIAL PRIMARY KEY,
+  nome TEXT NOT NULL,
+  usuario TEXT UNIQUE NOT NULL,
+  senha TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'funcionario'
+);`
+  },
+  {
+    name: 'produtos',
+    create: `CREATE TABLE IF NOT EXISTS produtos (
+  id SERIAL PRIMARY KEY,
+  nome TEXT UNIQUE NOT NULL,
+  categoria TEXT,
+  qtd NUMERIC NOT NULL DEFAULT 0,
+  qtd_minima NUMERIC NOT NULL DEFAULT 0,
+  preco NUMERIC(10,2) NOT NULL DEFAULT 0,
+  tipo VARCHAR(20) NOT NULL DEFAULT 'estoque'
+);
+CREATE INDEX IF NOT EXISTS idx_produtos_tipo ON produtos(tipo);`
+  },
+  {
+    name: 'vendas',
+    create: `CREATE TABLE IF NOT EXISTS vendas (
+  id SERIAL PRIMARY KEY,
+  total NUMERIC(10,2) NOT NULL,
+  pagamento TEXT,
+  delivery BOOLEAN,
+  plataforma TEXT,
+  obs TEXT,
+  data TIMESTAMPTZ DEFAULT NOW()
+);`
+  },
+  {
+    name: 'pastel_recheios',
+    create: `CREATE TABLE IF NOT EXISTS pastel_recheios (
+  id SERIAL PRIMARY KEY,
+  produto_id INTEGER NOT NULL REFERENCES produtos(id) ON DELETE CASCADE,
+  nome TEXT NOT NULL,
+  ordem INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(produto_id, nome)
+);
+CREATE INDEX IF NOT EXISTS idx_pastel_recheios_produto ON pastel_recheios(produto_id);`
+  },
+  {
+    name: 'venda_itens',
+    create: `CREATE TABLE IF NOT EXISTS venda_itens (
+  id SERIAL PRIMARY KEY,
+  venda_id INTEGER NOT NULL REFERENCES vendas(id) ON DELETE CASCADE,
+  produto_id INTEGER REFERENCES produtos(id),
+  produto_nome TEXT NOT NULL,
+  qtd NUMERIC NOT NULL,
+  preco_unitario NUMERIC(10,2) NOT NULL,
+  recheio TEXT
+);`
+  },
+  {
+    name: 'movimentacoes',
+    create: `CREATE TABLE IF NOT EXISTS movimentacoes (
+  id SERIAL PRIMARY KEY,
+  tipo TEXT NOT NULL,
+  produto_id INTEGER REFERENCES produtos(id),
+  produto_nome TEXT NOT NULL,
+  qtd NUMERIC NOT NULL,
+  obs TEXT,
+  data TIMESTAMPTZ DEFAULT NOW()
+);`
+  },
+  {
+    name: 'caixa',
+    create: `CREATE TABLE IF NOT EXISTS caixa (
+  id SERIAL PRIMARY KEY,
+  troco_inicial NUMERIC(10,2),
+  data_abertura TIMESTAMPTZ NOT NULL,
+  data_fechamento TIMESTAMPTZ,
+  valor_final NUMERIC(10,2),
+  total_vendas_dinheiro NUMERIC(10,2),
+  usuario_abertura_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  usuario_fechamento_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL
+);`
+  },
+  {
+    name: 'caixa_retiradas',
+    create: `CREATE TABLE IF NOT EXISTS caixa_retiradas (
+  id SERIAL PRIMARY KEY,
+  caixa_id INTEGER NOT NULL REFERENCES caixa(id) ON DELETE CASCADE,
+  valor NUMERIC(10,2) NOT NULL CHECK (valor > 0),
+  motivo TEXT NOT NULL,
+  usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  data TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_caixa_retiradas_caixa ON caixa_retiradas(caixa_id);`
+  },
+  {
+    name: 'consumos',
+    create: `CREATE TABLE IF NOT EXISTS consumos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  total NUMERIC(10,2) NOT NULL DEFAULT 0,
+  obs TEXT,
+  data TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_consumos_usuario_data ON consumos(usuario_id, data);`
+  },
+  {
+    name: 'consumo_itens',
+    create: `CREATE TABLE IF NOT EXISTS consumo_itens (
+  id SERIAL PRIMARY KEY,
+  consumo_id INTEGER NOT NULL REFERENCES consumos(id) ON DELETE CASCADE,
+  produto_id INTEGER REFERENCES produtos(id) ON DELETE SET NULL,
+  produto_nome TEXT NOT NULL,
+  qtd NUMERIC(10,2) NOT NULL DEFAULT 1,
+  preco_unitario NUMERIC(10,2) NOT NULL DEFAULT 0,
+  recheio TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_consumo_itens_consumo ON consumo_itens(consumo_id);`
+  },
+  {
+    name: 'acai_complementos',
+    create: `CREATE TABLE IF NOT EXISTS acai_complementos (
+  id BIGSERIAL PRIMARY KEY,
+  nome TEXT UNIQUE NOT NULL,
+  preco NUMERIC(10,2) NOT NULL DEFAULT 0,
+  ordem INT NOT NULL DEFAULT 0
+);`
+  }
+];
+
+function escapeSqlValue(val) {
+  if (val === null || val === undefined) return 'NULL';
+  if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
+  if (typeof val === 'number') return String(val);
+  if (val instanceof Date) return `'${val.toISOString()}'`;
+  if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
+  return `'${String(val).replace(/'/g, "''")}'`;
+}
+
+app.get('/api/admin/backup', autenticar, async (req, res) => {
+  try {
+    if (req.usuario.role !== 'dono') {
+      return res.status(403).json({ error: 'Acesso negado' });
+    }
+
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 16).replace('T', '_').replace(/:/g, '-');
+
+    let sql = `-- ============================================================\n`;
+    sql += `-- Backup GerenciarStock\n`;
+    sql += `-- Data: ${now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
+    sql += `-- Tabelas: ${BACKUP_TABLES.length}\n`;
+    sql += `-- ============================================================\n\n`;
+
+    sql += `SET client_encoding = 'UTF8';\n`;
+    sql += `SET standard_conforming_strings = on;\n\n`;
+
+    for (const table of BACKUP_TABLES) {
+      const { data: rows, error } = await supabase
+        .from(table.name)
+        .select('*');
+
+      if (error) {
+        console.error(`Erro ao consultar tabela ${table.name}:`, error.message);
+        sql += `-- ERRO ao consultar tabela ${table.name}: ${error.message}\n\n`;
+        continue;
+      }
+
+      sql += `-- Tabela: ${table.name}\n`;
+      sql += `${table.create}\n\n`;
+
+      if (!rows || rows.length === 0) {
+        sql += `-- (nenhum registro)\n\n`;
+        continue;
+      }
+
+      const columns = Object.keys(rows[0]);
+      const colList = columns.join(', ');
+
+      for (const row of rows) {
+        const values = columns.map(c => escapeSqlValue(row[c])).join(', ');
+        sql += `INSERT INTO ${table.name} (${colList}) VALUES (${values});\n`;
+      }
+      sql += `\n`;
+    }
+
+    sql += `-- ============================================================\n`;
+    sql += `-- Fim do backup\n`;
+    sql += `-- ============================================================\n`;
+
+    res.setHeader('Content-Type', 'application/sql; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="backup_gerenciarstock_${dateStr}.sql"`);
+    res.send(sql);
+  } catch (error) {
+    console.error('Erro ao gerar backup:', error);
+    res.status(500).json({ error: 'Erro ao gerar backup' });
+  }
+});
+
 // ==================== MIDDLEWARE DE AUTENTICAÇÃO ====================
 function autenticar(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1];
