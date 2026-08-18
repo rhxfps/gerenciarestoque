@@ -518,6 +518,14 @@
               </div>
             </div>
             <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-qrcode"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total pix</span>
+                <span class="dash-kpi-value" id="r-total-pix">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
               <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
               <div class="dash-kpi-body">
                 <span class="dash-kpi-label">Total geral</span>
@@ -826,6 +834,9 @@
                     </div>
                     <div class="payment-option" id="label-cartao" onclick="selectPayment('cartao')">
                       <i class="ti ti-credit-card"></i><span>Cartão</span>
+                    </div>
+                    <div class="payment-option" id="label-pix" onclick="selectPayment('pix')">
+                      <i class="ti ti-qrcode"></i><span>Pix</span>
                     </div>
                   </div>
                   <input type="hidden" id="v-pagamento-hidden" value="dinheiro">

@@ -563,9 +563,10 @@ function renderListaVendas() {
     }
 
     const total = fmt$(v.total);
-    const pagCls = v.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
-    const pagTxt = v.pagamento === 'dinheiro' ? 'Dinheiro' : 'Cartão';
-    const pagIco = v.pagamento === 'dinheiro' ? 'ti-cash' : 'ti-credit-card';
+    let pagCls, pagTxt, pagIco;
+    if (v.pagamento === 'dinheiro') { pagCls = 'pag-dinheiro'; pagTxt = 'Dinheiro'; pagIco = 'ti-cash'; }
+    else if (v.pagamento === 'pix') { pagCls = 'pag-pix'; pagTxt = 'Pix'; pagIco = 'ti-qrcode'; }
+    else { pagCls = 'pag-cartao'; pagTxt = 'Cartão'; pagIco = 'ti-credit-card'; }
     const tipoTxt = v.delivery ? 'Delivery' : 'Balcão';
     const tipoIco = v.delivery ? 'ti-delivery' : 'ti-shopping-bag';
 
@@ -739,9 +740,10 @@ function openVendaDetalhe(vendaId) {
   const dt = new Date(venda.data);
   const dataHora = `${dt.toLocaleDateString('pt-BR')} às ${dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-  const pagIco = venda.pagamento === 'dinheiro' ? 'ti-cash' : 'ti-credit-card';
-  const pagTxt = venda.pagamento === 'dinheiro' ? 'Dinheiro' : 'Cartão';
-  const pagCls = venda.pagamento === 'dinheiro' ? 'pag-dinheiro' : 'pag-cartao';
+  let pagIco, pagTxt, pagCls;
+  if (venda.pagamento === 'dinheiro') { pagIco = 'ti-cash'; pagTxt = 'Dinheiro'; pagCls = 'pag-dinheiro'; }
+  else if (venda.pagamento === 'pix') { pagIco = 'ti-qrcode'; pagTxt = 'Pix'; pagCls = 'pag-pix'; }
+  else { pagIco = 'ti-credit-card'; pagTxt = 'Cartão'; pagCls = 'pag-cartao'; }
   const tipoChip = venda.delivery
     ? '<span class="vd-strip-chip"><i class="ti ti-delivery"></i> Delivery</span>'
     : '<span class="vd-strip-chip"><i class="ti ti-shopping-bag"></i> Balcão</span>';
@@ -1333,10 +1335,12 @@ function renderDashboardProfissional() {
     }
   }
 
-  const pagamentos = { dinheiro: 0, cartao: 0 };
+  const pagamentos = { dinheiro: 0, cartao: 0, pix: 0 };
   vendasMes.forEach(venda => {
     if (venda.pagamento === 'dinheiro') {
       pagamentos.dinheiro++;
+    } else if (venda.pagamento === 'pix') {
+      pagamentos.pix++;
     } else if (venda.pagamento === 'cartao') {
       pagamentos.cartao++;
     }
@@ -1347,9 +1351,10 @@ function renderDashboardProfissional() {
     if (!vendasMes.length) {
       pagamentosEl.innerHTML = '<div class="empty" style="padding:1rem">Sem dados ainda</div>';
     } else {
-      const totalPag = pagamentos.dinheiro + pagamentos.cartao;
+      const totalPag = pagamentos.dinheiro + pagamentos.cartao + pagamentos.pix;
       const pctDin = totalPag > 0 ? Math.round((pagamentos.dinheiro/totalPag)*100) : 0;
       const pctCart = totalPag > 0 ? Math.round((pagamentos.cartao/totalPag)*100) : 0;
+      const pctPix = totalPag > 0 ? Math.round((pagamentos.pix/totalPag)*100) : 0;
       pagamentosEl.innerHTML = `
         <div class="dash-rank-item">
           <div class="dash-rank-header">
@@ -1365,6 +1370,13 @@ function renderDashboardProfissional() {
           </div>
           <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${pctCart}%"></div></div>
         </div>
+        <div class="dash-rank-item">
+          <div class="dash-rank-header">
+            <span class="dash-rank-name"><i class="ti ti-qrcode" style="color:var(--purple)"></i> Pix</span>
+            <span class="dash-rank-val">${pagamentos.pix} venda(s) · ${pctPix}%</span>
+          </div>
+          <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--purple);width:${pctPix}%"></div></div>
+        </div>
       `;
     }
   }
@@ -1375,9 +1387,10 @@ function renderDashboardProfissional() {
       ultimasVendasEl.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-secondary)">Sem vendas ainda</td></tr>';
     } else {
       ultimasVendasEl.innerHTML = vendas.slice(0, 8).map(venda => {
-        const pagamentoBadge = venda.pagamento === 'dinheiro' 
-          ? '<span class="badge badge-green">Dinheiro</span>' 
-          : '<span class="badge badge-blue">Cartão</span>';
+        let pagamentoBadge;
+        if (venda.pagamento === 'dinheiro') pagamentoBadge = '<span class="badge badge-green">Dinheiro</span>';
+        else if (venda.pagamento === 'pix') pagamentoBadge = '<span class="badge badge-purple">Pix</span>';
+        else pagamentoBadge = '<span class="badge badge-blue">Cartão</span>';
         const deliveryBadge = venda.delivery 
           ? '<span class="badge badge-amber">Sim</span>' 
           : '<span class="badge badge-green">Não</span>';
@@ -1589,6 +1602,7 @@ function renderRelVendas() {
   const totalVendasReais = vendasSemana.reduce((a, v) => a + (v.total || 0), 0);
   const totalDinheiro    = vendasSemana.filter(v => v.pagamento === 'dinheiro').reduce((a, v) => a + (v.total || 0), 0);
   const totalCartao      = vendasSemana.filter(v => v.pagamento === 'cartao').reduce((a, v) => a + (v.total || 0), 0);
+  const totalPix         = vendasSemana.filter(v => v.pagamento === 'pix').reduce((a, v) => a + (v.total || 0), 0);
   const qtdDelivery      = vendasSemana.filter(v => v.delivery).length;
   const qtdBalcao        = vendasSemana.filter(v => !v.delivery).length;
   const totalTipo        = Math.max(qtdDelivery + qtdBalcao, 1);
@@ -1596,6 +1610,7 @@ function renderRelVendas() {
   document.getElementById('r-vendas-qtd').textContent     = vendasSemana.length;
   document.getElementById('r-total-dinheiro').textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalDinheiro);
   document.getElementById('r-total-cartao').textContent   = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalCartao);
+  document.getElementById('r-total-pix').textContent      = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalPix);
   document.getElementById('r-total-geral').textContent    = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(totalVendasReais);
   document.getElementById('r-delivery').textContent = qtdDelivery;
   document.getElementById('r-balcao').textContent   = qtdBalcao;
