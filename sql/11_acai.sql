@@ -30,7 +30,6 @@ WHERE NOT EXISTS (SELECT 1 FROM acai_complementos WHERE acai_complementos.nome =
 INSERT INTO produtos (nome, categoria, qtd, qtd_minima, preco, tipo)
 SELECT nome, categoria, qtd, qtd_minima, preco, tipo FROM (VALUES
   ('Açaí 300ml', 'Açaí', 0, 0, 10.00, 'acai'),
-  ('Açaí 500ml', 'Açaí', 0, 0, 14.00, 'acai'),
-  ('Açaí 700ml', 'Açaí', 0, 0, 18.00, 'acai')
+  ('Açaí 500ml', 'Açaí', 0, 0, 15.00, 'acai')
 ) AS v(nome, categoria, qtd, qtd_minima, preco, tipo)
 WHERE NOT EXISTS (SELECT 1 FROM produtos WHERE produtos.nome = v.nome);
