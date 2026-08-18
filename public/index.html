@@ -676,6 +676,7 @@
                 <option value="">Todos</option>
                 <option value="dinheiro">Dinheiro</option>
                 <option value="cartao">Cartão</option>
+                <option value="pix">Pix</option>
               </select>
             </div>
             <div class="vl-filtro-group">
@@ -686,11 +687,10 @@
                 <option value="delivery">Delivery</option>
               </select>
             </div>
-            <div class="vl-filtro-group">
+            <div class="vl-filtro-group vl-filtro-produto-group">
               <label>Produto</label>
-              <select id="vl-filtro-produto" onchange="renderListaVendas()">
-                <option value="">Todos os produtos</option>
-              </select>
+              <input type="text" id="vl-filtro-produto" placeholder="Buscar produto..." oninput="renderListaVendas()" list="vl-filtro-produto-list">
+              <datalist id="vl-filtro-produto-list"></datalist>
             </div>
             <div class="vl-filtro-group">
               <label>De</label>

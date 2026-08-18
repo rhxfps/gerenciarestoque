@@ -518,12 +518,14 @@ function renderListaVendas() {
   };
   const listaRanking = lista.filter(filtroBasico);
 
-  // Filtro por produto
+  // Filtro por produto (busca por texto)
   let listaFiltrada = listaRanking;
   if (prodFiltro) {
-    listaFiltrada = listaRanking.filter(v =>
-      v.itens?.length ? v.itens.some(i => i.produto_nome === prodFiltro) : v.produto_nome === prodFiltro
-    );
+    const termo = prodFiltro.toLowerCase();
+    listaFiltrada = listaRanking.filter(v => {
+      if (v.itens?.length) return v.itens.some(i => i.produto_nome.toLowerCase().includes(termo));
+      return v.produto_nome?.toLowerCase().includes(termo);
+    });
   }
 
   const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
@@ -675,32 +677,26 @@ function renderListaRanking(lista, prodFiltro) {
 }
 
 function selectRankingProduto(nome) {
-  const sel = document.getElementById('vl-filtro-produto');
-  if (sel) {
-    if (!Array.from(sel.options).some(o => o.value === nome)) {
-      const opt = document.createElement('option');
-      opt.value = nome;
-      opt.textContent = nome;
-      sel.appendChild(opt);
-    }
-    sel.value = nome;
+  const input = document.getElementById('vl-filtro-produto');
+  if (input) {
+    input.value = nome;
     renderListaVendas();
   }
 }
 
 function preencherFiltroProduto() {
-  const sel = document.getElementById('vl-filtro-produto');
-  if (!sel) return;
+  const dl = document.getElementById('vl-filtro-produto-list');
+  if (!dl) return;
   const prods = new Set();
   vendas.forEach(v => {
     if (v.itens?.length) v.itens.forEach(i => prods.add(i.produto_nome));
     else if (v.produto_nome) prods.add(v.produto_nome);
   });
-  const atual = sel.value;
-  sel.innerHTML = '<option value="">Todos os produtos</option>' +
-    [...prods].sort((a, b) => a.localeCompare(b, 'pt-BR')).map(p =>
-      `<option value="${p.replace(/"/g, '&quot;')}">${p}</option>`).join('');
-  sel.value = atual;
+  const input = document.getElementById('vl-filtro-produto');
+  const atual = input ? input.value : '';
+  dl.innerHTML = [...prods].sort((a, b) => a.localeCompare(b, 'pt-BR')).map(p =>
+    `<option value="${p.replace(/"/g, '&quot;')}">`).join('');
+  if (input) input.value = atual;
 }
 
 function openVendaDetalhe(vendaId) {

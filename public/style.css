@@ -3166,13 +3166,18 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 
 .vl-filtro-group select,
-.vl-filtro-group input[type="date"] {
+.vl-filtro-group input[type="date"],
+.vl-filtro-group input[type="text"] {
   width: 145px;
   padding: 8px 12px;
   font-size: 13px;
   border-radius: var(--radius-md);
   font-family: inherit;
   color: var(--text-primary);
+}
+
+.vl-filtro-produto-group input[type="text"] {
+  width: 180px;
 }
 
 /* chips de período (acesso rápido) */
@@ -3770,7 +3775,8 @@ tbody tr:hover td { background: var(--blue-50); }
   .vl-kpi-row { grid-template-columns: 1fr; }
   .vl-filtros-row { gap: 8px; }
   .vl-filtro-group select,
-  .vl-filtro-group input[type="date"] { width: 120px; }
+  .vl-filtro-group input[type="date"],
+  .vl-filtro-group input[type="text"] { width: 120px; }
   .vl-card-top { flex-wrap: nowrap; }
 }
 
@@ -3787,7 +3793,8 @@ tbody tr:hover td { background: var(--blue-50); }
   .ac-manage-user { gap: 10px; }
   .vl-filtros-row { gap: 8px; }
   .vl-filtro-group select,
-  .vl-filtro-group input[type="date"] { width: 120px; }
+  .vl-filtro-group input[type="date"],
+  .vl-filtro-group input[type="text"] { width: 120px; }
   .vl-kpi-row { gap: 8px; }
   .vl-kpi { padding: .75rem 1rem; }
   .vl-kpi span { font-size: 15px; }
