@@ -1463,10 +1463,27 @@ tbody tr:hover td { background: var(--blue-50); }
 .vendas-empty { text-align: center; padding: 1.5rem 0.5rem; font-size: 13px; color: var(--text-muted); }
 
 /* payment / type options */
+.vendas-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vendas-opcoes .form-group {
+  display: flex;
+  flex-direction: column;
+}
+.vendas-opcoes label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
 .payment-options, .sale-type-options {
   display: flex;
   gap: 8px;
-  margin-top: 4px;
 }
 
 .payment-option, .sale-type-option {
@@ -1474,9 +1491,9 @@ tbody tr:hover td { background: var(--blue-50); }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   cursor: pointer;
-  padding: 7px 6px;
+  padding: 10px 8px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-primary);
@@ -1487,9 +1504,10 @@ tbody tr:hover td { background: var(--blue-50); }
   border-color: var(--blue);
   background: var(--blue-light);
   color: var(--blue);
+  font-weight: 600;
 }
 .payment-option i, .sale-type-option i { font-size: 16px; }
-.payment-option span, .sale-type-option span { font-size: 11px; font-weight: 700; }
+.payment-option span, .sale-type-option span { font-size: 12px; font-weight: 700; }
 .payment-option:hover, .sale-type-option:hover { border-color: var(--blue); color: var(--blue); }
 
 /* ============================================================
