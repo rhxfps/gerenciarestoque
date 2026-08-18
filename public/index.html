@@ -326,13 +326,23 @@
           <div class="card">
             <div class="section-header">
               <h2>Produtos cadastrados</h2>
-              <div style="display:flex;gap:10px;align-items:center">
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                 <span id="p-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <!-- busca -->
+                <div class="estoque-busca-wrap">
+                  <i class="ti ti-search estoque-busca-icon"></i>
+                  <input type="text" id="p-busca" class="estoque-busca-input"
+                    placeholder="Buscar produto..."
+                    oninput="filtrarProdutos()">
+                  <span id="p-busca-count" class="estoque-busca-count"></span>
+                </div>
                 <button class="btn btn-primary" onclick="toggleFormProduto()" id="btn-toggle-form">
                   <i class="ti ti-plus"></i> Novo produto
                 </button>
               </div>
             </div>
+            <!-- filtro por categoria -->
+            <div class="estoque-cats" id="p-cats"></div>
             <div style="overflow-x:auto">
             <table>
               <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd atual</th><th>Qtd mínima</th><th>Valor de venda</th><th>Status</th><th></th></tr></thead>

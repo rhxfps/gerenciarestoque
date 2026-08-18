@@ -891,30 +891,76 @@ async function salvarEdicaoProduto() {
   }
 }
 
+let produtosCatAtiva = 'Todas';
+
 function renderProdutos() {
-  const tb = document.getElementById('tabela-produtos');
-  const em = document.getElementById('produtos-empty');
-  const ct = document.getElementById('p-count');
   const lista = produtos.filter(p => !isProdutoAcai(p));
-  ct.textContent = `${lista.length} produto(s)`;
-  
+  const ct = document.getElementById('p-count');
+  if (ct) ct.textContent = `${lista.length} produto(s)`;
+
+  // Gera pills de categoria
+  const catsEl = document.getElementById('p-cats');
+  if (catsEl) {
+    const cats = ['Todas', ...new Set(lista.map(p => p.categoria).filter(Boolean))].sort((a,b) => {
+      if (a==='Todas') return -1; if (b==='Todas') return 1;
+      return a.localeCompare(b,'pt-BR');
+    });
+    catsEl.innerHTML = cats.map(c => `
+      <button class="estoque-cat-pill${c === produtosCatAtiva ? ' active' : ''}"
+        onclick="selectProdutosCat('${c.replace(/'/g,"\\'")}')">
+        ${c}
+      </button>`).join('');
+  }
+
+  filtrarProdutos();
+}
+
+function selectProdutosCat(cat) {
+  produtosCatAtiva = cat;
+  renderProdutos();
+}
+
+function filtrarProdutos() {
+  const busca = (document.getElementById('p-busca')?.value || '').toLowerCase().trim();
+  const tb    = document.getElementById('tabela-produtos');
+  const em    = document.getElementById('produtos-empty');
+  const count = document.getElementById('p-busca-count');
+
+  let lista = produtos.filter(p => !isProdutoAcai(p));
+
+  if (produtosCatAtiva !== 'Todas') {
+    lista = lista.filter(p => p.categoria === produtosCatAtiva);
+  }
+  if (busca) {
+    lista = lista.filter(p =>
+      p.nome.toLowerCase().includes(busca) ||
+      (p.categoria && p.categoria.toLowerCase().includes(busca))
+    );
+  }
+
+  if (count) count.textContent = (busca || produtosCatAtiva !== 'Todas') ? `${lista.length} produto(s)` : '';
+
   if (!lista.length) {
-    tb.innerHTML = '';
-    em.style.display = 'block';
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
+    if (em) em.style.display = 'none';
     return;
   }
-  em.style.display = 'none';
-  
+  if (em) em.style.display = 'none';
+
+  const esc = busca.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   tb.innerHTML = lista.map(p => {
-    const low = p.qtd <= p.qtd_minima;
+    const low  = p.qtd <= p.qtd_minima;
     const badge = low ? '<span class="badge badge-red">Baixo</span>' : '<span class="badge badge-green">OK</span>';
-    const precoFormatado = p.preco ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.preco) : '—';
+    const preco = p.preco ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(p.preco) : '—';
+    const nome  = busca
+      ? `<strong>${p.nome.replace(new RegExp(`(${esc})`,'gi'),'<mark class="estoque-highlight">$1</mark>')}</strong>`
+      : `<strong>${p.nome}</strong>`;
     return `<tr>
-      <td><strong>${p.nome}</strong></td>
+      <td>${nome}</td>
       <td>${p.categoria || '—'}</td>
       <td>${p.qtd}</td>
       <td>${p.qtd_minima}</td>
-      <td>${precoFormatado}</td>
+      <td>${preco}</td>
       <td>${badge}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm" style="margin-right:4px" onclick="openEditarProduto(${p.id})" title="Editar">
