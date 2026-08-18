@@ -2817,9 +2817,8 @@ async function baixarBackup() {
   btn.innerHTML = '<i class="ti ti-loader"></i> Gerando...';
 
   try {
-    const token = localStorage.getItem('token');
     const resp = await fetch('/api/admin/backup', {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${authToken}` }
     });
 
     if (!resp.ok) {
