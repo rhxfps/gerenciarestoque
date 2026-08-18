@@ -3294,10 +3294,8 @@ async function renderCaixa() {
       const ret     = totalRetiradas || 0;
       const saldo   = troco + vendas - ret;
 
-      document.getElementById('caixa-troco-inicial').textContent    = fmt$(troco);
-      document.getElementById('caixa-total-vendas').textContent     = fmt$(vendas);
-      document.getElementById('caixa-total-retiradas').textContent  = fmt$(ret);
-      document.getElementById('caixa-saldo-esperado').textContent   = fmt$(saldo);
+      document.getElementById('caixa-troco-inicial').textContent   = fmt$(troco);
+      document.getElementById('caixa-total-retiradas').textContent = fmt$(ret);
 
       // Lista de retiradas
       const listaEl = document.getElementById('caixa-retiradas-lista');
