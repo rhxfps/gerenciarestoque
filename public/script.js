@@ -652,9 +652,11 @@ function setMinhasVendasPeriodo(p) {
 }
 
 async function renderMinhasVendas() {
-  const busca  = (document.getElementById('mv-filtro-busca')?.value || '').toLowerCase();
-  const deVal  = document.getElementById('mv-filtro-de')?.value || '';
-  const ateVal = document.getElementById('mv-filtro-ate')?.value || '';
+  const busca      = (document.getElementById('mv-filtro-busca')?.value || '').toLowerCase();
+  const deVal      = document.getElementById('mv-filtro-de')?.value || '';
+  const ateVal     = document.getElementById('mv-filtro-ate')?.value || '';
+  const horaDeVal  = document.getElementById('mv-filtro-hora-de')?.value || '';
+  const horaAteVal = document.getElementById('mv-filtro-hora-ate')?.value || '';
 
   let lista = [];
   try {
@@ -684,6 +686,18 @@ async function renderMinhasVendas() {
       if (mvPeriodo === 'mes' && d < primeiroDiaMes) return false;
     }
     if (fimAte && d > fimAte) return false;
+
+    if (horaDeVal || horaAteVal) {
+      const mins = d.getHours() * 60 + d.getMinutes();
+      if (horaDeVal) {
+        const [hd, md] = horaDeVal.split(':').map(Number);
+        if (mins < hd * 60 + md) return false;
+      }
+      if (horaAteVal) {
+        const [ha, ma] = horaAteVal.split(':').map(Number);
+        if (mins > ha * 60 + ma) return false;
+      }
+    }
 
     if (busca) {
       const temItem = v.itens?.some(i => i.produto_nome.toLowerCase().includes(busca));
