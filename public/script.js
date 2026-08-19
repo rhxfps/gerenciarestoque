@@ -654,7 +654,7 @@ async function renderMinhasVendas() {
 
   let lista = [];
   try {
-    lista = await apiRequest('/vendas?minhas=true');
+    lista = await apiRequest('/vendas');
   } catch (e) {
     lista = [];
   }

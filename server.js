@@ -470,16 +470,10 @@ async function baixarEstoqueItens(itens, obs) {
 
 app.get('/api/vendas', autenticar, async (req, res) => {
   try {
-    const query = supabase
+    const { data: vendas, error: vendasError } = await supabase
       .from('vendas')
       .select('*')
       .order('data', { ascending: false });
-
-    if (req.query.minhas === 'true') {
-      query.eq('usuario_id', req.usuario.id);
-    }
-
-    const { data: vendas, error: vendasError } = await query;
     if (vendasError) throw vendasError;
 
     // Itens de todas as vendas em UMA consulta (evita N+1)
