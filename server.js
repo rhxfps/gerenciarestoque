@@ -470,10 +470,16 @@ async function baixarEstoqueItens(itens, obs) {
 
 app.get('/api/vendas', autenticar, async (req, res) => {
   try {
-    const { data: vendas, error: vendasError } = await supabase
+    const query = supabase
       .from('vendas')
       .select('*')
       .order('data', { ascending: false });
+
+    if (req.query.minhas === 'true') {
+      query.eq('usuario_id', req.usuario.id);
+    }
+
+    const { data: vendas, error: vendasError } = await query;
     if (vendasError) throw vendasError;
 
     // Itens de todas as vendas em UMA consulta (evita N+1)
@@ -505,7 +511,7 @@ app.post('/api/vendas', autenticar, async (req, res) => {
     // Inserir venda
     const { data: venda, error: vendaError } = await supabase
       .from('vendas')
-      .insert([{ total, pagamento, delivery, plataforma, obs }])
+      .insert([{ total, pagamento, delivery, plataforma, obs, usuario_id: req.usuario.id }])
       .select()
       .single();
     if (vendaError) throw vendaError;

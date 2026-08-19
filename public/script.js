@@ -248,12 +248,12 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
   
-  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio', 'vendas', 'caixa', 'consumo'];
+  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'minhas-vendas', 'relatorio', 'vendas', 'caixa', 'consumo'];
 
   navItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) {
-      if (item === 'vendas' || item === 'caixa') {
+      if (item === 'vendas' || item === 'caixa' || item === 'minhas-vendas') {
         el.style.display = 'block';
       } else if (item === 'consumo') {
         // Consumo (compra) aparece apenas para funcionários
@@ -321,6 +321,7 @@ const titles = {
   produtos:     'Produtos',
   registrar:    'Registrar Movimentação',
   'lista-vendas': 'Vendas',
+  'minhas-vendas': 'Minhas Vendas',
   relatorio:    'Relatório semanal',
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
@@ -336,7 +337,7 @@ function nav(screen) {
       nav('vendas');
       return;
     }
-  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && currentUser.role !== 'dono') {
+  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && screen !== 'minhas-vendas' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
@@ -361,6 +362,7 @@ function nav(screen) {
   if (screen === 'estoque')      renderEstoque();
   if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); populateHFiltro(); selectRegTipo(regTipoAtivo); renderHistorico(); }
   if (screen === 'lista-vendas') renderListaVendas();
+  if (screen === 'minhas-vendas') renderMinhasVendas();
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
@@ -635,6 +637,91 @@ function rotuloDia(d) {
   if (dia.getTime() === hoje.getTime()) return 'Hoje';
   if (dia.getTime() === ontem.getTime()) return 'Ontem';
   return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+}
+
+let mvPeriodo = 'hoje';
+
+function setMinhasVendasPeriodo(p) {
+  mvPeriodo = p;
+  document.querySelectorAll('[data-mv-periodo]').forEach(b => b.classList.toggle('active', b.dataset.mvPeriodo === p));
+  renderMinhasVendas();
+}
+
+async function renderMinhasVendas() {
+  const busca  = (document.getElementById('mv-filtro-busca')?.value || '').toLowerCase();
+  const deVal  = document.getElementById('mv-filtro-de')?.value || '';
+  const ateVal = document.getElementById('mv-filtro-ate')?.value || '';
+
+  let lista = [];
+  try {
+    lista = await apiRequest('/vendas?minhas=true');
+  } catch (e) {
+    lista = [];
+  }
+
+  const hoje = new Date();
+  hoje.setHours(23, 59, 59, 999);
+  const diaSemana = hoje.getDay();
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+
+  const inicioDe = deVal ? new Date(deVal + 'T00:00:00') : null;
+  const fimAte   = ateVal ? new Date(ateVal + 'T23:59:59.999') : null;
+
+  const filtrada = lista.filter(v => {
+    const d = new Date(v.data);
+    if (inicioDe && d < inicioDe) return false;
+    if (!inicioDe) {
+      if (mvPeriodo === 'hoje' && d < inicioDia) return false;
+      if (mvPeriodo === 'semana' && d < segunda) return false;
+      if (mvPeriodo === 'mes' && d < primeiroDiaMes) return false;
+    }
+    if (fimAte && d > fimAte) return false;
+
+    if (busca) {
+      const temItem = v.itens?.some(i => i.produto_nome.toLowerCase().includes(busca));
+      if (!temItem) return false;
+    }
+
+    return true;
+  }).sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  document.getElementById('mv-count').textContent = `${filtrada.length} venda(s)`;
+
+  const tbody = document.getElementById('mv-tbody');
+  const empty = document.getElementById('mv-empty');
+  if (!filtrada.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtrada.map(v => {
+    let pagCls, pagTxt, pagIco;
+    if (v.pagamento === 'dinheiro') { pagCls = 'pag-dinheiro'; pagTxt = 'Dinheiro'; pagIco = 'ti-cash'; }
+    else if (v.pagamento === 'pix') { pagCls = 'pag-pix'; pagTxt = 'Pix'; pagIco = 'ti-qrcode'; }
+    else { pagCls = 'pag-cartao'; pagTxt = 'Cartão'; pagIco = 'ti-credit-card'; }
+
+    let itensResumo = '';
+    if (v.itens?.length) {
+      itensResumo = v.itens.map(i => `${i.produto_nome} ×${i.qtd}`).join(', ');
+    }
+
+    const tipoTxt = v.delivery ? `Delivery${v.plataforma ? ' (' + v.plataforma + ')' : ''}` : 'Balcão';
+
+    return `<tr>
+      <td><i class="ti ti-clock" style="margin-right:4px;opacity:.5"></i>${fmt(v.data)}</td>
+      <td>${itensResumo}</td>
+      <td><span class="vl-card-tag ${pagCls}"><i class="ti ${pagIco}"></i>${pagTxt}</span></td>
+      <td>${tipoTxt}</td>
+      <td style="font-weight:700">${fmt$(v.total)}</td>
+    </tr>`;
+  }).join('');
 }
 
 function toggleListaRanking() {

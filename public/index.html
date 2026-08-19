@@ -57,6 +57,7 @@
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
       <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
+      <div class="nav-item" data-screen="minhas-vendas" id="nav-minhas-vendas"><i class="ti ti-user-check"></i> <span>Minhas Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
@@ -113,6 +114,7 @@
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
       <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
+      <div class="mobile-nav-item" data-screen="minhas-vendas"><i class="ti ti-user-check"></i> Minhas Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
@@ -768,6 +770,59 @@
       <div class="modal-overlay" id="venda-detalhe-modal" onclick="closeVendaDetalhe(event)">
         <div class="modal-content venda-detalhe-content" onclick="event.stopPropagation()">
           <div id="venda-detalhe-body"></div>
+        </div>
+      </div>
+
+      <!-- MINHAS VENDAS (funcionários) -->
+      <div class="screen" id="screen-minhas-vendas">
+        <!-- Filtros -->
+        <div class="card vl-filtros">
+          <div class="vl-filtros-row">
+            <div class="vl-filtro-group">
+              <label>Buscar</label>
+              <input type="text" id="mv-filtro-busca" placeholder="Produto..." oninput="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Período</label>
+              <div class="vl-chips">
+                <button type="button" class="vl-chip active" data-mv-periodo="hoje" onclick="setMinhasVendasPeriodo('hoje')">Hoje</button>
+                <button type="button" class="vl-chip" data-mv-periodo="semana" onclick="setMinhasVendasPeriodo('semana')">7 dias</button>
+                <button type="button" class="vl-chip" data-mv-periodo="mes" onclick="setMinhasVendasPeriodo('mes')">1 mês</button>
+                <button type="button" class="vl-chip" data-mv-periodo="tudo" onclick="setMinhasVendasPeriodo('tudo')">Tudo</button>
+              </div>
+            </div>
+            <div class="vl-filtro-group">
+              <label>De</label>
+              <input type="date" id="mv-filtro-de" onchange="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Até</label>
+              <input type="date" id="mv-filtro-ate" onchange="renderMinhasVendas()">
+            </div>
+            <span id="mv-count" class="vl-count"></span>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="card" style="margin-top:10px">
+          <div class="vl-lista-wrap">
+            <table class="vl-table">
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Itens</th>
+                  <th>Pagamento</th>
+                  <th>Entrega</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="mv-tbody"></tbody>
+            </table>
+            <div id="mv-empty" class="vl-empty" style="display:none">
+              <i class="ti ti-receipt-off"></i>
+              <p>Nenhuma venda encontrada</p>
+            </div>
+          </div>
         </div>
       </div>
 
