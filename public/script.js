@@ -247,32 +247,36 @@ function showApp() {
 // Atualizar menu por role
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
-  
-  const navItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'minhas-vendas', 'relatorio', 'vendas', 'caixa', 'consumo'];
 
-  navItems.forEach(item => {
+  // Itens do dono: dashboard, estoque, registrar, lista-vendas, relatorio
+  const donoItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio'];
+  donoItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
-    if (el) {
-      if (item === 'vendas' || item === 'caixa' || item === 'minhas-vendas') {
-        el.style.display = 'block';
-      } else if (item === 'consumo') {
-        // Consumo (compra) aparece apenas para funcionários
-        el.style.display = isDono ? 'none' : 'block';
-      } else {
-        el.style.display = isDono ? 'block' : 'none';
-      }
-    }
+    if (el) el.style.display = isDono ? 'block' : 'none';
   });
 
-  // Seção Admin: só aparece para o dono
+  // Seção Admin: só dono
   const adminSection = document.getElementById('nav-admin-section');
   if (adminSection) adminSection.style.display = isDono ? 'flex' : 'none';
   const mobileAdmin = document.getElementById('mobile-admin-section');
   if (mobileAdmin) mobileAdmin.style.display = isDono ? 'flex' : 'none';
-  
+
+  // Separador "Funcionários": só dono vê o label
+  const funcSection = document.getElementById('nav-func-section');
+  if (funcSection) funcSection.style.display = isDono ? 'flex' : 'none';
+  const mobileFunc = document.getElementById('mobile-func-section');
+  if (mobileFunc) mobileFunc.style.display = isDono ? 'flex' : 'none';
+
+  // Itens da seção funcionários: sempre visíveis
+  const funcItems = ['minhas-vendas', 'vendas', 'caixa', 'consumo'];
+  funcItems.forEach(item => {
+    const el = document.getElementById(`nav-${item}`);
+    if (el) el.style.display = 'block';
+  });
+
   const userRoleEl = document.getElementById('user-role');
   if (userRoleEl) {
-    userRoleEl.textContent = currentUser.role === 'dono' ? 'Dono' : 'Funcionário';
+    userRoleEl.textContent = isDono ? 'Dono' : 'Funcionário';
   }
 }
 
@@ -321,7 +325,7 @@ const titles = {
   produtos:     'Produtos',
   registrar:    'Registrar Movimentação',
   'lista-vendas': 'Vendas',
-  'minhas-vendas': 'Minhas Vendas',
+  'minhas-vendas': 'Registrados',
   relatorio:    'Relatório semanal',
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
