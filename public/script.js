@@ -1096,11 +1096,14 @@ function filtrarProdutos() {
 }
 
 function populateSelect(id) {
-  const sel = document.getElementById(id);
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Selecione um produto</option>' + 
-    produtos.map(p => `<option value="${p.id}">${p.nome} (estoque: ${p.qtd})</option>`).join('');
-  if (cur) sel.value = cur;
+  const list = document.getElementById(id + '-list');
+  if (!list) return;
+  list.innerHTML = produtos.map(p => `<option value="${p.nome}">${p.nome} (estoque: ${p.qtd})</option>`).join('');
+}
+
+function findProdutoByName(name) {
+  const lower = name.toLowerCase().trim();
+  return produtos.find(p => p.nome.toLowerCase().trim() === lower);
 }
 
 function populateHFiltro() {
@@ -1111,7 +1114,8 @@ function populateHFiltro() {
 
 // ==================== MOVIMENTAÇÕES ====================
 async function addEntrada() {
-  const produtoId = parseInt(document.getElementById('e-produto').value);
+  const produto = findProdutoByName(document.getElementById('e-produto').value);
+  const produtoId = produto ? produto.id : null;
   const qtdRaw    = parseFloat(document.getElementById('e-qty').value);
   const unidade   = document.getElementById('e-unidade')?.value || 'un';
   const obsInput  = document.getElementById('e-obs').value.trim();
@@ -1126,8 +1130,6 @@ async function addEntrada() {
   const obs = obsInput
     ? `[${qtd} ${unidade}] ${obsInput}`
     : `[${qtd} ${unidade}]`;
-
-  const produto = produtos.find(p => p.id === produtoId);
 
   try {
     await apiRequest('/movimentacoes', {
@@ -1148,7 +1150,8 @@ async function addEntrada() {
 }
 
 async function addSaida() {
-  const produtoId = parseInt(document.getElementById('s-produto').value);
+  const produto = findProdutoByName(document.getElementById('s-produto').value);
+  const produtoId = produto ? produto.id : null;
   const qtdRaw    = parseFloat(document.getElementById('s-qty').value);
   const unidade   = document.getElementById('s-unidade')?.value || 'un';
   const obsInput  = document.getElementById('s-obs').value.trim();
@@ -1158,7 +1161,6 @@ async function addSaida() {
 
   const qtd = unidade === 'un' ? Math.round(qtdRaw) : qtdRaw;
 
-  const produto = produtos.find(p => p.id === produtoId);
   if (unidade === 'un' && qtd > produto.qtd) {
     toast(`Estoque insuficiente! Disponível: ${produto.qtd}`, false);
     return;

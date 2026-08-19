@@ -401,7 +401,7 @@
         <div class="card" id="reg-form-entrada">
           <div class="card-title"><i class="ti ti-arrow-bar-to-down" style="color:var(--green)"></i> Registrar entrada</div>
           <div class="form-row">
-            <div class="form-group"><label>Produto</label><select id="e-produto"><option value="">Selecione um produto</option></select></div>
+            <div class="form-group"><label>Produto</label><input type="text" id="e-produto" list="e-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="e-produto-list"></datalist></div>
             <div class="form-group">
               <label>Quantidade</label>
               <div class="qty-unit-wrap">
@@ -426,7 +426,7 @@
         <div class="card" id="reg-form-saida" style="display:none">
           <div class="card-title"><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Registrar saída</div>
           <div class="form-row">
-            <div class="form-group"><label>Produto</label><select id="s-produto"><option value="">Selecione um produto</option></select></div>
+            <div class="form-group"><label>Produto</label><input type="text" id="s-produto" list="s-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="s-produto-list"></datalist></div>
             <div class="form-group">
               <label>Quantidade</label>
               <div class="qty-unit-wrap">
