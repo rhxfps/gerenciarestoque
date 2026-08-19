@@ -1039,6 +1039,9 @@
           <button class="reg-toggle-btn" id="admin-btn-consumo" onclick="selectAdminTipo('consumo')">
             <i class="ti ti-wallet"></i> Consumo
           </button>
+          <button class="reg-toggle-btn" id="admin-btn-atividade" onclick="selectAdminTipo('atividade')">
+            <i class="ti ti-clipboard-list"></i> Atividade
+          </button>
         </div>
 
         <div id="admin-view-usuarios">
@@ -1175,6 +1178,35 @@
             <div id="ac-manage-panel"></div>
           </div>
         </div>
+
+        <!-- ===== ATIVIDADE (log de movimentações) ===== -->
+        <div id="admin-view-atividade" style="display:none">
+          <div class="card">
+            <div class="section-header">
+              <h2><i class="ti ti-clipboard-list"></i> Atividade de movimentações</h2>
+              <span id="at-count" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Funcionário</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Observação</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-atividade"></tbody>
+            </table>
+            </div>
+            <div id="atividade-empty" class="empty" style="display:none">
+              <i class="ti ti-clipboard-off"></i>Nenhuma movimentação registrada.
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- CONSUMO (funcionários) -->

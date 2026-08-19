@@ -330,18 +330,41 @@ app.get('/api/movimentacoes', autenticar, async (req, res) => {
   }
 });
 
-app.post('/api/movimentacoes', autenticar, async (req, res) => {
+app.get('/api/movimentacoes/log', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
+  try {
+    const { data: movs, error: movError } = await supabase
+      .from('movimentacoes')
+      .select('*')
+      .order('data', { ascending: false });
+    if (movError) throw movError;
+
+    const { data: users } = await supabase
+      .from('usuarios')
+      .select('id, nome, usuario');
+
+    const userMap = {};
+    (users || []).forEach(u => { userMap[u.id] = u; });
+
+    res.json((movs || []).map(m => ({
+      ...m,
+      usuario_nome: m.usuario_id ? (userMap[m.usuario_id]?.nome || 'Desconhecido') : null
+    })));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+app.post('/api/movimentacoes', autenticar, async (req, res) => {
   const { tipo, produto_id, produto_nome, qtd, obs } = req.body;
 
   try {
-    // Inserir movimentação
     const { data: movimentacao, error: movError } = await supabase
       .from('movimentacoes')
-      .insert([{ tipo, produto_id, produto_nome, qtd, obs }])
+      .insert([{ tipo, produto_id, produto_nome, qtd, obs, usuario_id: req.usuario.id }])
       .select()
       .single();
     if (movError) throw movError;

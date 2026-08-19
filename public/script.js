@@ -248,12 +248,16 @@ function showApp() {
 function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
 
-  // Itens do dono: dashboard, estoque, registrar, lista-vendas, relatorio
-  const donoItems = ['dashboard', 'estoque', 'registrar', 'lista-vendas', 'relatorio'];
+  // Itens do dono: dashboard, estoque, lista-vendas, relatorio
+  const donoItems = ['dashboard', 'estoque', 'lista-vendas', 'relatorio'];
   donoItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) el.style.display = isDono ? 'block' : 'none';
   });
+
+  // Registrar: visível para ambos
+  const regEl = document.getElementById('nav-registrar');
+  if (regEl) regEl.style.display = 'block';
 
   // Seção Admin: só dono
   const adminSection = document.getElementById('nav-admin-section');
@@ -341,7 +345,7 @@ function nav(screen) {
       nav('vendas');
       return;
     }
-  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && screen !== 'minhas-vendas' && currentUser.role !== 'dono') {
+  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && screen !== 'minhas-vendas' && screen !== 'registrar' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
@@ -364,7 +368,15 @@ function nav(screen) {
 
   if (screen === 'dashboard')    renderDashboardProfissional();
   if (screen === 'estoque')      renderEstoque();
-  if (screen === 'registrar')    { populateSelect('e-produto'); populateSelect('s-produto'); populateHFiltro(); selectRegTipo(regTipoAtivo); renderHistorico(); }
+  if (screen === 'registrar') {
+    populateSelect('e-produto');
+    populateSelect('s-produto');
+    const isFunc = currentUser.role !== 'dono';
+    const histBtn = document.getElementById('reg-btn-historico');
+    if (histBtn) histBtn.style.display = isFunc ? 'none' : '';
+    if (isFunc) selectRegTipo('entrada');
+    else { selectRegTipo(regTipoAtivo); renderHistorico(); }
+  }
   if (screen === 'lista-vendas') renderListaVendas();
   if (screen === 'minhas-vendas') renderMinhasVendas();
   if (screen === 'relatorio')    renderRelatorio();
@@ -435,6 +447,7 @@ document.getElementById('mobileNav').addEventListener('click', e => {
 let regTipoAtivo = 'entrada';
 
 function selectRegTipo(tipo) {
+  if (tipo === 'historico' && currentUser.role !== 'dono') return;
   regTipoAtivo = tipo;
   document.getElementById('reg-btn-entrada').classList.toggle('active', tipo === 'entrada');
   document.getElementById('reg-btn-saida').classList.toggle('active', tipo === 'saida');
@@ -2584,10 +2597,48 @@ function selectAdminTipo(tipo) {
   adminTipoAtivo = tipo;
   document.getElementById('admin-btn-usuarios').classList.toggle('active', tipo === 'usuarios');
   document.getElementById('admin-btn-consumo').classList.toggle('active', tipo === 'consumo');
+  document.getElementById('admin-btn-atividade').classList.toggle('active', tipo === 'atividade');
   document.getElementById('admin-view-usuarios').style.display = tipo === 'usuarios' ? 'block' : 'none';
   document.getElementById('admin-view-consumo').style.display = tipo === 'consumo' ? 'block' : 'none';
+  document.getElementById('admin-view-atividade').style.display = tipo === 'atividade' ? 'block' : 'none';
   if (tipo === 'usuarios') renderUsuarios();
   if (tipo === 'consumo') selectAdminConsumo(adminConsumoAtivo);
+  if (tipo === 'atividade') renderAtividade();
+}
+
+async function renderAtividade() {
+  let data = [];
+  try {
+    data = await apiRequest('/movimentacoes/log');
+  } catch (e) { data = []; }
+
+  const tb = document.getElementById('tabela-atividade');
+  const em = document.getElementById('atividade-empty');
+  document.getElementById('at-count').textContent = `${data.length} registro(s)`;
+
+  if (!data.length) {
+    tb.innerHTML = '';
+    em.style.display = 'flex';
+    return;
+  }
+  em.style.display = 'none';
+
+  tb.innerHTML = data.map(m => {
+    const badge = m.tipo === 'entrada'
+      ? '<span class="badge badge-green">Entrada</span>'
+      : '<span class="badge badge-red">Saída</span>';
+    const qtd = m.tipo === 'entrada'
+      ? `<span class="tag-entrada">+${m.qtd}</span>`
+      : `<span class="tag-saida">-${m.qtd}</span>`;
+    return `<tr>
+      <td>${fmt(m.data)}</td>
+      <td>${m.usuario_nome || '—'}</td>
+      <td>${m.produto_nome}</td>
+      <td>${badge}</td>
+      <td>${qtd}</td>
+      <td>${m.obs || '—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 function renderConsumo() {
