@@ -2537,14 +2537,33 @@ function renderVendaItens() {
 }
 
 function selectPayment(type) {
-  // Update hidden input
   document.getElementById('v-pagamento-hidden').value = type;
-  
-  // Update UI
+
   document.querySelectorAll('.payment-option').forEach(opt => {
     opt.classList.remove('active');
     if (opt.id === 'label-' + type) opt.classList.add('active');
   });
+
+  const trocoRow = document.getElementById('v-troco-row');
+  if (trocoRow) {
+    trocoRow.style.display = type === 'dinheiro' ? 'flex' : 'none';
+    if (type !== 'dinheiro') {
+      document.getElementById('v-valor-recebido').value = '';
+      document.getElementById('v-troco-valor').textContent = 'R$ 0,00';
+    }
+  }
+}
+
+function calcTroco() {
+  const totalText = document.getElementById('v-total-preview')?.textContent || 'R$ 0,00';
+  const total = parseFloat(totalText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+  const recebido = parseFloat(document.getElementById('v-valor-recebido')?.value) || 0;
+  const troco = recebido - total;
+  const trocoEl = document.getElementById('v-troco-valor');
+  if (trocoEl) {
+    trocoEl.textContent = fmtMoeda(Math.max(troco, 0));
+    trocoEl.style.color = troco < 0 ? 'var(--red)' : 'var(--green)';
+  }
 }
 
 function selectSaleType(type) {
@@ -2597,6 +2616,7 @@ function atualizaPreview() {
     return acumulador + (item.qtd * item.precoUnitario);
   }, 0);
   preview.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
+  if (document.getElementById('v-pagamento-hidden')?.value === 'dinheiro') calcTroco();
 }
 
 async function addVenda() {
@@ -2641,6 +2661,9 @@ async function addVenda() {
     document.getElementById('v-obs').value = '';
     document.getElementById('v-pagamento-hidden').value = 'dinheiro';
     document.getElementById('v-tipo-venda-hidden').value = 'balcao';
+    document.getElementById('v-valor-recebido').value = '';
+    document.getElementById('v-troco-valor').textContent = 'R$ 0,00';
+    document.getElementById('v-troco-row').style.display = 'none';
     renderVendas();
     renderVendaItens();
     atualizaPreview();

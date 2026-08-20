@@ -1428,6 +1428,31 @@ tbody tr:hover td { background: var(--blue-50); }
 .vendas-total .total-value { font-size: 26px; font-weight: 800; color: var(--blue); letter-spacing: -0.5px; }
 .vendas-total .total-value.over-limit { color: #d97706; }
 
+.vendas-troco-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+.vendas-troco-info {
+  text-align: center;
+  min-width: 90px;
+}
+.vendas-troco-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.vendas-troco-valor {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--green);
+}
+
 .vendas-limite-warn {
   display: flex;
   align-items: center;
