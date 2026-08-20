@@ -259,6 +259,10 @@ function updateMenuByRole() {
   const regEl = document.getElementById('nav-registrar');
   if (regEl) regEl.style.display = 'block';
 
+  // Contagem: visível para ambos
+  const contEl = document.getElementById('nav-contagem');
+  if (contEl) contEl.style.display = 'block';
+
   // Seção Admin: só dono
   const adminSection = document.getElementById('nav-admin-section');
   if (adminSection) adminSection.style.display = isDono ? 'flex' : 'none';
@@ -334,6 +338,7 @@ const titles = {
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
   consumo:      'Consumo',
+  contagem:     'Contagem de Estoque',
   admin:        'Admin',
   usuarios:     'Usuários'
 };
@@ -345,7 +350,7 @@ function nav(screen) {
       nav('vendas');
       return;
     }
-  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && screen !== 'minhas-vendas' && screen !== 'registrar' && currentUser.role !== 'dono') {
+  } else if (screen !== 'vendas' && screen !== 'caixa' && screen !== 'lista-vendas' && screen !== 'minhas-vendas' && screen !== 'registrar' && screen !== 'contagem' && currentUser.role !== 'dono') {
     toast('Acesso negado!', false);
     nav('vendas');
     return;
@@ -382,6 +387,7 @@ function nav(screen) {
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
+  if (screen === 'contagem')    renderContagem();
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
@@ -3717,6 +3723,172 @@ async function fecharCaixa() {
     toast(error.message || 'Erro ao fechar caixa!', false);
     console.error(error);
   }
+}
+
+// ==================== CONTAGEM DE ESTOQUE ====================
+function renderContagem() {
+  const container = document.getElementById('contagem-lista');
+  if (!container) return;
+
+  const busca = (document.getElementById('contagem-busca')?.value || '').toLowerCase().trim();
+  let lista = produtos.filter(p => !isProdutoAcai(p));
+
+  if (busca) {
+    lista = lista.filter(p =>
+      p.nome.toLowerCase().includes(busca) ||
+      (p.categoria && p.categoria.toLowerCase().includes(busca))
+    );
+  }
+
+  lista.sort((a, b) => {
+    const catA = (a.categoria || '').localeCompare(b.categoria || '', 'pt-BR');
+    if (catA !== 0) return catA;
+    return a.nome.localeCompare(b.nome, 'pt-BR');
+  });
+
+  const count = document.getElementById('contagem-count');
+  if (count) count.textContent = `${lista.length} produto(s)`;
+
+  const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
+  const lastTs = saved._timestamp;
+  const lastEl = document.getElementById('contagem-last');
+  if (lastEl) {
+    lastEl.textContent = lastTs ? `Última contagem: ${fmt(lastTs)}` : '';
+  }
+
+  if (currentUser.role === 'dono') {
+    const sqlBtn = document.getElementById('contagem-sql-btn');
+    if (sqlBtn) sqlBtn.style.display = lastTs ? 'inline-flex' : 'none';
+  }
+
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty"><i class="ti ti-clipboard-check"></i>Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  let html = '';
+  let lastCat = '';
+  lista.forEach(p => {
+    const cat = p.categoria || 'Sem categoria';
+    if (cat !== lastCat) {
+      if (lastCat) html += '</div>';
+      lastCat = cat;
+      html += `<div class="contagem-cat">
+        <div class="contagem-cat-title"><i class="ti ti-tag"></i> ${cat}</div>
+        <div class="contagem-items">`;
+    }
+    const val = saved[p.id] !== undefined ? saved[p.id] : '';
+    html += `<div class="contagem-row">
+      <span class="contagem-name">${p.nome}</span>
+      <input type="number" class="contagem-input" data-id="${p.id}" value="${val}" min="0" step="0.001" placeholder="0"
+        onchange="saveContagemField(${p.id}, this.value)" oninput="saveContagemField(${p.id}, this.value)">
+    </div>`;
+  });
+  if (lastCat) html += '</div></div>';
+
+  container.innerHTML = html;
+}
+
+function saveContagemField(id, val) {
+  const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
+  if (val === '' || val === undefined) {
+    delete saved[id];
+  } else {
+    saved[id] = parseFloat(val);
+  }
+  saved._timestamp = new Date().toISOString();
+  localStorage.setItem('contagem', JSON.stringify(saved));
+
+  const lastTs = saved._timestamp;
+  const lastEl = document.getElementById('contagem-last');
+  if (lastEl) lastEl.textContent = `Última contagem: ${fmt(lastTs)}`;
+  if (currentUser.role === 'dono') {
+    const sqlBtn = document.getElementById('contagem-sql-btn');
+    if (sqlBtn) sqlBtn.style.display = 'inline-flex';
+  }
+}
+
+function confirmarContagem() {
+  const inputs = document.querySelectorAll('.contagem-input');
+  let preenchidos = 0;
+  inputs.forEach(inp => {
+    if (inp.value !== '' && inp.value !== undefined) preenchidos++;
+  });
+
+  if (preenchidos === 0) {
+    toast('Preencha pelo menos uma quantidade antes de confirmar!', false);
+    return;
+  }
+
+  const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
+  saved._timestamp = new Date().toISOString();
+  saved._user = currentUser.nome;
+  localStorage.setItem('contagem', JSON.stringify(saved));
+
+  const lastEl = document.getElementById('contagem-last');
+  if (lastEl) lastEl.textContent = `Última contagem: ${fmt(saved._timestamp)} por ${currentUser.nome}`;
+
+  if (currentUser.role === 'dono') {
+    const sqlBtn = document.getElementById('contagem-sql-btn');
+    if (sqlBtn) sqlBtn.style.display = 'inline-flex';
+  }
+
+  toast(`${preenchidos} produto(s) confirmado(s)!`);
+}
+
+function limparContagem() {
+  showConfirm({
+    title: 'Limpar contagem',
+    message: 'Apagar todos os valores da contagem atual?',
+    confirmText: 'Limpar',
+    icon: 'ti ti-trash',
+    onConfirm: () => {
+      localStorage.removeItem('contagem');
+      renderContagem();
+      toast('Contagem limpa!');
+    }
+  });
+}
+
+function salvarContagemSQL() {
+  const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
+  const ids = Object.keys(saved).filter(k => !k.startsWith('_'));
+
+  if (!ids.length) {
+    toast('Nenhuma contagem para exportar!', false);
+    return;
+  }
+
+  let sql = `-- ============================================================\n`;
+  sql += `-- Contagem de Estoque - GerenciarStock\n`;
+  sql += `-- Data: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
+  sql += `-- Produtos: ${ids.length}\n`;
+  sql += `-- ============================================================\n\n`;
+
+  ids.forEach(id => {
+    const produto = produtos.find(p => p.id === parseInt(id));
+    const nome = produto ? produto.nome : `Produto #${id}`;
+    const qtd = saved[id];
+    sql += `-- ${nome}\n`;
+    sql += `UPDATE produtos SET qtd = ${qtd} WHERE id = ${id};\n`;
+  });
+
+  sql += `\n-- ============================================================\n`;
+  sql += `-- Fim da contagem\n`;
+  sql += `-- ============================================================\n`;
+
+  const blob = new Blob([sql], { type: 'application/sql;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.download = `contagem_estoque_${dateStr}.sql`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  toast('Arquivo SQL baixado com sucesso!');
 }
 
 // ==================== INICIALIZAÇÃO ====================

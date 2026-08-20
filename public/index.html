@@ -58,6 +58,7 @@
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
       <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
+      <div class="nav-item" data-screen="contagem" id="nav-contagem"><i class="ti ti-clipboard-check"></i> <span>Contagem</span></div>
       <div class="nav-section" id="nav-func-section"><i class="ti ti-users"></i> <span>Funcionários</span></div>
       <div class="nav-item" data-screen="minhas-vendas" id="nav-minhas-vendas"><i class="ti ti-clipboard-list"></i> <span>Registrados</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
@@ -116,6 +117,7 @@
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
       <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
+      <div class="mobile-nav-item" data-screen="contagem"><i class="ti ti-clipboard-check"></i> Contagem</div>
       <div class="mobile-nav-section" id="mobile-func-section"><i class="ti ti-users"></i> Funcionários</div>
       <div class="mobile-nav-item" data-screen="minhas-vendas"><i class="ti ti-clipboard-list"></i> Registrados</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
@@ -1231,6 +1233,29 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- CONTAGEM DE ESTOQUE -->
+      <div class="screen" id="screen-contagem">
+        <div class="card">
+          <div class="section-header">
+            <h2><i class="ti ti-clipboard-check"></i> Contagem de Estoque</h2>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span id="contagem-count" style="font-size:12px;color:var(--text-secondary)"></span>
+              <span id="contagem-last" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+          </div>
+          <div class="estoque-busca-wrap" style="margin-bottom:1rem">
+            <i class="ti ti-search estoque-busca-icon"></i>
+            <input type="text" id="contagem-busca" class="estoque-busca-input" placeholder="Buscar produto..." oninput="renderContagem()">
+          </div>
+          <div id="contagem-lista"></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap">
+            <button class="btn" onclick="limparContagem()"><i class="ti ti-trash"></i> Limpar</button>
+            <button class="btn btn-primary" onclick="confirmarContagem()"><i class="ti ti-check"></i> Confirmar</button>
+            <button class="btn btn-primary" id="contagem-sql-btn" style="display:none" onclick="salvarContagemSQL()"><i class="ti ti-download"></i> Salvar como SQL</button>
+          </div>
+        </div>
       </div>
 
       <!-- CONSUMO (funcionários) -->

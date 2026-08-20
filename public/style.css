@@ -3951,6 +3951,80 @@ mark.estoque-highlight {
 }
 
 /* ============================================================
+   CONTAGEM DE ESTOQUE
+   ============================================================ */
+.contagem-cat {
+  margin-bottom: 1.25rem;
+}
+
+.contagem-cat-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  padding: 6px 0;
+  border-bottom: 2px solid var(--blue);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contagem-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.contagem-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.contagem-row:last-child {
+  border-bottom: none;
+}
+
+.contagem-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contagem-input {
+  width: 90px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-mid);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.contagem-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  background: var(--bg-primary);
+}
+
+@media (max-width: 600px) {
+  .contagem-row { flex-wrap: wrap; }
+  .contagem-input { width: 100%; text-align: left; }
+}
+
+/* ============================================================
    CAIXA — layout
    ============================================================ */
 .caixa-kpi-grid {
