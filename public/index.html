@@ -60,6 +60,7 @@
       <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
       <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
       <div class="nav-item" data-screen="contagem" id="nav-contagem"><i class="ti ti-clipboard-check"></i> <span>Contagem</span></div>
+      <div class="nav-item" data-screen="gastos" id="nav-gastos"><i class="ti ti-receipt-off"></i> <span>Gastos</span></div>
       <div class="nav-section" id="nav-func-section"><i class="ti ti-users"></i> <span>Funcionários</span></div>
       <div class="nav-item" data-screen="minhas-vendas" id="nav-minhas-vendas"><i class="ti ti-clipboard-list"></i> <span>Registrados</span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
@@ -119,6 +120,7 @@
       <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
       <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
       <div class="mobile-nav-item" data-screen="contagem"><i class="ti ti-clipboard-check"></i> Contagem</div>
+      <div class="mobile-nav-item" data-screen="gastos"><i class="ti ti-receipt-off"></i> Gastos</div>
       <div class="mobile-nav-section" id="mobile-func-section"><i class="ti ti-users"></i> Funcionários</div>
       <div class="mobile-nav-item" data-screen="minhas-vendas"><i class="ti ti-clipboard-list"></i> Registrados</div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
@@ -1256,6 +1258,132 @@
             <button class="btn btn-primary" onclick="confirmarContagem()"><i class="ti ti-check"></i> Confirmar</button>
             <button class="btn btn-primary" id="contagem-sql-btn" style="display:none" onclick="salvarContagemSQL()"><i class="ti ti-download"></i> Salvar como SQL</button>
           </div>
+        </div>
+      </div>
+
+      <!-- GASTOS -->
+      <div class="screen" id="screen-gastos">
+
+        <!-- KPIs -->
+        <div class="dash-kpi-grid" style="margin-bottom:1.25rem">
+          <div class="dash-kpi dash-kpi--red">
+            <div class="dash-kpi-icon"><i class="ti ti-receipt-off"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Gastos Fixos / Mês</span>
+              <span class="dash-kpi-value" id="gastos-fixos-total">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-repeat"></i> Mensal</span>
+            </div>
+          </div>
+          <div class="dash-kpi dash-kpi--amber">
+            <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Gastos Variáveis / Mês</span>
+              <span class="dash-kpi-value" id="gastos-variaveis-total">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Este mês</span>
+            </div>
+          </div>
+          <div class="dash-kpi dash-kpi--violet">
+            <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Total Mês</span>
+              <span class="dash-kpi-value" id="gastos-total-mes">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Fixos + Variáveis</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <!-- Formulário novo gasto -->
+          <div class="card">
+            <div class="card-title"><i class="ti ti-plus" style="color:var(--green)"></i> Novo gasto</div>
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="g-descricao" placeholder="Ex: Aluguel, Conta de luz...">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="g-categoria" list="g-categoria-list" placeholder="Ex: Aluguel, Energia..." autocomplete="off">
+                <datalist id="g-categoria-list">
+                  <option value="Aluguel">
+                  <option value="Energia">
+                  <option value="Água">
+                  <option value="Internet">
+                  <option value="Telefone">
+                  <option value="Funcionários">
+                  <option value="Impostos">
+                  <option value="Manutenção">
+                  <option value="Material">
+                  <option value="Combustível">
+                  <option value="Outros">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="g-valor" placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Forma de pagamento</label>
+                <select id="g-pagamento">
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">Pix</option>
+                  <option value="transferencia">Transferência</option>
+                  <option value="boleto">Boleto</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data</label>
+                <input type="date" id="g-data">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="vl-switch" style="margin-top:4px">
+                <input type="checkbox" id="g-fixo">
+                <span class="vl-switch-slider"></span>
+                <span class="vl-switch-label"><i class="ti ti-repeat"></i> Gasto fixo (mensal)</span>
+              </label>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="addGasto()">
+              <i class="ti ti-check"></i> Adicionar gasto
+            </button>
+          </div>
+
+          <!-- Lista de gastos -->
+          <div class="card">
+            <div class="section-header">
+              <div class="card-title" style="margin:0"><i class="ti ti-list"></i> Gastos</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="g-filtro-periodo" onchange="renderGastos()" style="padding:6px 10px;font-size:13px">
+                  <option value="mes">Este mês</option>
+                  <option value="semana">Esta semana</option>
+                  <option value="tudo">Tudo</option>
+                </select>
+                <span id="g-count" style="font-size:12px;color:var(--text-secondary)"></span>
+              </div>
+            </div>
+            <div style="overflow-x:auto;max-height:480px;overflow-y:auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Pagamento</th>
+                    <th>Tipo</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="gastos-tbody"></tbody>
+              </table>
+            </div>
+            <div id="gastos-empty" class="empty" style="display:none"><i class="ti ti-receipt-off"></i>Nenhum gasto registrado.</div>
+          </div>
+
         </div>
       </div>
 

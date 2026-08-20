@@ -249,7 +249,7 @@ function updateMenuByRole() {
   const isDono = currentUser.role === 'dono';
 
   // Itens do dono: dashboard, estoque, lista-vendas, relatorio
-  const donoItems = ['dashboard', 'estoque', 'lista-vendas', 'relatorio'];
+  const donoItems = ['dashboard', 'estoque', 'lista-vendas', 'relatorio', 'gastos'];
   donoItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) el.style.display = isDono ? 'block' : 'none';
@@ -297,6 +297,10 @@ async function loadAllData() {
       apiRequest('/vendas')
     ]);
 
+    if (currentUser.role === 'dono') {
+      gastosData = await apiRequest('/gastos').catch(() => []);
+    }
+
     preencherFiltroProduto();
 
     if (currentUser.role === 'dono') {
@@ -339,6 +343,7 @@ const titles = {
   caixa:        'Caixa',
   consumo:      'Consumo',
   contagem:     'Contagem de Estoque',
+  gastos:       'Gastos',
   admin:        'Admin',
   usuarios:     'Usuários'
 };
@@ -388,6 +393,7 @@ function nav(screen) {
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
   if (screen === 'contagem')    { loadContagemServidor().then(() => renderContagem()); }
+  if (screen === 'gastos')      { if (!document.getElementById('g-data').value) document.getElementById('g-data').value = new Date().toISOString().slice(0, 10); renderGastos(); }
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
@@ -3919,6 +3925,137 @@ function salvarContagemSQL() {
   URL.revokeObjectURL(url);
 
   toast('Arquivo SQL baixado com sucesso!');
+}
+
+// ==================== GASTOS ====================
+let gastosData = [];
+
+async function loadGastos() {
+  try {
+    gastosData = await apiRequest('/gastos');
+  } catch (e) {
+    console.error('Erro ao carregar gastos:', e);
+    gastosData = [];
+  }
+}
+
+function renderGastos() {
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  const periodo = document.getElementById('g-filtro-periodo')?.value || 'mes';
+
+  const hoje = new Date();
+  const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+  const diaSemana = hoje.getDay();
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+  const filtrados = gastosData.filter(g => {
+    const d = new Date(g.data);
+    if (periodo === 'semana') return d >= segunda;
+    if (periodo === 'hoje') return d >= inicioDia;
+    return true;
+  }).sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  // KPIs — fixos e variáveis do mês atual
+  const mesAtual = gastosData.filter(g => {
+    const d = new Date(g.data);
+    return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+  });
+  const fixosMes = mesAtual.filter(g => g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
+  const variaveisMes = mesAtual.filter(g => !g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
+
+  document.getElementById('gastos-fixos-total').textContent = fmt$(fixosMes);
+  document.getElementById('gastos-variaveis-total').textContent = fmt$(variaveisMes);
+  document.getElementById('gastos-total-mes').textContent = fmt$(fixosMes + variaveisMes);
+
+  const count = document.getElementById('g-count');
+  if (count) count.textContent = `${filtrados.length} gasto(s)`;
+
+  const tbody = document.getElementById('gastos-tbody');
+  const empty = document.getElementById('gastos-empty');
+
+  if (!filtrados.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const pagMap = {
+    dinheiro: { txt: 'Dinheiro', cls: 'pag-dinheiro', ico: 'ti-cash' },
+    cartao:   { txt: 'Cartão',   cls: 'pag-cartao',   ico: 'ti-credit-card' },
+    pix:      { txt: 'Pix',      cls: 'pag-pix',      ico: 'ti-qrcode' },
+    transferencia: { txt: 'Transferência', cls: 'pag-cartao', ico: 'ti-arrows-left-right' },
+    boleto:   { txt: 'Boleto',   cls: 'pag-cartao',   ico: 'ti-file-text' }
+  };
+
+  tbody.innerHTML = filtrados.map(g => {
+    const d = new Date(g.data);
+    const dataFmt = d.toLocaleDateString('pt-BR');
+    const pag = pagMap[g.pagamento] || pagMap.dinheiro;
+    const tipoBadge = g.fixo
+      ? '<span class="badge badge-amber"><i class="ti ti-repeat"></i> Fixo</span>'
+      : '<span class="badge badge-blue"><i class="ti ti-random"></i> Variável</span>';
+    return `<tr>
+      <td style="white-space:nowrap"><i class="ti ti-clock" style="margin-right:4px;opacity:.5"></i>${dataFmt}</td>
+      <td><strong>${g.descricao}</strong></td>
+      <td>${g.categoria || '—'}</td>
+      <td style="font-weight:700">${fmt$(g.valor)}</td>
+      <td><span class="vl-card-tag ${pag.cls}"><i class="ti ${pag.ico}"></i>${pag.txt}</span></td>
+      <td>${tipoBadge}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteGasto(${g.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function addGasto() {
+  const descricao = document.getElementById('g-descricao').value.trim();
+  const categoria = document.getElementById('g-categoria').value.trim() || 'Outros';
+  const valor = parseFloat(document.getElementById('g-valor').value) || 0;
+  const pagamento = document.getElementById('g-pagamento').value;
+  const data = document.getElementById('g-data').value;
+  const fixo = document.getElementById('g-fixo').checked;
+
+  if (!descricao) { toast('Informe a descrição do gasto!', false); return; }
+  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
+  try {
+    await apiRequest('/gastos', {
+      method: 'POST',
+      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo })
+    });
+
+    await loadGastos();
+    renderGastos();
+
+    document.getElementById('g-descricao').value = '';
+    document.getElementById('g-categoria').value = '';
+    document.getElementById('g-valor').value = '';
+    document.getElementById('g-fixo').checked = false;
+    toast('Gasto adicionado com sucesso!');
+  } catch (e) {
+    toast(e.message || 'Erro ao adicionar gasto!', false);
+  }
+}
+
+async function deleteGasto(id) {
+  showConfirm({
+    title: 'Remover gasto',
+    message: 'Deseja remover este gasto?',
+    confirmText: 'Remover',
+    onConfirm: async () => {
+      try {
+        await apiRequest(`/gastos/${id}`, { method: 'DELETE' });
+        await loadGastos();
+        renderGastos();
+        toast('Gasto removido!');
+      } catch (e) {
+        toast(e.message || 'Erro ao remover gasto!', false);
+      }
+    }
+  });
 }
 
 // ==================== INICIALIZAÇÃO ====================

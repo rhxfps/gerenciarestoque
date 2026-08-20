@@ -1237,6 +1237,22 @@ CREATE INDEX IF NOT EXISTS idx_consumo_itens_consumo ON consumo_itens(consumo_id
 );
 CREATE INDEX IF NOT EXISTS idx_contagem_usuario_data ON contagem(usuario_id, data);
 CREATE INDEX IF NOT EXISTS idx_contagem_produto ON contagem(produto_id);`
+  },
+  {
+    name: 'gastos',
+    create: `CREATE TABLE IF NOT EXISTS gastos (
+  id SERIAL PRIMARY KEY,
+  descricao TEXT NOT NULL,
+  categoria TEXT NOT NULL DEFAULT 'Outros',
+  valor NUMERIC(10,2) NOT NULL DEFAULT 0,
+  pagamento TEXT NOT NULL DEFAULT 'dinheiro',
+  data TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  fixo BOOLEAN NOT NULL DEFAULT FALSE,
+  usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_gastos_data ON gastos(data);
+CREATE INDEX IF NOT EXISTS idx_gastos_categoria ON gastos(categoria);`
   }
 ];
 
@@ -1317,6 +1333,65 @@ app.post('/api/contagem', autenticar, async (req, res) => {
     if (insErr) throw insErr;
 
     res.json({ success: true, data: now, count: rows.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== GASTOS ====================
+
+// GET /api/gastos — lista gastos, opcionalmente filtrar por período
+app.get('/api/gastos', autenticar, async (req, res) => {
+  try {
+    const { de, ate, fixo } = req.query;
+    let query = supabase.from('gastos').select('*').order('data', { ascending: false });
+    if (de)  query = query.gte('data', de);
+    if (ate) query = query.lte('data', ate + 'T23:59:59.999');
+    if (fixo !== undefined) query = query.eq('fixo', fixo === 'true');
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/gastos — criar gasto
+app.post('/api/gastos', autenticar, async (req, res) => {
+  const { descricao, categoria, valor, pagamento, data, fixo } = req.body;
+  if (!descricao || valor === undefined) {
+    return res.status(400).json({ error: 'Informe descrição e valor' });
+  }
+  try {
+    const { data: novo, error } = await supabase
+      .from('gastos')
+      .insert([{
+        descricao,
+        categoria: categoria || 'Outros',
+        valor: parseFloat(valor) || 0,
+        pagamento: pagamento || 'dinheiro',
+        data: data || new Date().toISOString(),
+        fixo: !!fixo,
+        usuario_id: req.usuario.id
+      }])
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(novo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/gastos/:id — remover gasto
+app.delete('/api/gastos/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  try {
+    const { error } = await supabase.from('gastos').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
