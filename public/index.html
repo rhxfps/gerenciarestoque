@@ -1343,9 +1343,18 @@
           <!-- Card: Novo gasto variável -->
           <div class="card">
             <div class="card-title"><i class="ti ti-shopping-cart" style="color:var(--amber)"></i> Novo gasto variável</div>
-            <div class="form-group">
-              <label>Descrição</label>
-              <input type="text" id="g-descricao" placeholder="Ex: material de limpeza...">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="g-tipo" onchange="toggleMercadoria()">
+                  <option value="outros">Outros</option>
+                  <option value="mercadoria">Mercadoria</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="g-descricao" placeholder="Ex: material de limpeza...">
+              </div>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -1386,6 +1395,23 @@
                 <input type="date" id="g-data">
               </div>
             </div>
+
+            <!-- Sub-form mercadoria (oculto por padrão) -->
+            <div id="g-mercadoria-section" style="display:none">
+              <div class="mercadoria-divider"><span><i class="ti ti-package"></i> Itens da mercadoria</span></div>
+              <div class="mercadoria-add-row">
+                <input type="text" id="merc-nome" placeholder="Produto" style="flex:2">
+                <input type="number" id="merc-qtd" placeholder="Qtd" min="1" step="1" value="1" style="flex:.5">
+                <input type="number" id="merc-preco" placeholder="Preço un." min="0" step="0.01" style="flex:.7">
+                <button class="btn btn-sm btn-primary" onclick="addMercItem()" style="flex:0"><i class="ti ti-plus"></i></button>
+              </div>
+              <div id="merc-items-list"></div>
+              <div class="mercadoria-total" id="merc-total-display" style="display:none">
+                <span>Total:</span>
+                <span id="merc-total-value">R$ 0,00</span>
+              </div>
+            </div>
+
             <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="addGasto()">
               <i class="ti ti-check"></i> Adicionar gasto
             </button>
@@ -1496,6 +1522,37 @@
                 <i class="ti ti-x"></i> Cancelar
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL NOTINHA DE MERCADORIA -->
+      <div class="modal-overlay" id="notinha-modal" onclick="closeNotinha(event)">
+        <div class="modal-content notinha-content" onclick="event.stopPropagation()">
+          <div class="notinha-paper" id="notinha-paper">
+            <div class="notinha-header">
+              <strong id="notinha-titulo">Mercadoria</strong>
+              <span id="notinha-data"></span>
+            </div>
+            <div class="notinha-desc" id="notinha-desc"></div>
+            <div class="notinha-divider"></div>
+            <table class="notinha-table">
+              <thead>
+                <tr><th>Produto</th><th style="text-align:center">Qtd</th><th style="text-align:right">Preço Un.</th><th style="text-align:right">Subtotal</th></tr>
+              </thead>
+              <tbody id="notinha-itens"></tbody>
+            </table>
+            <div class="notinha-divider"></div>
+            <div class="notinha-total">
+              <span>TOTAL</span>
+              <span id="notinha-total">R$ 0,00</span>
+            </div>
+            <div class="notinha-footer">
+              <span id="notinha-pagamento"></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;padding:1rem 1.25rem;justify-content:flex-end">
+            <button class="btn" onclick="closeNotinha()"><i class="ti ti-x"></i> Fechar</button>
           </div>
         </div>
       </div>

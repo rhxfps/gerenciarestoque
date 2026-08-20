@@ -3930,6 +3930,7 @@ function salvarContagemSQL() {
 // ==================== GASTOS ====================
 let gastosData = [];
 let gastosListaVisivel = false;
+let mercItems = [];
 
 function toggleGastosLista() {
   gastosListaVisivel = !gastosListaVisivel;
@@ -3977,6 +3978,63 @@ function updateGastosKPIs() {
   document.getElementById('gastos-fixos-total').textContent = fmt$(fixosMes);
   document.getElementById('gastos-variaveis-total').textContent = fmt$(variaveisMes);
   document.getElementById('gastos-total-mes').textContent = fmt$(fixosMes + variaveisMes);
+}
+
+function toggleMercadoria() {
+  const tipo = document.getElementById('g-tipo').value;
+  document.getElementById('g-mercadoria-section').style.display = tipo === 'mercadoria' ? 'block' : 'none';
+}
+
+function addMercItem() {
+  const nome = document.getElementById('merc-nome').value.trim();
+  const qtd = parseInt(document.getElementById('merc-qtd').value) || 1;
+  const preco = parseFloat(document.getElementById('merc-preco').value) || 0;
+
+  if (!nome) { toast('Informe o nome do produto!', false); return; }
+  if (preco <= 0) { toast('Informe o preço do produto!', false); return; }
+
+  mercItems.push({ nome, qtd, preco, subtotal: qtd * preco });
+  document.getElementById('merc-nome').value = '';
+  document.getElementById('merc-preco').value = '';
+  document.getElementById('merc-qtd').value = '1';
+  renderMercItems();
+  document.getElementById('merc-nome').focus();
+}
+
+function removeMercItem(idx) {
+  mercItems.splice(idx, 1);
+  renderMercItems();
+}
+
+function renderMercItems() {
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const container = document.getElementById('merc-items-list');
+  const totalDisplay = document.getElementById('merc-total-display');
+  const totalValue = document.getElementById('merc-total-value');
+  const valorInput = document.getElementById('g-valor');
+
+  if (!mercItems.length) {
+    container.innerHTML = '';
+    totalDisplay.style.display = 'none';
+    valorInput.readOnly = false;
+    return;
+  }
+
+  container.innerHTML = mercItems.map((item, i) => `
+    <div class="merc-item-row">
+      <span class="merc-item-nome">${item.nome}</span>
+      <span class="merc-item-qtd">${item.qtd}x</span>
+      <span class="merc-item-preco">${fmt$(item.preco)}</span>
+      <span class="merc-item-subtotal">${fmt$(item.subtotal)}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeMercItem(${i})" style="padding:2px 6px"><i class="ti ti-x"></i></button>
+    </div>
+  `).join('');
+
+  const total = mercItems.reduce((s, i) => s + i.subtotal, 0);
+  totalDisplay.style.display = 'flex';
+  totalValue.textContent = fmt$(total);
+  valorInput.value = total.toFixed(2);
+  valorInput.readOnly = true;
 }
 
 function renderGastos() {
@@ -4031,10 +4089,16 @@ function renderGastos() {
     const pag = pagMap[g.pagamento] || pagMap.dinheiro;
     const tipoBadge = g.fixo
       ? '<span class="badge badge-amber"><i class="ti ti-repeat"></i> Fixo</span>'
-      : '<span class="badge badge-blue"><i class="ti ti-random"></i> Variável</span>';
+      : (g.tipo === 'mercadoria'
+        ? '<span class="badge badge-green"><i class="ti ti-package"></i> Mercadoria</span>'
+        : '<span class="badge badge-blue"><i class="ti ti-random"></i> Outros</span>');
+    const itensCount = (g.itens && g.itens.length) ? g.itens.length : 0;
+    const itensBtn = itensCount
+      ? ` <button class="btn btn-sm" style="color:var(--green);padding:2px 6px;font-size:11px" title="Ver notinha" onclick="openNotinha(${g.id})"><i class="ti ti-receipt"></i> ${itensCount} itens</button>`
+      : '';
     return `<tr>
       <td style="white-space:nowrap"><i class="ti ti-clock" style="margin-right:4px;opacity:.5"></i>${dataFmt}</td>
-      <td><strong>${g.descricao}</strong></td>
+      <td><strong>${g.descricao}</strong>${itensBtn}</td>
       <td>${g.categoria || '—'}</td>
       <td style="font-weight:700">${fmt$(g.valor)}</td>
       <td><span class="vl-card-tag ${pag.cls}"><i class="ti ${pag.ico}"></i>${pag.txt}</span></td>
@@ -4081,6 +4145,8 @@ async function addGasto() {
   const valor = parseFloat(document.getElementById('g-valor').value) || 0;
   const pagamento = document.getElementById('g-pagamento').value;
   const data = document.getElementById('g-data').value;
+  const tipo = document.getElementById('g-tipo').value;
+  const itens = tipo === 'mercadoria' && mercItems.length ? [...mercItems] : null;
 
   if (!descricao) { toast('Informe a descrição do gasto!', false); return; }
   if (valor <= 0) { toast('Informe um valor válido!', false); return; }
@@ -4088,7 +4154,7 @@ async function addGasto() {
   try {
     await apiRequest('/gastos', {
       method: 'POST',
-      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo: false })
+      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo: false, tipo, itens })
     });
 
     await loadGastos();
@@ -4098,10 +4164,45 @@ async function addGasto() {
     document.getElementById('g-descricao').value = '';
     document.getElementById('g-categoria').value = '';
     document.getElementById('g-valor').value = '';
+    document.getElementById('g-tipo').value = 'outros';
+    document.getElementById('g-mercadoria-section').style.display = 'none';
+    mercItems = [];
+    renderMercItems();
     toast('Gasto adicionado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao adicionar gasto!', false);
   }
+}
+
+function openNotinha(id) {
+  const g = gastosData.find(x => x.id === id);
+  if (!g || !g.itens || !g.itens.length) return;
+
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+  const d = new Date(g.data);
+
+  document.getElementById('notinha-titulo').textContent = g.descricao;
+  document.getElementById('notinha-data').textContent = d.toLocaleDateString('pt-BR');
+  document.getElementById('notinha-desc').textContent = g.categoria || '';
+  document.getElementById('notinha-pagamento').textContent = `Pagamento: ${g.pagamento}`;
+
+  const tbody = document.getElementById('notinha-itens');
+  tbody.innerHTML = g.itens.map(item => `
+    <tr>
+      <td>${item.nome}</td>
+      <td style="text-align:center">${item.qtd}</td>
+      <td style="text-align:right">${fmt$(item.preco)}</td>
+      <td style="text-align:right;font-weight:700">${fmt$(item.subtotal)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('notinha-total').textContent = fmt$(g.valor);
+  document.getElementById('notinha-modal').classList.add('show');
+}
+
+function closeNotinha(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('notinha-modal').classList.remove('show');
 }
 
 function openEditarGastoById(id) {

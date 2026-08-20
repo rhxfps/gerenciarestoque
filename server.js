@@ -1248,6 +1248,8 @@ CREATE INDEX IF NOT EXISTS idx_contagem_produto ON contagem(produto_id);`
   pagamento TEXT NOT NULL DEFAULT 'dinheiro',
   data TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   fixo BOOLEAN NOT NULL DEFAULT FALSE,
+  tipo TEXT NOT NULL DEFAULT 'outros',
+  itens JSONB,
   usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -1358,7 +1360,7 @@ app.get('/api/gastos', autenticar, async (req, res) => {
 
 // POST /api/gastos — criar gasto
 app.post('/api/gastos', autenticar, async (req, res) => {
-  const { descricao, categoria, valor, pagamento, data, fixo } = req.body;
+  const { descricao, categoria, valor, pagamento, data, fixo, tipo, itens } = req.body;
   if (!descricao || valor === undefined) {
     return res.status(400).json({ error: 'Informe descrição e valor' });
   }
@@ -1372,6 +1374,8 @@ app.post('/api/gastos', autenticar, async (req, res) => {
         pagamento: pagamento || 'dinheiro',
         data: data || new Date().toISOString(),
         fixo: !!fixo,
+        tipo: tipo || 'outros',
+        itens: itens || null,
         usuario_id: req.usuario.id
       }])
       .select()
@@ -1388,7 +1392,7 @@ app.put('/api/gastos/:id', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') {
     return res.status(403).json({ error: 'Acesso negado' });
   }
-  const { descricao, categoria, valor, pagamento, data, fixo } = req.body;
+  const { descricao, categoria, valor, pagamento, data, fixo, tipo, itens } = req.body;
   try {
     const updates = {};
     if (descricao !== undefined) updates.descricao = descricao;
@@ -1397,6 +1401,8 @@ app.put('/api/gastos/:id', autenticar, async (req, res) => {
     if (pagamento !== undefined) updates.pagamento = pagamento;
     if (data !== undefined) updates.data = data;
     if (fixo !== undefined) updates.fixo = !!fixo;
+    if (tipo !== undefined) updates.tipo = tipo;
+    if (itens !== undefined) updates.itens = itens || null;
 
     const { data: atualizado, error } = await supabase
       .from('gastos')
