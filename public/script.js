@@ -914,6 +914,12 @@ function closeVendaDetalhe(e) {
 }
 
 // ==================== PRODUTOS ====================
+function populateCategoriaDatalist() {
+  const cats = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
+  const list = document.getElementById('p-cat-list');
+  if (list) list.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+}
+
 function toggleFormProduto(e) {
   if (e && e.target !== e.currentTarget) return;
   const modal = document.getElementById('novo-produto-modal');
@@ -927,6 +933,7 @@ function toggleFormProduto(e) {
     document.getElementById('p-qty').value = '';
     document.getElementById('p-min').value = '';
     document.getElementById('p-preco').value = '';
+    populateCategoriaDatalist();
     modal.classList.add('show');
     setTimeout(() => document.getElementById('p-nome').focus(), 120);
   }
@@ -988,6 +995,7 @@ function openEditarProduto(id) {
   document.getElementById('edit-qty').value   = p.qtd;
   document.getElementById('edit-min').value   = p.qtd_minima;
   document.getElementById('edit-preco').value = p.preco || '';
+  populateCategoriaDatalist();
   document.getElementById('editar-produto-modal').classList.add('show');
 }
 
