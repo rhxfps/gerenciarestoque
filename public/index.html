@@ -1405,7 +1405,12 @@
         <div class="card gastos-lista-section" id="gastos-lista-section" style="display:none;margin-top:14px">
           <div class="section-header">
             <div class="card-title" style="margin:0"><i class="ti ti-list"></i> Lista de Gastos</div>
-            <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <label class="gastos-fixos-toggle" onclick="toggleFiltrosFixos()">
+                <input type="checkbox" id="g-show-fixos" onchange="renderGastos()">
+                <span class="gastos-fixos-toggle-slider"></span>
+                <span><i class="ti ti-repeat"></i> Fixos</span>
+              </label>
               <select id="g-filtro-periodo" onchange="renderGastos()" style="padding:6px 10px;font-size:13px">
                 <option value="mes">Este mês</option>
                 <option value="semana">Esta semana</option>

@@ -4022,6 +4022,54 @@ mark.estoque-highlight {
   color: var(--primary);
 }
 
+.gastos-fixos-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  transition: all .2s ease;
+  user-select: none;
+}
+.gastos-fixos-toggle input { display: none; }
+.gastos-fixos-toggle-slider {
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: all .2s ease;
+}
+.gastos-fixos-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: all .2s ease;
+}
+.gastos-fixos-toggle input:checked ~ .gastos-fixos-toggle-slider {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.gastos-fixos-toggle input:checked ~ .gastos-fixos-toggle-slider::after {
+  left: 14px;
+  background: #fff;
+}
+.gastos-fixos-toggle input:checked ~ span:last-child {
+  color: var(--amber);
+}
+
 @media (max-width: 768px) {
   #screen-gastos > div:first-of-type { grid-template-columns: 1fr !important; }
 }

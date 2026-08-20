@@ -3984,6 +3984,7 @@ function renderGastos() {
 
   const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
   const periodo = document.getElementById('g-filtro-periodo')?.value || 'mes';
+  const showFixos = document.getElementById('g-show-fixos')?.checked || false;
 
   const hoje = new Date();
   const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
@@ -3994,10 +3995,14 @@ function renderGastos() {
 
   const filtrados = gastosData.filter(g => {
     const d = new Date(g.data);
-    if (periodo === 'semana') return d >= segunda;
-    if (periodo === 'hoje') return d >= inicioDia;
+    if (periodo === 'semana' && d < segunda) return false;
+    if (periodo === 'hoje' && d < inicioDia) return false;
+    if (!showFixos && g.fixo) return false;
     return true;
-  }).sort((a, b) => new Date(b.data) - new Date(a.data));
+  }).sort((a, b) => {
+    if (showFixos && a.fixo !== b.fixo) return a.fixo ? -1 : 1;
+    return new Date(b.data) - new Date(a.data);
+  });
 
   const count = document.getElementById('g-count');
   if (count) count.textContent = `${filtrados.length} gasto(s)`;
