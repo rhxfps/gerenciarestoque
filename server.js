@@ -20,7 +20,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Serve the HTML file as the default route
 app.get('/', (req, res) => {
