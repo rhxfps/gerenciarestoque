@@ -3949,7 +3949,6 @@ function renderGastos() {
   const segunda = new Date(hoje);
   segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
   segunda.setHours(0, 0, 0, 0);
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
   const filtrados = gastosData.filter(g => {
     const d = new Date(g.data);
@@ -4005,9 +4004,39 @@ function renderGastos() {
       <td style="font-weight:700">${fmt$(g.valor)}</td>
       <td><span class="vl-card-tag ${pag.cls}"><i class="ti ${pag.ico}"></i>${pag.txt}</span></td>
       <td>${tipoBadge}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteGasto(${g.id})"><i class="ti ti-trash"></i></button></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" style="color:var(--primary);padding:4px 6px" title="Editar" onclick='openEditarGasto(${JSON.stringify(g).replace(/'/g, "&#39;")})'><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteGasto(${g.id})"><i class="ti ti-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
+}
+
+async function addGastoFixo() {
+  const descricao = document.getElementById('gf-descricao').value.trim();
+  const categoria = document.getElementById('gf-categoria').value.trim() || 'Outros';
+  const valor = parseFloat(document.getElementById('gf-valor').value) || 0;
+  const pagamento = document.getElementById('gf-pagamento').value;
+
+  if (!descricao) { toast('Informe a descrição do gasto fixo!', false); return; }
+  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
+  try {
+    await apiRequest('/gastos', {
+      method: 'POST',
+      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: new Date().toISOString(), fixo: true })
+    });
+
+    await loadGastos();
+    renderGastos();
+
+    document.getElementById('gf-descricao').value = '';
+    document.getElementById('gf-categoria').value = '';
+    document.getElementById('gf-valor').value = '';
+    toast('Gasto fixo adicionado com sucesso!');
+  } catch (e) {
+    toast(e.message || 'Erro ao adicionar gasto fixo!', false);
+  }
 }
 
 async function addGasto() {
@@ -4016,7 +4045,6 @@ async function addGasto() {
   const valor = parseFloat(document.getElementById('g-valor').value) || 0;
   const pagamento = document.getElementById('g-pagamento').value;
   const data = document.getElementById('g-data').value;
-  const fixo = document.getElementById('g-fixo').checked;
 
   if (!descricao) { toast('Informe a descrição do gasto!', false); return; }
   if (valor <= 0) { toast('Informe um valor válido!', false); return; }
@@ -4024,7 +4052,7 @@ async function addGasto() {
   try {
     await apiRequest('/gastos', {
       method: 'POST',
-      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo })
+      body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo: false })
     });
 
     await loadGastos();
@@ -4033,10 +4061,51 @@ async function addGasto() {
     document.getElementById('g-descricao').value = '';
     document.getElementById('g-categoria').value = '';
     document.getElementById('g-valor').value = '';
-    document.getElementById('g-fixo').checked = false;
     toast('Gasto adicionado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao adicionar gasto!', false);
+  }
+}
+
+function openEditarGasto(g) {
+  document.getElementById('eg-id').value = g.id;
+  document.getElementById('eg-descricao').value = g.descricao || '';
+  document.getElementById('eg-categoria').value = g.categoria || '';
+  document.getElementById('eg-valor').value = g.valor || '';
+  document.getElementById('eg-pagamento').value = g.pagamento || 'dinheiro';
+  document.getElementById('eg-data').value = g.data ? new Date(g.data).toISOString().slice(0, 10) : '';
+  document.getElementById('eg-fixo').checked = !!g.fixo;
+  document.getElementById('editar-gasto-modal').classList.add('show');
+}
+
+function closeEditarGasto(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('editar-gasto-modal').classList.remove('show');
+}
+
+async function salvarEdicaoGasto() {
+  const id = document.getElementById('eg-id').value;
+  const descricao = document.getElementById('eg-descricao').value.trim();
+  const categoria = document.getElementById('eg-categoria').value.trim() || 'Outros';
+  const valor = parseFloat(document.getElementById('eg-valor').value) || 0;
+  const pagamento = document.getElementById('eg-pagamento').value;
+  const data = document.getElementById('eg-data').value;
+  const fixo = document.getElementById('eg-fixo').checked;
+
+  if (!descricao) { toast('Informe a descrição!', false); return; }
+  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
+  try {
+    await apiRequest(`/gastos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ descricao, categoria, valor, pagamento, data, fixo })
+    });
+    closeEditarGasto();
+    await loadGastos();
+    renderGastos();
+    toast('Gasto atualizado com sucesso!');
+  } catch (e) {
+    toast(e.message || 'Erro ao atualizar gasto!', false);
   }
 }
 

@@ -1292,19 +1292,65 @@
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:14px;align-items:start">
 
-          <!-- Formulário novo gasto -->
-          <div class="card">
-            <div class="card-title"><i class="ti ti-plus" style="color:var(--green)"></i> Novo gasto</div>
+          <!-- Card: Gasto Fixo Mensal -->
+          <div class="card gastos-fixo-card">
+            <div class="gastos-fixo-header">
+              <i class="ti ti-repeat"></i>
+              <span>Gasto Fixo Mensal</span>
+            </div>
+            <p class="gastos-fixo-sub">Gastos que se repetem todo mês (aluguel, energia, internet...)</p>
             <div class="form-group">
               <label>Descrição</label>
-              <input type="text" id="g-descricao" placeholder="Ex: Aluguel, Conta de luz...">
+              <input type="text" id="gf-descricao" placeholder="Ex: Aluguel, Energia...">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Categoria</label>
-                <input type="text" id="g-categoria" list="g-categoria-list" placeholder="Ex: Aluguel, Energia..." autocomplete="off">
+                <input type="text" id="gf-categoria" list="gf-cat-list" placeholder="Ex: Aluguel..." autocomplete="off">
+                <datalist id="gf-cat-list">
+                  <option value="Aluguel">
+                  <option value="Energia">
+                  <option value="Água">
+                  <option value="Internet">
+                  <option value="Telefone">
+                  <option value="Funcionários">
+                  <option value="Impostos">
+                  <option value="Manutenção">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="gf-valor" placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Forma de pagamento</label>
+              <select id="gf-pagamento">
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="pix">Pix</option>
+                <option value="transferencia">Transferência</option>
+                <option value="boleto">Boleto</option>
+              </select>
+            </div>
+            <button class="btn btn-primary gastos-fixo-btn" onclick="addGastoFixo()">
+              <i class="ti ti-plus"></i> Adicionar fixo
+            </button>
+          </div>
+
+          <!-- Card: Novo gasto variável -->
+          <div class="card">
+            <div class="card-title"><i class="ti ti-shopping-cart" style="color:var(--amber)"></i> Novo gasto variável</div>
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="g-descricao" placeholder="Ex: material de limpeza...">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="g-categoria" list="g-categoria-list" placeholder="Ex: Material..." autocomplete="off">
                 <datalist id="g-categoria-list">
                   <option value="Aluguel">
                   <option value="Energia">
@@ -1339,13 +1385,6 @@
                 <label>Data</label>
                 <input type="date" id="g-data">
               </div>
-            </div>
-            <div class="form-group" style="margin-bottom:0">
-              <label class="vl-switch" style="margin-top:4px">
-                <input type="checkbox" id="g-fixo">
-                <span class="vl-switch-slider"></span>
-                <span class="vl-switch-label"><i class="ti ti-repeat"></i> Gasto fixo (mensal)</span>
-              </label>
             </div>
             <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="addGasto()">
               <i class="ti ti-check"></i> Adicionar gasto
@@ -1384,6 +1423,67 @@
             <div id="gastos-empty" class="empty" style="display:none"><i class="ti ti-receipt-off"></i>Nenhum gasto registrado.</div>
           </div>
 
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR GASTO -->
+      <div class="modal-overlay" id="editar-gasto-modal" onclick="closeEditarGasto(event)">
+        <div class="modal-content" style="max-width:500px" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-edit"></i> Editar Gasto</h3>
+            <button class="modal-close" onclick="closeEditarGasto()"><i class="ti ti-x"></i></button>
+          </div>
+          <div style="padding:1.25rem">
+            <input type="hidden" id="eg-id">
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="eg-descricao" placeholder="Descrição do gasto">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="eg-categoria" list="eg-cat-list" placeholder="Categoria" autocomplete="off">
+                <datalist id="eg-cat-list">
+                  <option value="Aluguel"><option value="Energia"><option value="Água"><option value="Internet"><option value="Telefone"><option value="Funcionários"><option value="Impostos"><option value="Manutenção"><option value="Material"><option value="Combustível"><option value="Outros">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="eg-valor" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Forma de pagamento</label>
+                <select id="eg-pagamento">
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">Pix</option>
+                  <option value="transferencia">Transferência</option>
+                  <option value="boleto">Boleto</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data</label>
+                <input type="date" id="eg-data">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="vl-switch" style="margin-top:4px">
+                <input type="checkbox" id="eg-fixo">
+                <span class="vl-switch-slider"></span>
+                <span class="vl-switch-label"><i class="ti ti-repeat"></i> Gasto fixo (mensal)</span>
+              </label>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:1rem">
+              <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="salvarEdicaoGasto()">
+                <i class="ti ti-check"></i> Salvar alterações
+              </button>
+              <button class="btn" onclick="closeEditarGasto()">
+                <i class="ti ti-x"></i> Cancelar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

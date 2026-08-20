@@ -1383,6 +1383,34 @@ app.post('/api/gastos', autenticar, async (req, res) => {
   }
 });
 
+// PUT /api/gastos/:id — editar gasto
+app.put('/api/gastos/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  const { descricao, categoria, valor, pagamento, data, fixo } = req.body;
+  try {
+    const updates = {};
+    if (descricao !== undefined) updates.descricao = descricao;
+    if (categoria !== undefined) updates.categoria = categoria;
+    if (valor !== undefined) updates.valor = parseFloat(valor);
+    if (pagamento !== undefined) updates.pagamento = pagamento;
+    if (data !== undefined) updates.data = data;
+    if (fixo !== undefined) updates.fixo = !!fixo;
+
+    const { data: atualizado, error } = await supabase
+      .from('gastos')
+      .update(updates)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(atualizado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // DELETE /api/gastos/:id — remover gasto
 app.delete('/api/gastos/:id', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') {
