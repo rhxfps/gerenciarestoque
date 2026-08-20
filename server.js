@@ -339,6 +339,7 @@ app.get('/api/movimentacoes/log', autenticar, async (req, res) => {
     const { data: movs, error: movError } = await supabase
       .from('movimentacoes')
       .select('*')
+      .not('usuario_id', 'is', null)
       .order('data', { ascending: false });
     if (movError) throw movError;
 
