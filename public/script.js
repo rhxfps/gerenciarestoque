@@ -393,7 +393,7 @@ function nav(screen) {
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
   if (screen === 'contagem')    { loadContagemServidor().then(() => renderContagem()); }
-  if (screen === 'gastos')      { if (!document.getElementById('g-data').value) document.getElementById('g-data').value = new Date().toISOString().slice(0, 10); renderGastos(); }
+  if (screen === 'gastos')      { if (!document.getElementById('g-data').value) document.getElementById('g-data').value = new Date().toISOString().slice(0, 10); updateGastosKPIs(); if (gastosListaVisivel) renderGastos(); }
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
@@ -3929,17 +3929,59 @@ function salvarContagemSQL() {
 
 // ==================== GASTOS ====================
 let gastosData = [];
+let gastosListaVisivel = false;
+
+function toggleGastosLista() {
+  gastosListaVisivel = !gastosListaVisivel;
+  const section = document.getElementById('gastos-lista-section');
+  const icon = document.getElementById('gastos-toggle-icon');
+  const btn = document.getElementById('gastos-toggle-btn');
+
+  if (gastosListaVisivel) {
+    section.style.display = 'block';
+    icon.classList.replace('ti-chevron-down', 'ti-chevron-up');
+    btn.classList.add('active');
+    renderGastos();
+  } else {
+    section.style.display = 'none';
+    icon.classList.replace('ti-chevron-up', 'ti-chevron-down');
+    btn.classList.remove('active');
+  }
+}
+
+function updateGastosToggleCount() {
+  const count = document.getElementById('gastos-toggle-count');
+  if (count) count.textContent = `(${gastosData.length})`;
+}
 
 async function loadGastos() {
   try {
     gastosData = await apiRequest('/gastos');
+    updateGastosToggleCount();
   } catch (e) {
     console.error('Erro ao carregar gastos:', e);
     gastosData = [];
   }
 }
 
+function updateGastosKPIs() {
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  const hoje = new Date();
+  const mesAtual = gastosData.filter(g => {
+    const d = new Date(g.data);
+    return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+  });
+  const fixosMes = mesAtual.filter(g => g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
+  const variaveisMes = mesAtual.filter(g => !g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
+
+  document.getElementById('gastos-fixos-total').textContent = fmt$(fixosMes);
+  document.getElementById('gastos-variaveis-total').textContent = fmt$(variaveisMes);
+  document.getElementById('gastos-total-mes').textContent = fmt$(fixosMes + variaveisMes);
+}
+
 function renderGastos() {
+  if (!gastosListaVisivel) return;
+
   const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
   const periodo = document.getElementById('g-filtro-periodo')?.value || 'mes';
 
@@ -3956,18 +3998,6 @@ function renderGastos() {
     if (periodo === 'hoje') return d >= inicioDia;
     return true;
   }).sort((a, b) => new Date(b.data) - new Date(a.data));
-
-  // KPIs — fixos e variáveis do mês atual
-  const mesAtual = gastosData.filter(g => {
-    const d = new Date(g.data);
-    return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
-  });
-  const fixosMes = mesAtual.filter(g => g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
-  const variaveisMes = mesAtual.filter(g => !g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
-
-  document.getElementById('gastos-fixos-total').textContent = fmt$(fixosMes);
-  document.getElementById('gastos-variaveis-total').textContent = fmt$(variaveisMes);
-  document.getElementById('gastos-total-mes').textContent = fmt$(fixosMes + variaveisMes);
 
   const count = document.getElementById('g-count');
   if (count) count.textContent = `${filtrados.length} gasto(s)`;
@@ -4005,7 +4035,7 @@ function renderGastos() {
       <td><span class="vl-card-tag ${pag.cls}"><i class="ti ${pag.ico}"></i>${pag.txt}</span></td>
       <td>${tipoBadge}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-sm" style="color:var(--primary);padding:4px 6px" title="Editar" onclick='openEditarGasto(${JSON.stringify(g).replace(/'/g, "&#39;")})'><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm" style="color:var(--primary);padding:4px 6px" title="Editar" onclick="openEditarGastoById(${g.id})"><i class="ti ti-pencil"></i></button>
         <button class="btn btn-danger btn-sm" onclick="deleteGasto(${g.id})"><i class="ti ti-trash"></i></button>
       </td>
     </tr>`;
@@ -4029,6 +4059,7 @@ async function addGastoFixo() {
 
     await loadGastos();
     renderGastos();
+    updateGastosKPIs();
 
     document.getElementById('gf-descricao').value = '';
     document.getElementById('gf-categoria').value = '';
@@ -4057,6 +4088,7 @@ async function addGasto() {
 
     await loadGastos();
     renderGastos();
+    updateGastosKPIs();
 
     document.getElementById('g-descricao').value = '';
     document.getElementById('g-categoria').value = '';
@@ -4065,6 +4097,12 @@ async function addGasto() {
   } catch (e) {
     toast(e.message || 'Erro ao adicionar gasto!', false);
   }
+}
+
+function openEditarGastoById(id) {
+  const g = gastosData.find(x => x.id === id);
+  if (!g) return;
+  openEditarGasto(g);
 }
 
 function openEditarGasto(g) {
@@ -4103,6 +4141,7 @@ async function salvarEdicaoGasto() {
     closeEditarGasto();
     await loadGastos();
     renderGastos();
+    updateGastosKPIs();
     toast('Gasto atualizado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao atualizar gasto!', false);
@@ -4119,6 +4158,7 @@ async function deleteGasto(id) {
         await apiRequest(`/gastos/${id}`, { method: 'DELETE' });
         await loadGastos();
         renderGastos();
+        updateGastosKPIs();
         toast('Gasto removido!');
       } catch (e) {
         toast(e.message || 'Erro ao remover gasto!', false);
