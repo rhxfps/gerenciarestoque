@@ -3927,6 +3927,107 @@ function salvarContagemSQL() {
   toast('Arquivo SQL baixado com sucesso!');
 }
 
+function exportarVendasSQL() {
+  const periodo    = document.getElementById('vl-filtro-periodo')?.value || 'semana';
+  const pagFiltro  = document.getElementById('vl-filtro-pag')?.value || '';
+  const tipoFiltro = document.getElementById('vl-filtro-tipo')?.value || '';
+  const prodFiltro = document.getElementById('vl-filtro-produto')?.value || '';
+  const deVal      = document.getElementById('vl-filtro-de')?.value || '';
+  const ateVal     = document.getElementById('vl-filtro-ate')?.value || '';
+  const horaDeVal  = document.getElementById('vl-filtro-hora-de')?.value || '';
+  const horaAteVal = document.getElementById('vl-filtro-hora-ate')?.value || '';
+
+  const hoje = new Date();
+  hoje.setHours(23, 59, 59, 999);
+  const diaSemana = hoje.getDay();
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
+  segunda.setHours(0, 0, 0, 0);
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+
+  const inicioDe = deVal ? new Date(deVal + 'T00:00:00') : null;
+  const fimAte   = ateVal ? new Date(ateVal + 'T23:59:59.999') : null;
+
+  const filtroPeriodo = v => {
+    const d = new Date(v.data);
+    if (inicioDe) {
+      if (d < inicioDe) return false;
+    } else if (periodo === 'hoje') {
+      if (d < inicioDia) return false;
+    } else if (periodo === 'semana') {
+      if (d < segunda) return false;
+    } else if (periodo === 'mes') {
+      if (d < primeiroDiaMes) return false;
+    }
+    if (fimAte && d > fimAte) return false;
+    if (horaDeVal || horaAteVal) {
+      const mins = d.getHours() * 60 + d.getMinutes();
+      if (horaDeVal) { const [hd, md] = horaDeVal.split(':').map(Number); if (mins < hd * 60 + md) return false; }
+      if (horaAteVal) { const [ha, ma] = horaAteVal.split(':').map(Number); if (mins > ha * 60 + ma) return false; }
+    }
+    return true;
+  };
+
+  const lista = [...vendas].sort((a, b) => new Date(b.data) - new Date(a.data)).filter(filtroPeriodo);
+
+  let listaFiltrada = lista;
+  if (pagFiltro) listaFiltrada = listaFiltrada.filter(v => v.pagamento === pagFiltro);
+  if (tipoFiltro) listaFiltrada = listaFiltrada.filter(v => tipoFiltro === 'delivery' ? v.delivery : !v.delivery);
+  if (prodFiltro) {
+    const termo = prodFiltro.toLowerCase();
+    listaFiltrada = listaFiltrada.filter(v => {
+      if (v.itens?.length) return v.itens.some(i => i.produto_nome.toLowerCase().includes(termo));
+      return false;
+    });
+  }
+
+  if (!listaFiltrada.length) {
+    toast('Nenhuma venda para exportar com os filtros atuais!', false);
+    return;
+  }
+
+  const esc = v => v === null || v === undefined ? 'NULL' : `'${String(v).replace(/'/g, "''")}'`;
+
+  let sql = `-- ============================================================\n`;
+  sql += `-- Vendas Exportadas - GerenciarStock\n`;
+  sql += `-- Data: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
+  sql += `-- Filtros: ${periodo}${pagFiltro ? `, pagamento=${pagFiltro}` : ''}${tipoFiltro ? `, tipo=${tipoFiltro}` : ''}${prodFiltro ? `, produto="${prodFiltro}"` : ''}\n`;
+  sql += `-- Vendas: ${listaFiltrada.length}\n`;
+  sql += `-- ============================================================\n\n`;
+
+  sql += `-- Inserir vendas\n`;
+  listaFiltrada.forEach(v => {
+    const dataIso = new Date(v.data).toISOString();
+    sql += `INSERT INTO vendas (id, total, pagamento, delivery, plataforma, obs, data, usuario_id)\n`;
+    sql += `VALUES (${v.id}, ${parseFloat(v.total)}, ${esc(v.pagamento)}, ${!!v.delivery}, ${esc(v.plataforma)}, ${esc(v.obs)}, '${dataIso}', ${v.usuario_id || 'NULL'});\n`;
+  });
+
+  sql += `\n-- Inserir itens das vendas\n`;
+  const todosItens = listaFiltrada.flatMap(v => (v.itens || []).map(i => ({ ...i, venda_id: v.id })));
+  todosItens.forEach(i => {
+    sql += `INSERT INTO venda_itens (venda_id, produto_id, produto_nome, qtd, preco_unitario, recheio)\n`;
+    sql += `VALUES (${i.venda_id}, ${i.produto_id || 'NULL'}, ${esc(i.produto_nome)}, ${parseFloat(i.qtd)}, ${parseFloat(i.preco_unitario)}, ${esc(i.recheio || null)});\n`;
+  });
+
+  sql += `\n-- ============================================================\n`;
+  sql += `-- Fim da exportação\n`;
+  sql += `-- ============================================================\n`;
+
+  const blob = new Blob([sql], { type: 'application/sql;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.download = `vendas_${dateStr}.sql`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  toast(`${listaFiltrada.length} venda(s) exportada(s) com sucesso!`);
+}
+
 // ==================== GASTOS ====================
 let gastosData = [];
 let gastosListaVisivel = false;
