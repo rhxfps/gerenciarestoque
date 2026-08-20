@@ -1225,6 +1225,18 @@ CREATE INDEX IF NOT EXISTS idx_consumo_itens_consumo ON consumo_itens(consumo_id
   preco NUMERIC(10,2) NOT NULL DEFAULT 0,
   ordem INT NOT NULL DEFAULT 0
 );`
+  },
+  {
+    name: 'contagem',
+    create: `CREATE TABLE IF NOT EXISTS contagem (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  produto_id INTEGER NOT NULL REFERENCES produtos(id) ON DELETE CASCADE,
+  qtd NUMERIC NOT NULL DEFAULT 0,
+  data TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_contagem_usuario_data ON contagem(usuario_id, data);
+CREATE INDEX IF NOT EXISTS idx_contagem_produto ON contagem(produto_id);`
   }
 ];
 
@@ -1236,6 +1248,79 @@ function escapeSqlValue(val) {
   if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
   return `'${String(val).replace(/'/g, "''")}'`;
 }
+
+// ==================== CONTAGEM DE ESTOQUE ====================
+
+// GET /api/contagem — retorna a última contagem salva
+app.get('/api/contagem', autenticar, async (req, res) => {
+  try {
+    // Busca a data da contagem mais recente
+    const { data: ultimaContagem, error: err1 } = await supabase
+      .from('contagem')
+      .select('data, usuario_id, usuarios:usuario_id (nome)')
+      .order('data', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (err1) throw err1;
+    if (!ultimaContagem) return res.json({ data: null, items: [] });
+
+    // Busca todos os itens dessa data
+    const { data: items, error: err2 } = await supabase
+      .from('contagem')
+      .select('produto_id, qtd, usuario_id, usuarios:usuario_id (nome)')
+      .eq('data', ultimaContagem.data);
+
+    if (err2) throw err2;
+
+    res.json({
+      data: ultimaContagem.data,
+      usuario: ultimaContagem.usuarios?.nome || 'Desconhecido',
+      items: items || []
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/contagem — salva uma contagem nova (substitui a anterior do mesmo usuário)
+app.post('/api/contagem', autenticar, async (req, res) => {
+  const { items } = req.body;
+  if (!items || !Array.isArray(items) || !items.length) {
+    return res.status(400).json({ error: 'Nenhum item para salvar' });
+  }
+
+  try {
+    const now = new Date().toISOString();
+    const usuario_id = req.usuario.id;
+
+    // Deleta contagens anteriores deste usuário (não confirmadas)
+    const { error: delErr } = await supabase
+      .from('contagem')
+      .delete()
+      .eq('usuario_id', usuario_id);
+
+    if (delErr) throw delErr;
+
+    // Insere os novos itens
+    const rows = items.map(item => ({
+      usuario_id,
+      produto_id: item.produto_id,
+      qtd: item.qtd,
+      data: now
+    }));
+
+    const { error: insErr } = await supabase
+      .from('contagem')
+      .insert(rows);
+
+    if (insErr) throw insErr;
+
+    res.json({ success: true, data: now, count: rows.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get('/api/admin/backup', autenticar, async (req, res) => {
   try {

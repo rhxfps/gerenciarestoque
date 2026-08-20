@@ -387,7 +387,7 @@ function nav(screen) {
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
-  if (screen === 'contagem')    renderContagem();
+  if (screen === 'contagem')    { loadContagemServidor().then(() => renderContagem()); }
   if (screen === 'consumo') {
     consumoItens = [];
     consumoCategoriaAtiva = 'Todos';
@@ -3726,6 +3726,8 @@ async function fecharCaixa() {
 }
 
 // ==================== CONTAGEM DE ESTOQUE ====================
+let contagemServerData = null;
+
 function renderContagem() {
   const container = document.getElementById('contagem-lista');
   if (!container) return;
@@ -3750,10 +3752,15 @@ function renderContagem() {
   if (count) count.textContent = `${lista.length} produto(s)`;
 
   const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
-  const lastTs = saved._timestamp;
+  const lastTs = contagemServerData?.data || saved._timestamp;
+  const lastUser = contagemServerData?.usuario || saved._user;
   const lastEl = document.getElementById('contagem-last');
   if (lastEl) {
-    lastEl.textContent = lastTs ? `Última contagem: ${fmt(lastTs)}` : '';
+    if (lastTs) {
+      lastEl.textContent = `Última contagem: ${fmt(lastTs)}${lastUser ? ' por ' + lastUser : ''}`;
+    } else {
+      lastEl.textContent = '';
+    }
   }
 
   if (currentUser.role === 'dono') {
@@ -3796,44 +3803,48 @@ function saveContagemField(id, val) {
   } else {
     saved[id] = parseFloat(val);
   }
-  saved._timestamp = new Date().toISOString();
   localStorage.setItem('contagem', JSON.stringify(saved));
-
-  const lastTs = saved._timestamp;
-  const lastEl = document.getElementById('contagem-last');
-  if (lastEl) lastEl.textContent = `Última contagem: ${fmt(lastTs)}`;
-  if (currentUser.role === 'dono') {
-    const sqlBtn = document.getElementById('contagem-sql-btn');
-    if (sqlBtn) sqlBtn.style.display = 'inline-flex';
-  }
 }
 
-function confirmarContagem() {
+async function confirmarContagem() {
   const inputs = document.querySelectorAll('.contagem-input');
-  let preenchidos = 0;
+  const items = [];
   inputs.forEach(inp => {
-    if (inp.value !== '' && inp.value !== undefined) preenchidos++;
+    if (inp.value !== '' && inp.value !== undefined && parseFloat(inp.value) >= 0) {
+      items.push({ produto_id: parseInt(inp.dataset.id), qtd: parseFloat(inp.value) });
+    }
   });
 
-  if (preenchidos === 0) {
+  if (!items.length) {
     toast('Preencha pelo menos uma quantidade antes de confirmar!', false);
     return;
   }
 
-  const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
-  saved._timestamp = new Date().toISOString();
-  saved._user = currentUser.nome;
-  localStorage.setItem('contagem', JSON.stringify(saved));
+  try {
+    const resp = await apiRequest('/contagem', {
+      method: 'POST',
+      body: JSON.stringify({ items })
+    });
 
-  const lastEl = document.getElementById('contagem-last');
-  if (lastEl) lastEl.textContent = `Última contagem: ${fmt(saved._timestamp)} por ${currentUser.nome}`;
+    contagemServerData = { data: resp.data, usuario: currentUser.nome };
 
-  if (currentUser.role === 'dono') {
-    const sqlBtn = document.getElementById('contagem-sql-btn');
-    if (sqlBtn) sqlBtn.style.display = 'inline-flex';
+    const saved = JSON.parse(localStorage.getItem('contagem') || '{}');
+    saved._timestamp = resp.data;
+    saved._user = currentUser.nome;
+    localStorage.setItem('contagem', JSON.stringify(saved));
+
+    const lastEl = document.getElementById('contagem-last');
+    if (lastEl) lastEl.textContent = `Última contagem: ${fmt(resp.data)} por ${currentUser.nome}`;
+
+    if (currentUser.role === 'dono') {
+      const sqlBtn = document.getElementById('contagem-sql-btn');
+      if (sqlBtn) sqlBtn.style.display = 'inline-flex';
+    }
+
+    toast(`${items.length} produto(s) confirmado(s) e salvo(s) no servidor!`);
+  } catch (e) {
+    toast(e.message || 'Erro ao salvar contagem!', false);
   }
-
-  toast(`${preenchidos} produto(s) confirmado(s)!`);
 }
 
 function limparContagem() {
@@ -3844,10 +3855,29 @@ function limparContagem() {
     icon: 'ti ti-trash',
     onConfirm: () => {
       localStorage.removeItem('contagem');
+      contagemServerData = null;
       renderContagem();
       toast('Contagem limpa!');
     }
   });
+}
+
+async function loadContagemServidor() {
+  try {
+    const data = await apiRequest('/contagem');
+    if (data && data.data) {
+      contagemServerData = data;
+      const saved = {};
+      data.items.forEach(item => {
+        saved[item.produto_id] = item.qtd;
+      });
+      saved._timestamp = data.data;
+      saved._user = data.usuario;
+      localStorage.setItem('contagem', JSON.stringify(saved));
+    }
+  } catch (e) {
+    console.error('Erro ao carregar contagem do servidor:', e);
+  }
 }
 
 function salvarContagemSQL() {
