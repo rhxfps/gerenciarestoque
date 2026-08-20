@@ -962,7 +962,11 @@
             <h3><span>🥟</span> Escolha o recheio</h3>
             <button type="button" class="modal-close" onclick="closePastelModal()"><i class="ti ti-x"></i></button>
           </div>
-          <p class="pastel-modal-preco">Preço fixo: <strong>R$ 14,00</strong> — escolha até <strong>3 sabores</strong></p>
+          <div class="pastel-toggle-row">
+            <button type="button" class="pastel-toggle-btn active" id="pastel-btn-salgado" onclick="setPastelModoRecheio('salgado')">Salgados</button>
+            <button type="button" class="pastel-toggle-btn" id="pastel-btn-doce" onclick="setPastelModoRecheio('doce')">Doces</button>
+          </div>
+          <p class="pastel-modal-preco" id="pastel-preco-texto">Preço fixo: <strong>R$ 14,00</strong> — escolha até <strong>3 sabores</strong></p>
           <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
           <div class="pastel-modal-footer">
             <div class="pastel-modal-selecao">

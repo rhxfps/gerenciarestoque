@@ -1647,6 +1647,39 @@ tbody tr:hover td { background: var(--blue-50); }
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, .3);
 }
+.pastel-recheio-btn.selected .pastel-recheio-preco { color: rgba(255,255,255,.85); }
+
+.pastel-recheio-preco {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  margin-top: 4px;
+}
+
+.pastel-toggle-row {
+  display: flex;
+  gap: 0;
+  padding: 0.6rem 1.25rem 0;
+}
+.pastel-toggle-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 1.5px solid var(--border-mid);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .12s;
+}
+.pastel-toggle-btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.pastel-toggle-btn:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; border-left: 0; }
+.pastel-toggle-btn.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
 
 .pastel-modal-footer {
   display: flex;

@@ -1948,6 +1948,15 @@ const PASTEL_RECHEIOS_PADRAO = [
   'Presunto e Queijo', 'Queijo', 'Calabresa', 'Carne', 'Frango', 'Palmito', 'Pizza'
 ];
 
+const PASTEL_RECHEIOS_DOCES = [
+  { nome: 'Nuttella com Morango', preco: 20 },
+  { nome: 'Nuttella', preco: 20 },
+  { nome: 'Romeu e Julieta', preco: 17 },
+  { nome: 'Banana com Canela', preco: 17 }
+];
+
+let pastelModoRecheio = 'salgado';
+
 const fmtMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 // Categorias que só aparecem no estoque — nunca no PDV de vendas
@@ -2106,25 +2115,47 @@ function openPastelModal(modo = 'vendas') {
 
   pastelModo = modo;
   pastelSelecionados = [];
+  pastelModoRecheio = 'salgado';
   renderPastelModal();
 
   modal.classList.add('show');
 }
 
+function setPastelModoRecheio(modo) {
+  pastelModoRecheio = modo;
+  pastelSelecionados = [];
+  document.getElementById('pastel-btn-salgado').classList.toggle('active', modo === 'salgado');
+  document.getElementById('pastel-btn-doce').classList.toggle('active', modo === 'doce');
+  renderPastelModal();
+}
+
 function renderPastelModal() {
   const grid = document.getElementById('pastel-recheios-grid');
+  const precoTexto = document.getElementById('pastel-preco-texto');
   if (!grid) return;
 
-  const recheios = pastelData.recheios?.length
-    ? pastelData.recheios
-    : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
+  if (pastelModoRecheio === 'doce') {
+    grid.innerHTML = PASTEL_RECHEIOS_DOCES.map(r => `
+      <button type="button" class="pastel-recheio-btn pastel-recheio-doce${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
+        onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
+        ${r.nome}
+        <span class="pastel-recheio-preco">${fmtMoeda(r.preco)}</span>
+      </button>
+    `).join('');
+    if (precoTexto) precoTexto.innerHTML = 'Preço variável por recheio — escolha até <strong>3 sabores</strong>';
+  } else {
+    const recheios = pastelData.recheios?.length
+      ? pastelData.recheios
+      : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
 
-  grid.innerHTML = recheios.map(r => `
-    <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
-      onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
-      ${r.nome}
-    </button>
-  `).join('');
+    grid.innerHTML = recheios.map(r => `
+      <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
+        onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
+        ${r.nome}
+      </button>
+    `).join('');
+    if (precoTexto) precoTexto.innerHTML = `Preço fixo: <strong>${fmtMoeda(pastelData.preco || 14)}</strong> — escolha até <strong>3 sabores</strong>`;
+  }
 
   const texto = document.getElementById('pastel-selecao-texto');
   if (texto) texto.textContent = pastelSelecionados.length ? pastelSelecionados.join(' + ') : 'Nenhum sabor';
@@ -2148,7 +2179,12 @@ function togglePastelRecheio(nome) {
 
 function confirmPastelAdd() {
   if (!pastelSelecionados.length) return;
-  addPastelToVenda(pastelSelecionados.join('+'), pastelModo);
+  let precoUnitario = null;
+  if (pastelModoRecheio === 'doce') {
+    const doce = PASTEL_RECHEIOS_DOCES.find(r => r.nome === pastelSelecionados[0]);
+    precoUnitario = doce ? doce.preco : 14;
+  }
+  addPastelToVenda(pastelSelecionados.join('+'), pastelModo, precoUnitario);
 }
 
 function closePastelModal(e) {
@@ -2157,11 +2193,11 @@ function closePastelModal(e) {
   if (modal) modal.classList.remove('show');
 }
 
-function addPastelToVenda(recheio, modo = 'vendas') {
+function addPastelToVenda(recheio, modo = 'vendas', precoOverride = null) {
   const itens = modo === 'consumo' ? consumoItens : vendaItens;
   const pastel = produtos.find(isProdutoPastel);
   const produtoId = pastelData.produtoId || pastel?.id;
-  const preco = pastelData.preco || pastel?.preco || 14;
+  const preco = precoOverride || pastelData.preco || pastel?.preco || 14;
 
   if (!produtoId) {
     toast('Produto Pastel não cadastrado. Execute o SQL do pastel no Supabase.', false);
