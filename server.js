@@ -467,10 +467,10 @@ async function baixarEstoqueItens(itens, obs) {
       deducoes.set(idAlvo, d);
     }
 
-    // Cada pastel desconta 1 unidade de Massa de Pastel
+    // Cada pastel desconta massa: 1 unidade normal, 0,5 mini pastel
     if (isPastel && massaProd) {
       const dm = deducoes.get(massaProd.id) || { qtd: 0, nome: 'Massa de Pastel' };
-      dm.qtd += item.qtd;
+      dm.qtd += item.mini ? item.qtd * 0.5 : item.qtd;
       deducoes.set(massaProd.id, dm);
     }
   }

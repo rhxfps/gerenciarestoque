@@ -2101,16 +2101,26 @@ function quickAddProduto(produtoId) {
 
 let pastelSelecionados = [];
 let pastelModo = 'vendas';
+let pastelTipo = 'pastel';
 
-function openPastelModal(modo = 'vendas') {
+function openPastelModal(modo = 'vendas', tipo = 'pastel') {
   const modal = document.getElementById('pastel-modal');
   if (!modal) return;
 
   pastelModo = modo;
+  pastelTipo = tipo;
   pastelSelecionados = [];
   pastelModoRecheio = 'salgado';
-  renderPastelModal();
 
+  const titulo = modal.querySelector('h3 span');
+  if (titulo) titulo.parentElement.innerHTML = tipo === 'mini'
+    ? '<span>🥟</span> Mini Pastéis — escolha o recheio'
+    : '<span>🥟</span> Escolha o recheio';
+
+  document.getElementById('pastel-btn-salgado').style.display = tipo === 'mini' ? 'none' : '';
+  document.getElementById('pastel-btn-doce').style.display = tipo === 'mini' ? 'none' : '';
+
+  renderPastelModal();
   modal.classList.add('show');
 }
 
@@ -2144,6 +2154,13 @@ function renderPastelModal() {
         </button>`).join('')
       : '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:1rem">Nenhum recheio doce cadastrado.</p>';
     if (precoTexto) precoTexto.innerHTML = 'Preço variável por recheio — escolha até <strong>3 sabores</strong>';
+  } else if (pastelTipo === 'mini') {
+    grid.innerHTML = salgados.map(r => `
+      <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
+        onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
+        ${r.nome}
+      </button>`).join('');
+    if (precoTexto) precoTexto.innerHTML = `Preço fixo: <strong>${fmtMoeda(5)}</strong> — escolha até <strong>3 sabores</strong>`;
   } else {
     grid.innerHTML = salgados.map(r => `
       <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
@@ -2176,11 +2193,13 @@ function togglePastelRecheio(nome) {
 function confirmPastelAdd() {
   if (!pastelSelecionados.length) return;
   let precoUnitario = null;
-  if (pastelModoRecheio === 'doce') {
+  if (pastelTipo === 'mini') {
+    precoUnitario = 5;
+  } else if (pastelModoRecheio === 'doce') {
     const doce = (pastelData.recheios || []).find(r => r.nome === pastelSelecionados[0]);
     precoUnitario = doce ? doce.preco : null;
   }
-  addPastelToVenda(pastelSelecionados.join('+'), pastelModo, precoUnitario);
+  addPastelToVenda(pastelSelecionados.join('+'), pastelModo, precoUnitario, pastelTipo);
 }
 
 function closePastelModal(e) {
@@ -2189,27 +2208,31 @@ function closePastelModal(e) {
   if (modal) modal.classList.remove('show');
 }
 
-function addPastelToVenda(recheio, modo = 'vendas', precoOverride = null) {
+function addPastelToVenda(recheio, modo = 'vendas', precoOverride = null, tipo = 'pastel') {
   const itens = modo === 'consumo' ? consumoItens : vendaItens;
-  const pastel = produtos.find(isProdutoPastel);
-  const produtoId = pastelData.produtoId || pastel?.id;
-  const preco = precoOverride || pastelData.preco || pastel?.preco || 14;
+  const produto = tipo === 'mini'
+    ? produtos.find(p => p.nome && p.nome.toLowerCase().includes('mini pastel'))
+    : produtos.find(isProdutoPastel);
+  const produtoId = tipo === 'mini' ? (produto?.id || null) : (pastelData.produtoId || produto?.id);
+  const preco = precoOverride || (tipo === 'mini' ? 5 : (pastelData.preco || produto?.preco || 14));
 
   if (!produtoId) {
-    toast('Produto Pastel não cadastrado. Execute o SQL do pastel no Supabase.', false);
+    toast(`Produto ${tipo === 'mini' ? 'Mini Pastel' : 'Pastel'} não cadastrado.`, false);
     return;
   }
 
-  const existing = itens.find(i => i.produtoId === produtoId && i.recheio === recheio);
+  const nomeProduto = tipo === 'mini' ? `Mini Pastel (${recheio})` : `Pastel (${recheio})`;
+  const existing = itens.find(i => i.produtoId === produtoId && i.recheio === recheio && i.mini === (tipo === 'mini'));
   if (existing) {
     existing.qtd += 1;
   } else {
     itens.push({
       produtoId,
-      produtoNome: `Pastel (${recheio})`,
+      produtoNome: nomeProduto,
       qtd: 1,
       precoUnitario: preco,
-      recheio
+      recheio,
+      mini: tipo === 'mini'
     });
   }
 
