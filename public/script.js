@@ -1948,13 +1948,6 @@ const PASTEL_RECHEIOS_PADRAO = [
   'Presunto e Queijo', 'Queijo', 'Calabresa', 'Carne', 'Frango', 'Palmito', 'Pizza'
 ];
 
-const PASTEL_RECHEIOS_DOCES = [
-  { nome: 'Nuttella com Morango', preco: 20 },
-  { nome: 'Nuttella', preco: 20 },
-  { nome: 'Romeu e Julieta', preco: 17 },
-  { nome: 'Banana com Canela', preco: 17 }
-];
-
 let pastelModoRecheio = 'salgado';
 
 const fmtMoeda = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -2134,26 +2127,29 @@ function renderPastelModal() {
   const precoTexto = document.getElementById('pastel-preco-texto');
   if (!grid) return;
 
+  const todos = pastelData.recheios?.length
+    ? pastelData.recheios
+    : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
+
+  const salgados = todos.filter(r => !r.preco);
+  const doces = todos.filter(r => r.preco);
+
   if (pastelModoRecheio === 'doce') {
-    grid.innerHTML = PASTEL_RECHEIOS_DOCES.map(r => `
-      <button type="button" class="pastel-recheio-btn pastel-recheio-doce${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
-        onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
-        ${r.nome}
-        <span class="pastel-recheio-preco">${fmtMoeda(r.preco)}</span>
-      </button>
-    `).join('');
+    grid.innerHTML = doces.length
+      ? doces.map(r => `
+        <button type="button" class="pastel-recheio-btn pastel-recheio-doce${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
+          onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
+          ${r.nome}
+          <span class="pastel-recheio-preco">${fmtMoeda(r.preco)}</span>
+        </button>`).join('')
+      : '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:1rem">Nenhum recheio doce cadastrado.</p>';
     if (precoTexto) precoTexto.innerHTML = 'Preço variável por recheio — escolha até <strong>3 sabores</strong>';
   } else {
-    const recheios = pastelData.recheios?.length
-      ? pastelData.recheios
-      : PASTEL_RECHEIOS_PADRAO.map((nome, i) => ({ id: i, nome }));
-
-    grid.innerHTML = recheios.map(r => `
+    grid.innerHTML = salgados.map(r => `
       <button type="button" class="pastel-recheio-btn${pastelSelecionados.includes(r.nome) ? ' selected' : ''}"
         onclick="togglePastelRecheio('${r.nome.replace(/'/g, "\\'")}')">
         ${r.nome}
-      </button>
-    `).join('');
+      </button>`).join('');
     if (precoTexto) precoTexto.innerHTML = `Preço fixo: <strong>${fmtMoeda(pastelData.preco || 14)}</strong> — escolha até <strong>3 sabores</strong>`;
   }
 
@@ -2181,8 +2177,8 @@ function confirmPastelAdd() {
   if (!pastelSelecionados.length) return;
   let precoUnitario = null;
   if (pastelModoRecheio === 'doce') {
-    const doce = PASTEL_RECHEIOS_DOCES.find(r => r.nome === pastelSelecionados[0]);
-    precoUnitario = doce ? doce.preco : 14;
+    const doce = (pastelData.recheios || []).find(r => r.nome === pastelSelecionados[0]);
+    precoUnitario = doce ? doce.preco : null;
   }
   addPastelToVenda(pastelSelecionados.join('+'), pastelModo, precoUnitario);
 }

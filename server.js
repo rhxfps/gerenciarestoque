@@ -270,7 +270,7 @@ app.get('/api/pastel/recheios', autenticar, async (req, res) => {
 
     const { data: recheios, error: recheiosError } = await supabase
       .from('pastel_recheios')
-      .select('id, nome, ordem')
+      .select('id, nome, ordem, preco')
       .eq('produto_id', pastel.id)
       .order('ordem');
 
