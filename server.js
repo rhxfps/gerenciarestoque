@@ -1491,6 +1491,214 @@ app.get('/api/admin/backup', autenticar, async (req, res) => {
   }
 });
 
+// ==================== HAMBURGUER - ESTOQUE ====================
+app.get('/api/hamburguer/estoque', autenticar, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('hamburguer_estoque').select('*').order('categoria').order('nome');
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar estoque hamburguer' });
+  }
+});
+
+app.post('/api/hamburguer/estoque', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { nome, icone, categoria, qtd, qtd_minima, unidade, preco_unitario } = req.body;
+    if (!nome) return res.status(400).json({ error: 'Nome obrigatório' });
+    const { data, error } = await supabase
+      .from('hamburguer_estoque')
+      .insert([{ nome, icone: icone || '🍔', categoria: categoria || 'Geral', qtd: qtd || 0, qtd_minima: qtd_minima || 0, unidade: unidade || 'un', preco_unitario: preco_unitario || 0 }])
+      .select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Erro ao criar item' });
+  }
+});
+
+app.put('/api/hamburguer/estoque/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { nome, icone, categoria, qtd, qtd_minima, unidade, preco_unitario } = req.body;
+    const { data, error } = await supabase
+      .from('hamburguer_estoque')
+      .update({ nome, icone, categoria, qtd, qtd_minima, unidade, preco_unitario, atualizado_em: new Date().toISOString() })
+      .eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/hamburguer/estoque/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { error } = await supabase.from('hamburguer_estoque').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== HAMBURGUER - MOVIMENTAÇÕES ====================
+app.get('/api/hamburguer/movimentacoes', autenticar, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('hamburguer_movimentacoes').select('*').order('data', { ascending: false }).limit(200);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar movimentações' });
+  }
+});
+
+app.post('/api/hamburguer/movimentacoes', autenticar, async (req, res) => {
+  const { tipo, estoque_id, produto_nome, qtd, obs } = req.body;
+  try {
+    const { data: mov, error: movError } = await supabase
+      .from('hamburguer_movimentacoes')
+      .insert([{ tipo, estoque_id, produto_nome, qtd, obs, usuario_id: req.usuario.id }])
+      .select().single();
+    if (movError) throw movError;
+
+    // Atualizar estoque
+    const { data: item } = await supabase.from('hamburguer_estoque').select('qtd').eq('id', estoque_id).single();
+    if (item) {
+      let novaQtd = tipo === 'entrada' ? item.qtd + qtd : tipo === 'saida' ? item.qtd - qtd : qtd;
+      if (novaQtd < 0) novaQtd = 0;
+      await supabase.from('hamburguer_estoque').update({ qtd: novaQtd, atualizado_em: new Date().toISOString() }).eq('id', estoque_id);
+    }
+    res.json(mov);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== HAMBURGUER - VENDAS ====================
+app.get('/api/hamburguer/vendas', autenticar, async (req, res) => {
+  try {
+    const { data: vendas, error: vErr } = await supabase
+      .from('hamburguer_vendas').select('*').order('data', { ascending: false }).limit(500);
+    if (vErr) throw vErr;
+
+    const ids = (vendas || []).map(v => v.id);
+    let itensMap = {};
+    if (ids.length) {
+      const { data: itens } = await supabase.from('hamburguer_venda_itens').select('*').in('venda_id', ids);
+      for (const it of itens || []) {
+        if (!itensMap[it.venda_id]) itensMap[it.venda_id] = [];
+        itensMap[it.venda_id].push(it);
+      }
+    }
+    res.json((vendas || []).map(v => ({ ...v, itens: itensMap[v.id] || [] })));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar vendas hamburguer' });
+  }
+});
+
+app.post('/api/hamburguer/vendas', autenticar, async (req, res) => {
+  const { comanda_num, cliente, total, pagamento, obs, itens } = req.body;
+  try {
+    const { data: venda, error: vErr } = await supabase
+      .from('hamburguer_vendas')
+      .insert([{ comanda_num: comanda_num || null, cliente: cliente || '', total, pagamento: pagamento || 'dinheiro', obs: obs || '', usuario_id: req.usuario.id }])
+      .select().single();
+    if (vErr) throw vErr;
+
+    if (itens && itens.length) {
+      const itensData = itens.map(i => ({
+        venda_id: venda.id,
+        cardapio_id: i.cardapio_id || null,
+        nome: i.nome,
+        emoji: i.emoji || '🍔',
+        qtd: i.qtd || 1,
+        preco_unitario: i.preco_unitario || 0,
+        ingredientes_removidos: i.ingsRemovidos || [],
+        extras_adicionados: i.exAdicionados || [],
+        observacao: i.obs || ''
+      }));
+      await supabase.from('hamburguer_venda_itens').insert(itensData);
+    }
+
+    res.json({ ...venda, itens: itens || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== HAMBURGUER - CARDÁPIO (DB) ====================
+app.get('/api/hamburguer/cardapio', autenticar, async (req, res) => {
+  try {
+    const { data: cardapio, error } = await supabase
+      .from('hamburguer_cardapio').select('*').eq('ativo', true).order('categoria').order('nome');
+    if (error) throw error;
+
+    const ids = (cardapio || []).map(c => c.id);
+    let ingsMap = {}, extrasMap = {};
+    if (ids.length) {
+      const { data: ings } = await supabase.from('hamburguer_cardapio_ings').select('*').in('cardapio_id', ids).order('ordem');
+      const { data: extras } = await supabase.from('hamburguer_cardapio_extras').select('*').in('cardapio_id', ids).order('ordem');
+      for (const i of ings || []) {
+        if (!ingsMap[i.cardapio_id]) ingsMap[i.cardapio_id] = [];
+        ingsMap[i.cardapio_id].push(i);
+      }
+      for (const e of extras || []) {
+        if (!extrasMap[e.cardapio_id]) extrasMap[e.cardapio_id] = [];
+        extrasMap[e.cardapio_id].push(e);
+      }
+    }
+    res.json((cardapio || []).map(c => ({
+      ...c, ingredientes: ingsMap[c.id] || [], extras: extrasMap[c.id] || []
+    })));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar cardápio' });
+  }
+});
+
+app.post('/api/hamburguer/cardapio', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { nome, descricao, emoji, preco, categoria, tags, ingredientes, extras } = req.body;
+  try {
+    const { data: card, error } = await supabase
+      .from('hamburguer_cardapio')
+      .insert([{ nome, descricao: descricao || '', emoji: emoji || '🍔', preco, categoria: categoria || 'Classicos', tags: tags || [] }])
+      .select().single();
+    if (error) throw error;
+
+    if (ingredientes && ingredientes.length) {
+      const ingsData = ingredientes.map((i, idx) => ({
+        cardapio_id: card.id, estoque_id: i.estoque_id || null,
+        nome: i.nome, icone: i.icone || '🍔', removivel: i.removivel || false, ordem: idx
+      }));
+      await supabase.from('hamburguer_cardapio_ings').insert(ingsData);
+    }
+    if (extras && extras.length) {
+      const exData = extras.map((e, idx) => ({
+        cardapio_id: card.id, estoque_id: e.estoque_id || null,
+        nome: e.nome, icone: e.icone || '🍔', preco: e.preco || 0, ordem: idx
+      }));
+      await supabase.from('hamburguer_cardapio_extras').insert(exData);
+    }
+    res.json(card);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/hamburguer/cardapio/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { error } = await supabase.from('hamburguer_cardapio').update({ ativo: false }).eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== MIDDLEWARE DE AUTENTICAÇÃO ====================
 function autenticar(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1];

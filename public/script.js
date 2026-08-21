@@ -392,6 +392,7 @@ const titles = {
   'h-dashboard': 'Dashboard Hamburguer',
   'h-pdv':       'Comanda Hamburguer',
   'h-criar':     'Criar Hamburguer',
+  'h-estoque':   'Estoque Hamburguer',
   'h-vendas':    'Vendas Hamburguer'
 };
 
@@ -478,6 +479,7 @@ function nav(screen) {
   if (screen === 'h-dashboard') renderHDashboard();
   if (screen === 'h-pdv')       renderHPDV();
   if (screen === 'h-criar')     renderHCriar();
+  if (screen === 'h-estoque')   renderHEstoque();
   if (screen === 'h-vendas')    hVendasCarregar();
 }
 
@@ -2293,6 +2295,22 @@ function hpdvFinalizarComanda() {
     body: JSON.stringify(venda)
   }).then(function(r) { return r.json(); }).then(function(data) {
     if (data.error) { toast("Erro: " + data.error, false); release("hpdvFinalizar"); return; }
+    // Salvar também na tabela hamburguer_vendas
+    fetch("/api/hamburguer/vendas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        comanda_num: num ? parseInt(num) : null,
+        cliente: cliente,
+        total: total,
+        pagamento: "dinheiro",
+        obs: obsGeral,
+        itens: hpdvPedido.map(function(i) {
+          return { nome: i.nome, emoji: i.emoji || "🍔", qtd: i.qtd, preco_unitario: i.preco,
+            ingsRemovidos: i.ingsRemovidos, exAdicionados: i.exAdicionados, obs: i.obs || "" };
+        })
+      })
+    }).catch(function(){});
     toast("Comanda #" + (num || "?") + " registrada!");
     hpdvPedido = [];
     hpdvRenderPedido();
@@ -2598,6 +2616,217 @@ function hVendasRenderHistorico(vendas) {
     if (!qtd) qtd = v.qtd || 1;
     return '<tr><td>' + dataStr + '</td><td>' + prodStr + '</td><td>' + qtd + '</td><td><strong style="color:#22c55e">' + hpdvFmt(v.total) + '</strong></td><td>' + (v.pagamento || "-") + '</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (v.obs || "").replace(/"/g, '&quot;') + '">' + (v.obs || "-") + '</td></tr>';
   }).join("");
+}
+
+
+// ==================== HAMBURGUER ESTOQUE ====================
+var hEstoqueData = [];
+var hEstoqueCatAtiva = "Todos";
+var hEstoqueMovTipoAtiva = "entrada";
+
+function renderHEstoque() {
+  fetch("/api/hamburguer/estoque").then(function(r) { return r.json(); }).then(function(data) {
+    hEstoqueData = data || [];
+    hEstoqueRenderCats();
+    hEstoqueRenderKPIs();
+    hEstoqueRenderTabela();
+    hEstoqueUpdateCatList();
+  }).catch(function() { toast("Erro ao carregar estoque", false); });
+}
+
+function hEstoqueGetCats() {
+  var cats = {};
+  hEstoqueData.forEach(function(i) { cats[i.categoria] = true; });
+  return ["Todos"].concat(Object.keys(cats).sort());
+}
+
+function hEstoqueRenderCats() {
+  var el = document.getElementById("h-estoque-cats");
+  if (!el) return;
+  el.innerHTML = hEstoqueGetCats().map(function(c) {
+    return '<button class="hpdv-cat-btn' + (c === hEstoqueCatAtiva ? ' active' : '') + '" onclick="hEstoqueSelectCat(\'' + c + '\')">' + c + '</button>';
+  }).join("");
+}
+
+function hEstoqueSelectCat(c) { hEstoqueCatAtiva = c; hEstoqueRenderCats(); hEstoqueRenderTabela(); }
+
+function hEstoqueFiltrar() { hEstoqueRenderTabela(); }
+
+function hEstoqueRenderKPIs() {
+  var total = hEstoqueData.length;
+  var ok = 0, baixo = 0, critico = 0;
+  hEstoqueData.forEach(function(i) {
+    if (i.qtd <= 0) critico++;
+    else if (i.qtd <= i.qtd_minima) baixo++;
+    else ok++;
+  });
+  document.getElementById("h-estoque-total").textContent = total;
+  document.getElementById("h-estoque-ok").textContent = ok;
+  document.getElementById("h-estoque-baixo").textContent = baixo;
+  document.getElementById("h-estoque-critico").textContent = critico;
+}
+
+function hEstoqueRenderTabela() {
+  var busca = ((document.getElementById("h-estoque-busca") || {}).value || "").toLowerCase().trim();
+  var lista = hEstoqueData;
+  if (hEstoqueCatAtiva !== "Todos") lista = lista.filter(function(i) { return i.categoria === hEstoqueCatAtiva; });
+  if (busca) lista = lista.filter(function(i) { return i.nome.toLowerCase().indexOf(busca) !== -1; });
+
+  var tbody = document.getElementById("h-estoque-tbody");
+  if (!tbody) return;
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted)">Nenhum ingrediente encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(function(i) {
+    var statusClass = "h-status-ok", statusText = "OK";
+    if (i.qtd <= 0) { statusClass = "h-status-critico"; statusText = "Esgotado"; }
+    else if (i.qtd <= i.qtd_minima) { statusClass = "h-status-alerta"; statusText = "Baixo"; }
+    return '<tr>' +
+      '<td style="font-size:1.3rem">' + (i.icone || '🍔') + '</td>' +
+      '<td style="font-weight:600">' + i.nome + '</td>' +
+      '<td>' + i.categoria + '</td>' +
+      '<td style="font-weight:700">' + i.qtd + '</td>' +
+      '<td style="color:var(--text-muted)">' + i.qtd_minima + '</td>' +
+      '<td>' + i.unidade + '</td>' +
+      '<td style="color:#22c55e;font-weight:600">' + hpdvFmt(i.preco_unitario) + '</td>' +
+      '<td><span class="h-status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+      '<td>' +
+        '<div style="display:flex;gap:4px">' +
+          '<button class="h-btn-sm" onclick="hEstoqueAbrirMovModal(' + i.id + ')" title="Movimentar"><i class="ti ti-transfer"></i></button>' +
+          '<button class="h-btn-sm" onclick="hEstoqueEditar(' + i.id + ')" title="Editar"><i class="ti ti-pencil"></i></button>' +
+          '<button class="h-btn-sm" onclick="hEstoqueExcluir(' + i.id + ')" title="Excluir" style="border-color:rgba(239,68,68,.3);color:#ef4444"><i class="ti ti-trash"></i></button>' +
+        '</div>' +
+      '</td></tr>';
+  }).join("");
+}
+
+function hEstoqueUpdateCatList() {
+  var dl = document.getElementById("h-estoque-cat-list");
+  if (!dl) return;
+  var cats = {};
+  hEstoqueData.forEach(function(i) { cats[i.categoria] = true; });
+  dl.innerHTML = Object.keys(cats).sort().map(function(c) { return '<option value="' + c + '">'; }).join("");
+}
+
+function hEstoqueAbrirModal(id) {
+  var modal = document.getElementById("h-estoque-modal-overlay");
+  if (id) {
+    var item = hEstoqueData.find(function(i) { return i.id === id; });
+    if (!item) return;
+    document.getElementById("h-estoque-modal-titulo").textContent = "Editar Ingrediente";
+    document.getElementById("h-estoque-edit-id").value = id;
+    document.getElementById("h-estoque-modal-nome").value = item.nome;
+    document.getElementById("h-estoque-modal-icone").value = item.icone || "🍔";
+    document.getElementById("h-estoque-modal-categoria").value = item.categoria;
+    document.getElementById("h-estoque-modal-qtd").value = item.qtd;
+    document.getElementById("h-estoque-modal-qtd-min").value = item.qtd_minima;
+    document.getElementById("h-estoque-modal-unidade").value = item.unidade;
+    document.getElementById("h-estoque-modal-preco").value = item.preco_unitario;
+  } else {
+    document.getElementById("h-estoque-modal-titulo").textContent = "Novo Ingrediente";
+    document.getElementById("h-estoque-edit-id").value = "";
+    document.getElementById("h-estoque-modal-nome").value = "";
+    document.getElementById("h-estoque-modal-icone").value = "🍔";
+    document.getElementById("h-estoque-modal-categoria").value = "";
+    document.getElementById("h-estoque-modal-qtd").value = "0";
+    document.getElementById("h-estoque-modal-qtd-min").value = "0";
+    document.getElementById("h-estoque-modal-unidade").value = "un";
+    document.getElementById("h-estoque-modal-preco").value = "0";
+  }
+  modal.classList.add("show");
+}
+
+function hEstoqueFecharModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById("h-estoque-modal-overlay").classList.remove("show");
+}
+
+function hEstoqueSalvarModal() {
+  var editId = document.getElementById("h-estoque-edit-id").value;
+  var nome = document.getElementById("h-estoque-modal-nome").value.trim();
+  if (!nome) { toast("Informe o nome!", false); return; }
+  var payload = {
+    nome: nome,
+    icone: document.getElementById("h-estoque-modal-icone").value || "🍔",
+    categoria: document.getElementById("h-estoque-modal-categoria").value || "Geral",
+    qtd: parseFloat(document.getElementById("h-estoque-modal-qtd").value) || 0,
+    qtd_minima: parseFloat(document.getElementById("h-estoque-modal-qtd-min").value) || 0,
+    unidade: document.getElementById("h-estoque-modal-unidade").value,
+    preco_unitario: parseFloat(document.getElementById("h-estoque-modal-preco").value) || 0
+  };
+  var url = editId ? "/api/hamburguer/estoque/" + editId : "/api/hamburguer/estoque";
+  var method = editId ? "PUT" : "POST";
+  fetch(url, { method: method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+    .then(function(r) { return r.json(); }).then(function(data) {
+      if (data.error) { toast("Erro: " + data.error, false); return; }
+      toast(editId ? "Ingrediente atualizado!" : "Ingrediente criado!");
+      hEstoqueFecharModal();
+      renderHEstoque();
+    }).catch(function() { toast("Erro ao salvar", false); });
+}
+
+function hEstoqueEditar(id) { hEstoqueAbrirModal(id); }
+
+function hEstoqueExcluir(id) {
+  var item = hEstoqueData.find(function(i) { return i.id === id; });
+  if (!item) return;
+  if (!confirm('Excluir "' + item.nome + '"?')) return;
+  fetch("/api/hamburguer/estoque/" + id, { method: "DELETE" })
+    .then(function(r) { return r.json(); }).then(function(data) {
+      if (data.error) { toast("Erro: " + data.error, false); return; }
+      toast("Ingrediente excluído!");
+      renderHEstoque();
+    }).catch(function() { toast("Erro ao excluir", false); });
+}
+
+function hEstoqueAbrirMovModal(estoqueId) {
+  var item = hEstoqueData.find(function(i) { return i.id === estoqueId; });
+  if (!item) return;
+  document.getElementById("h-estoque-mov-estoque-id").value = estoqueId;
+  document.getElementById("h-estoque-mov-nome").textContent = item.icone + " " + item.nome + " (" + item.qtd + " " + item.unidade + ")";
+  document.getElementById("h-estoque-mov-atual").textContent = item.qtd + " " + item.unidade;
+  document.getElementById("h-estoque-mov-qtd").value = "1";
+  document.getElementById("h-estoque-mov-obs").value = "";
+  hEstoqueMovTipoAtiva = "entrada";
+  hEstoqueUpdateMovBtns();
+  document.getElementById("h-estoque-mov-overlay").classList.add("show");
+}
+
+function hEstoqueFecharMovModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById("h-estoque-mov-overlay").classList.remove("show");
+}
+
+function hEstoqueMovTipo(tipo) {
+  hEstoqueMovTipoAtiva = tipo;
+  hEstoqueUpdateMovBtns();
+}
+
+function hEstoqueUpdateMovBtns() {
+  document.getElementById("h-estoque-mov-entrada-btn").classList.toggle("active", hEstoqueMovTipoAtiva === "entrada");
+  document.getElementById("h-estoque-mov-saida-btn").classList.toggle("active", hEstoqueMovTipoAtiva === "saida");
+  document.getElementById("h-estoque-mov-ajuste-btn").classList.toggle("active", hEstoqueMovTipoAtiva === "ajuste");
+}
+
+function hEstoqueSalvarMov() {
+  var estoqueId = parseInt(document.getElementById("h-estoque-mov-estoque-id").value);
+  var item = hEstoqueData.find(function(i) { return i.id === estoqueId; });
+  var qtd = parseFloat(document.getElementById("h-estoque-mov-qtd").value) || 0;
+  var obs = document.getElementById("h-estoque-mov-obs").value.trim();
+  if (!estoqueId || !item) return;
+  if (qtd <= 0) { toast("Quantidade deve ser maior que 0!", false); return; }
+  if (hEstoqueMovTipoAtiva === "saida" && qtd > item.qtd) { toast("Estoque insuficiente! (" + item.qtd + " " + item.unidade + " disponível)", false); return; }
+  fetch("/api/hamburguer/movimentacoes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tipo: hEstoqueMovTipoAtiva, estoque_id: estoqueId, produto_nome: item.nome, qtd: qtd, obs: obs })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.error) { toast("Erro: " + data.error, false); return; }
+    toast("Estoque atualizado!");
+    hEstoqueFecharMovModal();
+    renderHEstoque();
+  }).catch(function() { toast("Erro ao movimentar", false); });
 }
 
 

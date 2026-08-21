@@ -65,6 +65,7 @@
       <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>Comanda</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-criar" id="nav-h-criar" style="display:none"><i class="ti ti-chef-hat"></i> <span>Criar Hamburguer</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-estoque" id="nav-h-estoque" style="display:none"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-vendas" id="nav-h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> <span>Vendas</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
@@ -130,6 +131,7 @@
       <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> Comanda</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-criar" style="display:none"><i class="ti ti-chef-hat"></i> Criar Hamburguer</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-estoque" style="display:none"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> Vendas</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
@@ -525,6 +527,169 @@
                 <div class="h-criar-preview-secao-titulo">Extras</div>
                 <div id="h-criar-preview-extras"></div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER ESTOQUE -->
+      <div class="screen hamburguer-only" id="screen-h-estoque" style="display:none; padding: 1.25rem">
+        <div class="h-estoque-header">
+          <div class="h-estoque-busca">
+            <i class="ti ti-search"></i>
+            <input type="text" id="h-estoque-busca" placeholder="Buscar ingrediente..." oninput="hEstoqueFiltrar()">
+          </div>
+          <button class="h-btn-primary" onclick="hEstoqueAbrirModal()"><i class="ti ti-plus"></i> Novo Ingrediente</button>
+        </div>
+
+        <div class="h-estoque-cats" id="h-estoque-cats"></div>
+
+        <div class="h-dash-kpi-grid">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-package"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Total Itens</span>
+              <span class="h-dash-kpi-value" id="h-estoque-total">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-circle-check"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Estoque OK</span>
+              <span class="h-dash-kpi-value" id="h-estoque-ok">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Estoque Baixo</span>
+              <span class="h-dash-kpi-value" id="h-estoque-baixo">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-alert-circle"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Em Crítico</span>
+              <span class="h-dash-kpi-value" id="h-estoque-critico">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-estoque-tabela-wrap">
+          <table class="h-estoque-tabela">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ingrediente</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Mínimo</th>
+                <th>Unidade</th>
+                <th>Preço Unit.</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="h-estoque-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- MODAL ESTOQUE -->
+        <div class="hpdv-modal-overlay" id="h-estoque-modal-overlay" onclick="hEstoqueFecharModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()" style="max-width:440px">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji">📦</span>
+                <div><h2 id="h-estoque-modal-titulo">Novo Ingrediente</h2><p>Preencha os dados do ingrediente</p></div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hEstoqueFecharModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <input type="hidden" id="h-estoque-edit-id">
+              <div class="h-criar-field">
+                <label>Nome</label>
+                <input type="text" id="h-estoque-modal-nome" placeholder="Ex: Queijo Cheddar">
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Emoji</label>
+                  <input type="text" id="h-estoque-modal-icone" value="🍔" maxlength="4">
+                </div>
+                <div style="flex:2">
+                  <label>Categoria</label>
+                  <input type="text" id="h-estoque-modal-categoria" placeholder="Ex: Queijos" list="h-estoque-cat-list">
+                  <datalist id="h-estoque-cat-list"></datalist>
+                </div>
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Quantidade</label>
+                  <input type="number" id="h-estoque-modal-qtd" step="0.1" min="0" value="0">
+                </div>
+                <div style="flex:1">
+                  <label>Mínimo</label>
+                  <input type="number" id="h-estoque-modal-qtd-min" step="0.1" min="0" value="0">
+                </div>
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Unidade</label>
+                  <select id="h-estoque-modal-unidade">
+                    <option value="un">Unidade (un)</option>
+                    <option value="kg">Quilograma (kg)</option>
+                    <option value="g">Grama (g)</option>
+                    <option value="l">Litro (L)</option>
+                    <option value="ml">Mililitro (ml)</option>
+                    <option value="cx">Caixa (cx)</option>
+                  </select>
+                </div>
+                <div style="flex:1">
+                  <label>Preço Unitário (R$)</label>
+                  <input type="number" id="h-estoque-modal-preco" step="0.01" min="0" value="0">
+                </div>
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div style="flex:1"></div>
+              <button class="hpdv-btn-adicionar" onclick="hEstoqueSalvarModal()"><i class="ti ti-device-floppy"></i> Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL MOVIMENTAÇÃO -->
+        <div class="hpdv-modal-overlay" id="h-estoque-mov-overlay" onclick="hEstoqueFecharMovModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()" style="max-width:400px">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji">🔄</span>
+                <div><h2>Movimentação de Estoque</h2><p id="h-estoque-mov-nome"></p></div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hEstoqueFecharMovModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <input type="hidden" id="h-estoque-mov-estoque-id">
+              <div class="h-criar-field">
+                <label>Tipo</label>
+                <div style="display:flex;gap:8px">
+                  <button class="h-criar-tag-btn active" id="h-estoque-mov-entrada-btn" onclick="hEstoqueMovTipo('entrada')" style="flex:1"><i class="ti ti-arrow-bar-down"></i> Entrada</button>
+                  <button class="h-criar-tag-btn" id="h-estoque-mov-saida-btn" onclick="hEstoqueMovTipo('saida')" style="flex:1"><i class="ti ti-arrow-bar-up"></i> Saída</button>
+                  <button class="h-criar-tag-btn" id="h-estoque-mov-ajuste-btn" onclick="hEstoqueMovTipo('ajuste')" style="flex:1"><i class="ti ti-adjust"></i> Ajuste</button>
+                </div>
+              </div>
+              <div class="h-criar-field">
+                <label>Quantidade</label>
+                <input type="number" id="h-estoque-mov-qtd" step="0.1" min="0" value="1">
+              </div>
+              <div class="h-criar-field">
+                <label>Observação</label>
+                <input type="text" id="h-estoque-mov-obs" placeholder="Ex: Compra no atacado...">
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div style="flex:1;text-align:left">
+                <span style="font-size:12px;color:var(--text-dim)">Estoque atual: <strong id="h-estoque-mov-atual">0</strong></span>
+              </div>
+              <button class="hpdv-btn-adicionar" onclick="hEstoqueSalvarMov()"><i class="ti ti-check"></i> Confirmar</button>
             </div>
           </div>
         </div>
