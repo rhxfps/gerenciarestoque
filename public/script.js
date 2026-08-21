@@ -37,6 +37,10 @@ function applyAppMode() {
   document.querySelectorAll('.hamburguer-only').forEach(function(el) {
     el.style.display = isH ? '' : 'none';
   });
+  var logoTitle = document.getElementById('sidebar-logo-title');
+  var logoSub = document.getElementById('sidebar-logo-sub');
+  if (logoTitle) logoTitle.innerHTML = isH ? '<i class="ti ti-burger"></i> Hamburguer' : '<i class="ti ti-box"></i> Pastel de Rei';
+  if (logoSub) logoSub.textContent = isH ? 'Sistema de hamburguer' : 'Sistema de estoque';
 }
 
 function toggleAppMode() {
@@ -45,6 +49,15 @@ function toggleAppMode() {
   applyAppMode();
   if (appMode === 'hamburguer') nav('h-dashboard');
   else nav('dashboard');
+}
+
+function goHamburguer() {
+  if (appMode !== 'hamburguer') {
+    appMode = 'hamburguer';
+    localStorage.setItem('appMode', appMode);
+    applyAppMode();
+  }
+  nav('h-dashboard');
 }
 
 // Variáveis globais

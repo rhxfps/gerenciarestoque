@@ -6,6 +6,35 @@ body[data-app="pastel"] .hamburguer-only { display: none !important; }
 body[data-app="hamburguer"] .hamburguer-only { display: block !important; }
 body[data-app="hamburguer"] .hamburguer-only-flex { display: flex !important; }
 
+/* Esconder itens pastel quando no modo hamburguer */
+body[data-app="hamburguer"] #nav-dashboard,
+body[data-app="hamburguer"] #nav-estoque,
+body[data-app="hamburguer"] #nav-registrar,
+body[data-app="hamburguer"] #nav-lista-vendas,
+body[data-app="hamburguer"] #nav-relatorio,
+body[data-app="hamburguer"] #nav-gastos,
+body[data-app="hamburguer"] #nav-admin-section,
+body[data-app="hamburguer"] #nav-func-section,
+body[data-app="hamburguer"] #nav-minhas-vendas,
+body[data-app="hamburguer"] #nav-contagem,
+body[data-app="hamburguer"] #nav-vendas,
+body[data-app="hamburguer"] #nav-caixa,
+body[data-app="hamburguer"] #nav-consumo { display: none !important; }
+
+body[data-app="hamburguer"] .mobile-menu [data-screen="dashboard"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="estoque"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="registrar"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="lista-vendas"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="relatorio"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="gastos"],
+body[data-app="hamburguer"] .mobile-menu #mobile-admin-section,
+body[data-app="hamburguer"] .mobile-menu #mobile-func-section,
+body[data-app="hamburguer"] .mobile-menu [data-screen="minhas-vendas"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="contagem"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="vendas"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="caixa"],
+body[data-app="hamburguer"] .mobile-menu [data-screen="consumo"] { display: none !important; }
+
 /* --- Sidebar --- */
 body[data-app="hamburguer"] .sidebar {
   background: #0d0d0d !important;

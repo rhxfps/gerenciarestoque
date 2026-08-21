@@ -56,12 +56,12 @@
 <div class="app" id="app-container" style="display:none">
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-title"><i class="ti ti-box"></i> Pastel de Rei</div>
-      <div class="logo-sub">Sistema de estoque</div>
+      <div class="logo-title" id="sidebar-logo-title"><i class="ti ti-box"></i> Pastel de Rei</div>
+      <div class="logo-sub" id="sidebar-logo-sub">Sistema de estoque</div>
     </div>
     <nav id="nav">
       <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
-      <div class="nav-section hamburguer-only nav-section-link" id="nav-h-section" onclick="nav('h-dashboard')"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
+      <div class="nav-section hamburguer-only nav-section-link" id="nav-h-section" onclick="goHamburguer()"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>Comanda</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
@@ -124,7 +124,7 @@
     </div>
     <nav class="mobile-nav" id="mobileNav">
       <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
-      <div class="mobile-nav-section hamburguer-only mobile-nav-section-link" id="mobile-h-section" onclick="toggleMobileMenu(); nav('h-dashboard')"><i class="ti ti-burger"></i> Hambúrguer</div>
+      <div class="mobile-nav-section hamburguer-only mobile-nav-section-link" id="mobile-h-section" onclick="toggleMobileMenu(); goHamburguer()"><i class="ti ti-burger"></i> Hambúrguer</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> Comanda</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
