@@ -289,3 +289,339 @@ body[data-app="hamburguer"] .mode-toggle-btn:hover {
   .h-dash-charts-grid { grid-template-columns: 1fr; }
   .h-dash-sparks-grid { grid-template-columns: 1fr; }
 }
+
+/* ==================== HAMBURGUER COMANDA (PDV) ==================== */
+.hpdv-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1rem;
+  height: calc(100vh - 120px);
+}
+
+.hpdv-picker {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hpdv-picker-header {
+  padding: 1rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.hpdv-picker-header .search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.hpdv-picker-header .search-wrapper i { color: #666; }
+
+.hpdv-picker-header input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #e5e5e5;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.hpdv-categorias {
+  display: flex;
+  gap: 6px;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2a2a;
+  flex-wrap: wrap;
+}
+
+.hpdv-cat {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #999;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hpdv-cat:hover { border-color: #ff6a00; color: #ff6a00; }
+
+.hpdv-cat.active {
+  background: #ff6a00;
+  border-color: #ff6a00;
+  color: #fff;
+}
+
+.hpdv-produtos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.hpdv-produto {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.hpdv-produto:hover {
+  border-color: #ff6a00;
+  transform: translateY(-2px);
+}
+
+.hpdv-produto-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.hpdv-produto-nome {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e5e5;
+  margin-bottom: 4px;
+}
+
+.hpdv-produto-preco {
+  display: block;
+  font-size: 0.8rem;
+  color: #ff6a00;
+  font-weight: 600;
+}
+
+/* Comanda column */
+.hpdv-comanda {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hpdv-comanda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.hpdv-comanda-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #e5e5e5;
+}
+
+.hpdv-comanda-header span {
+  font-size: 0.8rem;
+  color: #999;
+  background: #222;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.hpdv-comanda-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.hpdv-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #222;
+}
+
+.hpdv-item:last-child { border-bottom: none; }
+
+.hpdv-item-info { flex: 1; }
+
+.hpdv-item-nome {
+  font-size: 0.85rem;
+  color: #e5e5e5;
+  font-weight: 500;
+}
+
+.hpdv-item-preco {
+  font-size: 0.75rem;
+  color: #ff6a00;
+}
+
+.hpdv-item-qtd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hpdv-item-qtd button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #222;
+  color: #ccc;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hpdv-item-qtd button:hover {
+  border-color: #ff6a00;
+  color: #ff6a00;
+}
+
+.hpdv-item-qtd span {
+  min-width: 24px;
+  text-align: center;
+  color: #e5e5e5;
+  font-weight: 600;
+}
+
+.hpdv-item-subtotal {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e5e5;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Footer */
+.hpdv-comanda-footer {
+  padding: 1rem;
+  border-top: 1px solid #2a2a2a;
+}
+
+.hpdv-opcoes {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.hpdv-opcoes .form-group { flex: 1; }
+
+.hpdv-opcoes label {
+  display: block;
+  font-size: 0.7rem;
+  color: #999;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hpdv-payment-options,
+.hpdv-sale-options {
+  display: flex;
+  gap: 6px;
+}
+
+.hpdv-payment,
+.hpdv-sale {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #999;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hpdv-payment:hover,
+.hpdv-sale:hover { border-color: #ff6a00; color: #ff6a00; }
+
+.hpdv-payment.active,
+.hpdv-sale.active {
+  background: rgba(255,106,0,0.15);
+  border-color: #ff6a00;
+  color: #ff6a00;
+}
+
+.hpdv-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-top: 1px solid #2a2a2a;
+  margin-top: 0.5rem;
+}
+
+.hpdv-total div:first-child {
+  font-size: 0.85rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hpdv-total #hpdv-total-valor {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ff6a00;
+}
+
+.hpdv-finalizar-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 0.5rem;
+  background: #ff6a00;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.hpdv-finalizar-btn:hover { background: #e55d00; }
+
+.hpdv-troco-row input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #111;
+  color: #e5e5e5;
+  font-size: 0.85rem;
+}
+
+/* Responsive PDV */
+@media (max-width: 768px) {
+  .hpdv-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .hpdv-comanda { order: -1; }
+  .hpdv-produtos-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .hpdv-opcoes { flex-direction: column; gap: 0.75rem; }
+}
+
+/* Form elements dark theme */
+body[data-app="hamburguer"] input[type="text"],
+body[data-app="hamburguer"] input[type="number"],
+body[data-app="hamburguer"] select {
+  background: #111 !important;
+  border-color: #333 !important;
+  color: #e5e5e5 !important;
+}
+
+body[data-app="hamburguer"] input::placeholder { color: #666 !important; }
+body[data-app="hamburguer"] label { color: #999 !important; }

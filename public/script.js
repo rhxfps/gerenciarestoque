@@ -376,7 +376,8 @@ const titles = {
   gastos:       'Gastos',
   admin:        'Admin',
   usuarios:     'Usuários',
-  'h-dashboard': 'Dashboard Hamburguer'
+  'h-dashboard': 'Dashboard Hamburguer',
+  'h-pdv':       'Comanda Hamburguer'
 };
 
 function nav(screen) {
@@ -460,6 +461,7 @@ function nav(screen) {
     atualizaEstiloOpcoes();
   }
   if (screen === 'h-dashboard') renderHDashboard();
+  if (screen === 'h-pdv')       renderHPDV();
 }
 
 document.getElementById('nav').addEventListener('click', e => {
@@ -1937,6 +1939,212 @@ function hRenderSparkMes() {
     var cls = i === diaAtual - 1 ? 'h-dash-spark-bar today' : 'h-dash-spark-bar';
     return '<div class="' + cls + '" style="height:' + h + '%" title="Dia ' + (i+1) + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v) + '"></div>';
   }).join('');
+}
+
+
+
+// ==================== HAMBURGUER COMANDA (PDV) ====================
+var hpdvItens = [];
+var hpdvCategoriaAtiva = 'Todos';
+var hpdvProdutos = [
+  { id: 1, nome: 'X-Burger',       categoria: 'Hambúrguer', preco: 22.00, icon: '🍔' },
+  { id: 2, nome: 'X-Bacon',        categoria: 'Hambúrguer', preco: 25.00, icon: '🍔' },
+  { id: 3, nome: 'X-Egg',          categoria: 'Hambúrguer', preco: 24.00, icon: '🍔' },
+  { id: 4, nome: 'X-Tudo',         categoria: 'Hambúrguer', preco: 28.00, icon: '🍔' },
+  { id: 5, nome: 'Mini Burger',     categoria: 'Hambúrguer', preco: 15.00, icon: '🍔' },
+  { id: 6, nome: 'Batata Frita',    categoria: 'Batata',     preco: 14.00, icon: '🍟' },
+  { id: 7, nome: 'Batata c/ Cheddar', categoria: 'Batata',  preco: 18.00, icon: '🍟' },
+  { id: 8, nome: 'Batata c/ Bacon',  categoria: 'Batata',   preco: 20.00, icon: '🍟' },
+  { id: 9, nome: 'Coca-Cola 350ml',  categoria: 'Bebida',   preco: 6.00,  icon: '🥤' },
+  { id: 10, nome: 'Guaraná 350ml',   categoria: 'Bebida',   preco: 6.00,  icon: '🥤' },
+  { id: 11, nome: 'Água Mineral',    categoria: 'Bebida',   preco: 4.00,  icon: '💧' },
+  { id: 12, nome: 'Suco Natural',    categoria: 'Bebida',   preco: 8.00,  icon: '🧃' }
+];
+
+function renderHPDV() {
+  hpdvItens = [];
+  hpdvCategoriaAtiva = 'Todos';
+  hpdvRenderCategorias();
+  hpdvRenderGrid();
+  hpdvRenderItens();
+}
+
+function hpdvRenderCategorias() {
+  var cats = ['Todos', 'Hambúrguer', 'Batata', 'Bebida'];
+  var el = document.getElementById('hpdv-categorias');
+  if (!el) return;
+  el.innerHTML = cats.map(function(c) {
+    var cls = c === hpdvCategoriaAtiva ? 'hpdv-cat active' : 'hpdv-cat';
+    return '<button class="' + cls + '" onclick="hpdvSetCategoria(\'' + c + '\', this)">' + c + '</button>';
+  }).join('');
+}
+
+function hpdvSetCategoria(cat, btn) {
+  hpdvCategoriaAtiva = cat;
+  hpdvRenderCategorias();
+  hpdvRenderGrid();
+}
+
+function hpdvRenderGrid() {
+  var busca = (document.getElementById('hpdv-busca') || {}).value || '';
+  busca = busca.toLowerCase();
+  var filtered = hpdvProdutos.filter(function(p) {
+    var matchCat = hpdvCategoriaAtiva === 'Todos' || p.categoria === hpdvCategoriaAtiva;
+    var matchBusca = !busca || p.nome.toLowerCase().indexOf(busca) !== -1;
+    return matchCat && matchBusca;
+  });
+  var el = document.getElementById('hpdv-produtos-grid');
+  if (!el) return;
+  if (!filtered.length) {
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#666;padding:2rem">Nenhum produto encontrado</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(function(p) {
+    return '<div class="hpdv-produto" onclick="hpdvAddProduto(' + p.id + ')">' +
+      '<div class="hpdv-produto-icon">' + p.icon + '</div>' +
+      '<span class="hpdv-produto-nome">' + p.nome + '</span>' +
+      '<span class="hpdv-produto-preco">R$ ' + p.preco.toFixed(2).replace('.', ',') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function hpdvAddProduto(id) {
+  var prod = hpdvProdutos.find(function(p) { return p.id === id; });
+  if (!prod) return;
+  var existing = hpdvItens.find(function(i) { return i.id === id; });
+  if (existing) {
+    existing.qtd++;
+  } else {
+    hpdvItens.push({ id: prod.id, nome: prod.nome, preco: prod.preco, icon: prod.icon, qtd: 1 });
+  }
+  hpdvRenderItens();
+}
+
+function hpdvChangeQtd(id, delta) {
+  var item = hpdvItens.find(function(i) { return i.id === id; });
+  if (!item) return;
+  item.qtd += delta;
+  if (item.qtd <= 0) hpdvItens = hpdvItens.filter(function(i) { return i.id !== id; });
+  hpdvRenderItens();
+}
+
+function hpdvRenderItens() {
+  var empty = document.getElementById('hpdv-itens-empty');
+  var container = document.getElementById('hpdv-itens-container');
+  var countEl = document.getElementById('hpdv-comanda-count');
+  var totalEl = document.getElementById('hpdv-total-valor');
+
+  var total = hpdvItens.reduce(function(a, i) { return a + (i.preco * i.qtd); }, 0);
+  var totalQtd = hpdvItens.reduce(function(a, i) { return a + i.qtd; }, 0);
+  var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  if (countEl) countEl.textContent = totalQtd + ' item' + (totalQtd !== 1 ? 's' : '');
+  if (totalEl) totalEl.textContent = fmt.format(total);
+
+  if (!hpdvItens.length) {
+    if (empty) empty.style.display = 'block';
+    if (container) container.innerHTML = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (!container) return;
+
+  container.innerHTML = hpdvItens.map(function(item) {
+    return '<div class="hpdv-item">' +
+      '<span style="font-size:1.3rem">' + item.icon + '</span>' +
+      '<div class="hpdv-item-info">' +
+        '<div class="hpdv-item-nome">' + item.nome + '</div>' +
+        '<div class="hpdv-item-preco">R$ ' + item.preco.toFixed(2).replace('.', ',') + '</div>' +
+      '</div>' +
+      '<div class="hpdv-item-qtd">' +
+        '<button onclick="hpdvChangeQtd(' + item.id + ', -1)">−</button>' +
+        '<span>' + item.qtd + '</span>' +
+        '<button onclick="hpdvChangeQtd(' + item.id + ', 1)">+</button>' +
+      '</div>' +
+      '<div class="hpdv-item-subtotal">' + fmt.format(item.preco * item.qtd) + '</div>' +
+    '</div>';
+  }).join('');
+
+  var pag = document.getElementById('hpdv-pagamento');
+  if (pag && pag.value === 'dinheiro') {
+    document.getElementById('hpdv-troco-row').style.display = 'block';
+  } else {
+    document.getElementById('hpdv-troco-row').style.display = 'none';
+  }
+}
+
+function hpdvSelectPayment(tipo) {
+  document.getElementById('hpdv-pagamento').value = tipo;
+  document.querySelectorAll('.hpdv-payment').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('hpdv-pag-' + tipo).classList.add('active');
+  var trocoRow = document.getElementById('hpdv-troco-row');
+  if (trocoRow) trocoRow.style.display = tipo === 'dinheiro' ? 'block' : 'none';
+}
+
+function hpdvSelectTipo(tipo) {
+  document.getElementById('hpdv-tipo-venda').value = tipo;
+  document.querySelectorAll('.hpdv-sale').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('hpdv-tipo-' + tipo).classList.add('active');
+  var platWrap = document.getElementById('hpdv-plataforma-wrap');
+  if (platWrap) platWrap.style.display = tipo === 'delivery' ? 'block' : 'none';
+}
+
+function hpdvCalcTroco() {
+  var total = hpdvItens.reduce(function(a, i) { return a + (i.preco * i.qtd); }, 0);
+  var recebido = parseFloat(document.getElementById('hpdv-valor-recebido').value) || 0;
+  var info = document.getElementById('hpdv-troco-info');
+  if (!info) return;
+  if (recebido >= total && total > 0) {
+    var troco = recebido - total;
+    info.textContent = 'Troco: R$ ' + troco.toFixed(2).replace('.', ',');
+    info.style.color = '#22c55e';
+  } else if (recebido > 0) {
+    info.textContent = 'Falta: R$ ' + (total - recebido).toFixed(2).replace('.', ',');
+    info.style.color = '#f43f5e';
+  } else {
+    info.textContent = '';
+  }
+}
+
+function hpdvFinalizar() {
+  if (hpdvItens.length === 0) { toast('Adicione itens à comanda!', false); return; }
+  if (typeof acquire === 'function' && !acquire('hpdvFinalizar')) return;
+  var total = hpdvItens.reduce(function(a, i) { return a + (i.preco * i.qtd); }, 0);
+  var pagamento = document.getElementById('hpdv-pagamento').value;
+  var tipoVenda = document.getElementById('hpdv-tipo-venda').value;
+  var plataforma = document.getElementById('hpdv-plataforma').value;
+  var obs = document.getElementById('hpdv-obs').value;
+  var venda = {
+    data: new Date().toISOString(),
+    total: total,
+    pagamento: pagamento,
+    tipo_venda: tipoVenda,
+    plataforma: plataforma || null,
+    obs: obs || null,
+    itens: hpdvItens.map(function(i) {
+      return { produto_nome: i.nome, qtd: i.qtd, preco_unitario: i.preco };
+    }),
+    produto_nome: hpdvItens.length === 1 ? hpdvItens[0].nome : 'Hambúrguer',
+    qtd: hpdvItens.reduce(function(a, i) { return a + i.qtd; }, 0)
+  };
+  fetch('/api/vendas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(venda)
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.error) { toast('Erro: ' + data.error, false); release('hpdvFinalizar'); return; }
+    toast('Comanda finalizada!');
+    hpdvItens = [];
+    hpdvRenderItens();
+    document.getElementById('hpdv-obs').value = '';
+    document.getElementById('hpdv-valor-recebido').value = '';
+    hpdvCalcTroco();
+    loadAllData();
+    release('hpdvFinalizar');
+  }).catch(function() {
+    toast('Erro ao enviar comanda', false);
+    release('hpdvFinalizar');
+  });
 }
 
 // ==================== RELATÓRIO ====================

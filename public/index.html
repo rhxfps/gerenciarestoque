@@ -61,6 +61,9 @@
     </div>
     <nav id="nav">
       <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
+      <div class="nav-section hamburguer-only nav-section-link" id="nav-h-section" onclick="nav('h-dashboard')"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>Comanda</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
@@ -73,7 +76,6 @@
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-burger"></i> <span>Hamburguer</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="user-info">
@@ -122,6 +124,9 @@
     </div>
     <nav class="mobile-nav" id="mobileNav">
       <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
+      <div class="mobile-nav-section hamburguer-only mobile-nav-section-link" id="mobile-h-section" onclick="toggleMobileMenu(); nav('h-dashboard')"><i class="ti ti-burger"></i> Hambúrguer</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> Comanda</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
@@ -134,7 +139,6 @@
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-burger"></i> Hamburguer</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
       <button class="btn btn-danger" onclick="logout(); toggleMobileMenu();" style="width:100%;">
@@ -351,6 +355,92 @@
               </thead>
               <tbody id="h-dash-ultimas-vendas"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER COMANDA (PDV) -->
+      <div class="screen hamburguer-only" id="screen-h-pdv" style="display:none">
+        <div class="hpdv-layout">
+          <div class="card hpdv-picker">
+            <div class="hpdv-picker-header">
+              <div class="search-wrapper">
+                <i class="ti ti-search"></i>
+                <input type="text" id="hpdv-busca" placeholder="Buscar hambúrguer..." oninput="hpdvRenderGrid()">
+              </div>
+            </div>
+            <div class="hpdv-categorias" id="hpdv-categorias">
+              <button class="hpdv-cat active" onclick="hpdvSetCategoria('Todos', this)">Todos</button>
+              <button class="hpdv-cat" onclick="hpdvSetCategoria('Hambúrguer', this)">Hambúrguer</button>
+              <button class="hpdv-cat" onclick="hpdvSetCategoria('Batata', this)">Batata</button>
+              <button class="hpdv-cat" onclick="hpdvSetCategoria('Bebida', this)">Bebida</button>
+            </div>
+            <div class="hpdv-produtos-grid" id="hpdv-produtos-grid"></div>
+          </div>
+          <div class="card hpdv-comanda">
+            <div class="hpdv-comanda-header">
+              <h3><i class="ti ti-receipt"></i> Comanda</h3>
+              <span id="hpdv-comanda-count">0 itens</span>
+            </div>
+            <div class="hpdv-comanda-body">
+              <div id="hpdv-itens-empty" class="empty">Toque nos produtos para adicionar</div>
+              <div id="hpdv-itens-container"></div>
+            </div>
+            <div class="hpdv-comanda-footer">
+              <div class="hpdv-opcoes">
+                <div class="form-group">
+                  <label>Pagamento</label>
+                  <div class="hpdv-payment-options">
+                    <div class="hpdv-payment active" id="hpdv-pag-dinheiro" onclick="hpdvSelectPayment('dinheiro')">
+                      <i class="ti ti-cash"></i><span>Dinheiro</span>
+                    </div>
+                    <div class="hpdv-payment" id="hpdv-pag-cartao" onclick="hpdvSelectPayment('cartao')">
+                      <i class="ti ti-credit-card"></i><span>Cartão</span>
+                    </div>
+                    <div class="hpdv-payment" id="hpdv-pag-pix" onclick="hpdvSelectPayment('pix')">
+                      <i class="ti ti-qrcode"></i><span>Pix</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="hpdv-pagamento" value="dinheiro">
+                </div>
+                <div class="form-group">
+                  <label>Entrega</label>
+                  <div class="hpdv-sale-options">
+                    <div class="hpdv-sale active" id="hpdv-tipo-balcao" onclick="hpdvSelectTipo('balcao')">
+                      <i class="ti ti-shopping-bag"></i><span>Balcão</span>
+                    </div>
+                    <div class="hpdv-sale" id="hpdv-tipo-delivery" onclick="hpdvSelectTipo('delivery')">
+                      <i class="ti ti-delivery"></i><span>Delivery</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="hpdv-tipo-venda" value="balcao">
+                </div>
+              </div>
+              <div class="form-group" id="hpdv-plataforma-wrap" style="display:none">
+                <label>Plataforma</label>
+                <select id="hpdv-plataforma">
+                  <option value="">Selecione</option>
+                  <option value="99">99</option>
+                  <option value="ifood">iFood</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Observação</label>
+                <input type="text" id="hpdv-obs" placeholder="Ex: Sem cebola...">
+              </div>
+              <div class="hpdv-total">
+                <div>Total</div>
+                <div id="hpdv-total-valor">R$ 0,00</div>
+              </div>
+              <div class="hpdv-troco-row" id="hpdv-troco-row" style="display:none">
+                <label>Valor Recebido</label>
+                <input type="number" id="hpdv-valor-recebido" step="0.01" oninput="hpdvCalcTroco()">
+                <div id="hpdv-troco-info" style="font-size:0.8rem;color:var(--green);margin-top:4px"></div>
+              </div>
+              <button class="btn btn-primary hpdv-finalizar-btn" onclick="hpdvFinalizar()">
+                <i class="ti ti-check"></i> Finalizar Comanda
+              </button>
+            </div>
           </div>
         </div>
       </div>
