@@ -1,0 +1,291 @@
+/* ==================== HAMBURGUER MODE ==================== */
+
+/* --- Show/hide --- */
+body[data-app="pastel"] .hamburguer-only { display: none !important; }
+
+body[data-app="hamburguer"] .hamburguer-only { display: block !important; }
+body[data-app="hamburguer"] .hamburguer-only-flex { display: flex !important; }
+
+/* --- Sidebar --- */
+body[data-app="hamburguer"] .sidebar {
+  background: #0d0d0d !important;
+  border-right-color: #2a2a2a !important;
+  box-shadow: none !important;
+}
+
+body[data-app="hamburguer"] .sidebar .nav-item:hover {
+  background: rgba(255, 106, 0, 0.12) !important;
+}
+
+body[data-app="hamburguer"] .sidebar .nav-item.active {
+  background: rgba(255, 106, 0, 0.2) !important;
+  border-left-color: #ff6a00 !important;
+  color: #ff6a00 !important;
+}
+
+/* --- Topbar --- */
+body[data-app="hamburguer"] .topbar {
+  background: #0d0d0d !important;
+  border-bottom-color: #2a2a2a !important;
+}
+
+body[data-app="hamburguer"] .topbar h1 {
+  color: #f5f5f5 !important;
+}
+
+/* --- Content --- */
+body[data-app="hamburguer"] .content {
+  background: #111 !important;
+}
+
+body[data-app="hamburguer"] .main {
+  background: #111 !important;
+}
+
+body[data-app="hamburguer"] .card {
+  background: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+  color: #e5e5e5 !important;
+}
+
+body[data-app="hamburguer"] .card-title {
+  color: #ccc !important;
+}
+
+body[data-app="hamburguer"] table {
+  color: #e5e5e5 !important;
+}
+
+body[data-app="hamburguer"] table th {
+  background: #1a1a1a !important;
+  color: #999 !important;
+  border-bottom-color: #333 !important;
+}
+
+body[data-app="hamburguer"] table td {
+  border-bottom-color: #222 !important;
+  color: #ccc !important;
+}
+
+body[data-app="hamburguer"] table tbody tr:hover {
+  background: rgba(255, 106, 0, 0.05) !important;
+}
+
+/* --- Toggle button na topbar --- */
+.mode-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-toggle-btn:hover {
+  background: #ff6a00;
+  color: #fff;
+  border-color: #ff6a00;
+}
+
+.mode-toggle-btn i {
+  font-size: 1rem;
+}
+
+body[data-app="hamburguer"] .mode-toggle-btn {
+  background: rgba(255, 106, 0, 0.15);
+  border-color: #ff6a00;
+  color: #ff6a00;
+}
+
+body[data-app="hamburguer"] .mode-toggle-btn:hover {
+  background: #ff6a00;
+  color: #fff;
+}
+
+/* --- Dashboard Hamburguer --- */
+.h-dash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.h-dash-kpi {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.h-dash-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.h-dash-kpi--orange .h-dash-kpi-icon { background: rgba(255,106,0,0.15); color: #ff6a00; }
+.h-dash-kpi--green .h-dash-kpi-icon { background: rgba(34,197,94,0.15); color: #22c55e; }
+.h-dash-kpi--purple .h-dash-kpi-icon { background: rgba(168,85,247,0.15); color: #a855f7; }
+.h-dash-kpi--rose .h-dash-kpi-icon { background: rgba(244,63,94,0.15); color: #f43f5e; }
+
+.h-dash-kpi-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #999;
+  margin-bottom: 2px;
+}
+
+.h-dash-kpi-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+.h-dash-kpi-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.h-dash-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.h-dash-ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #222;
+}
+
+.h-dash-ranking-item:last-child { border-bottom: none; }
+
+.h-dash-ranking-medal {
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  width: 28px;
+  text-align: center;
+}
+
+.h-dash-ranking-name {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #e5e5e5;
+}
+
+.h-dash-ranking-val {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #ff6a00;
+}
+
+.h-dash-ranking-bar-wrap {
+  width: 80px;
+  height: 6px;
+  background: #222;
+  border-radius: 3px;
+  margin-left: 0.75rem;
+  overflow: hidden;
+}
+
+.h-dash-ranking-bar {
+  height: 100%;
+  background: #ff6a00;
+  border-radius: 3px;
+}
+
+/* Sparkline */
+.h-dash-sparks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.h-dash-spark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.h-dash-spark-title {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.h-dash-spark-valor {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f5f5f5;
+  margin-top: 2px;
+}
+
+.h-dash-spark-pct {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255,106,0,0.15);
+  color: #ff6a00;
+}
+
+.h-dash-spark-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+}
+
+.h-dash-spark-bar {
+  flex: 1;
+  background: rgba(255,106,0,0.3);
+  border-radius: 3px;
+  min-height: 4px;
+  transition: height 0.3s;
+}
+
+.h-dash-spark-bar.today {
+  background: #ff6a00;
+}
+
+/* Badge */
+.h-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.h-badge--green { background: rgba(34,197,94,0.15); color: #22c55e; }
+.h-badge--blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.h-badge--purple { background: rgba(168,85,247,0.15); color: #a855f7; }
+.h-badge--orange { background: rgba(255,106,0,0.15); color: #ff6a00; }
+.h-badge--red { background: rgba(244,63,94,0.15); color: #f43f5e; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .h-dash-kpi-grid { grid-template-columns: 1fr 1fr; }
+  .h-dash-charts-grid { grid-template-columns: 1fr; }
+  .h-dash-sparks-grid { grid-template-columns: 1fr; }
+}

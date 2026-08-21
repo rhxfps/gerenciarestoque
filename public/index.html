@@ -16,8 +16,15 @@
     document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
+<script>
+  (function(){
+    var m = localStorage.getItem('appMode') || 'pastel';
+    document.body.setAttribute('data-app', m);
+  })();
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style-hamburguer.css">
 </head>
 <body>
 
@@ -66,6 +73,7 @@
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-burger"></i> <span>Hamburguer</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="user-info">
@@ -126,6 +134,7 @@
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-burger"></i> Hamburguer</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
       <button class="btn btn-danger" onclick="logout(); toggleMobileMenu();" style="width:100%;">
@@ -137,6 +146,10 @@
   <main class="main">
     <div class="topbar">
       <h1 id="topbar-title">Dashboard</h1>
+      <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="toggleAppMode()" title="Alternar modo">
+        <i class="ti ti-burger" id="mode-toggle-icon"></i>
+        <span id="mode-toggle-label">Hamburguer</span>
+      </button>
       <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema">
         <i class="ti ti-moon" id="theme-icon"></i>
       </button>
@@ -249,6 +262,97 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- HAMBURGUER DASHBOARD -->
+      <div class="screen hamburguer-only" id="screen-h-dashboard" style="display:none">
+        <div class="h-dash-kpi-grid">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Vendas Hoje</span>
+              <span class="h-dash-kpi-value" id="h-dash-vendas-hoje">0</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-clock"></i> Hoje</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Faturamento Hoje</span>
+              <span class="h-dash-kpi-value" id="h-dash-faturamento-hoje">R$ 0,00</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-trending-up"></i> Receita do dia</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-receipt"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Ticket Médio</span>
+              <span class="h-dash-kpi-value" id="h-dash-ticket-medio">R$ 0,00</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-calculator"></i> Média por venda</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-calendar-stats"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Vendas do Mês</span>
+              <span class="h-dash-kpi-value" id="h-dash-vendas-mes">0</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-calendar-month"></i> Em <span id="h-dash-mes-atual"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-dash-charts-grid">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="h-dash-top-produtos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="h-dash-pagamentos"></div>
+          </div>
+        </div>
+
+        <div class="h-dash-sparks-grid">
+          <div class="card">
+            <div class="h-dash-spark-header">
+              <div>
+                <div class="h-dash-spark-title">Vendas na semana (<span id="h-dash-spark-semana-qtd">0</span>)</div>
+                <div class="h-dash-spark-valor" id="h-dash-spark-semana-total">R$ 0,00</div>
+              </div>
+              <span class="h-dash-spark-pct" id="h-dash-spark-semana-pct"></span>
+            </div>
+            <div class="h-dash-spark-wrap" id="h-dash-spark-semana"></div>
+          </div>
+          <div class="card">
+            <div class="h-dash-spark-header">
+              <div>
+                <div class="h-dash-spark-title">Vendas em <span id="h-dash-chart-mes-nome"></span> (<span id="h-dash-spark-mes-qtd">0</span>)</div>
+                <div class="h-dash-spark-valor" id="h-dash-spark-mes-total">R$ 0,00</div>
+              </div>
+              <span class="h-dash-spark-pct" id="h-dash-spark-mes-pct"></span>
+            </div>
+            <div class="h-dash-spark-wrap" id="h-dash-spark-mes"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin:0 0 1rem"><i class="ti ti-history"></i> Últimas Vendas</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Delivery</th>
+                </tr>
+              </thead>
+              <tbody id="h-dash-ultimas-vendas"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- ESTOQUE -->
