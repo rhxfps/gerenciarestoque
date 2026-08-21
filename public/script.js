@@ -2053,11 +2053,7 @@ var hpdvCardapio = [
   },
   { id: 10, nome: "Batata Frita", desc: "Porcao generosa de batata frita crocante", preco: 14.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: [] },
   { id: 11, nome: "Batata c/ Cheddar", desc: "Batata frita com cheddar cremoso", preco: 18.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: ["popular"] },
-  { id: 12, nome: "Batata c/ Bacon", desc: "Batata frita com cheddar e bacon crocante", preco: 20.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: [] },
-  { id: 20, nome: "Coca-Cola 350ml", desc: "Lata gelada 350ml", preco: 6.00, emoji: "\uD83E\uDD64", categoria: "Bebidas", tags: [] },
-  { id: 21, nome: "Guarana 350ml", desc: "Lata gelada 350ml", preco: 6.00, emoji: "\uD83E\uDD64", categoria: "Bebidas", tags: [] },
-  { id: 22, nome: "Agua Mineral", desc: "Garrafa 500ml", preco: 4.00, emoji: "\uD83D\uDCA7", categoria: "Bebidas", tags: [] },
-  { id: 23, nome: "Suco Natural", desc: "Laranja ou limao, 400ml", preco: 8.00, emoji: "\uD83E\uDDC3", categoria: "Bebidas", tags: ["novo"] }
+  { id: 12, nome: "Batata c/ Bacon", desc: "Batata frita com cheddar e bacon crocante", preco: 20.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: [] }
 ];
 
 var hpdvCatAtiva = "Todos";
@@ -2080,9 +2076,26 @@ function renderHPDV() {
   hpdvCatAtiva = "Todos";
   var numEl = document.getElementById("hpdv-comanda-num");
   if (numEl) numEl.value = Math.floor(1000 + Math.random() * 9000);
-  hpdvRenderCategorias();
-  hpdvRenderCardapio();
-  hpdvRenderPedido();
+  // Buscar bebidas do pastel e juntar ao cardápio
+  fetch("/api/produtos").then(function(r) { return r.json(); }).then(function(produtos) {
+    var bebidasExistentes = {};
+    hpdvCardapio.forEach(function(p) { if (p.categoria === "Bebidas") bebidasExistentes[p.nome] = true; });
+    (produtos || []).forEach(function(p) {
+      if (bebidasExistentes[p.nome]) return;
+      var cat = (p.categoria || "").toLowerCase();
+      if (cat !== "bebidas" && cat !== "drinks") return;
+      hpdvCardapio.push({
+        id: 9000 + p.id, nome: p.nome, desc: p.nome, preco: p.preco || 0,
+        emoji: "🥤", categoria: "Bebidas", tags: [],
+        ingredientes: [{ id: "base", nome: p.nome, icone: "🥤", removivel: false }],
+        extras: []
+      });
+    });
+  }).catch(function() {}).finally(function() {
+    hpdvRenderCategorias();
+    hpdvRenderCardapio();
+    hpdvRenderPedido();
+  });
 }
 
 function hpdvRenderCategorias() {
@@ -2557,7 +2570,7 @@ function hVendasRenderTopProdutos(vendas) {
   var map = {};
   vendas.forEach(function(v) {
     if (v.itens) v.itens.forEach(function(it) {
-      var nome = it.produto_nome || "Hambúrguer";
+      var nome = it.nome || "Hambúrguer";
       if (!map[nome]) map[nome] = { qtd: 0, total: 0 };
       map[nome].qtd += (it.qtd || 0);
       map[nome].total += (parseFloat(it.preco_unitario) || 0) * (it.qtd || 0);
@@ -2608,9 +2621,9 @@ function hVendasRenderHistorico(vendas) {
     var dataStr = d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     var prodStr = "";
     if (v.itens && v.itens.length) {
-      prodStr = v.itens.map(function(it) { return it.qtd + "x " + it.produto_nome; }).join(", ");
+      prodStr = v.itens.map(function(it) { return it.qtd + "x " + (it.nome || "Hambúrguer"); }).join(", ");
     } else {
-      prodStr = v.produto_nome || "-";
+      prodStr = v.cliente || "-";
     }
     var qtd = 0;
     if (v.itens) v.itens.forEach(function(it) { qtd += (it.qtd || 0); });

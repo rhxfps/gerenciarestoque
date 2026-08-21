@@ -45,13 +45,6 @@ INSERT INTO hamburguer_estoque (nome, icone, categoria, qtd, qtd_minima, unidade
 
   -- Batatas e Acompanhamentos
   ('Batata Palha',       '🍟', 'Acompanhamentos', 15, 8, 'kg', 8.00),
-  ('Onion Rings',        '🧅', 'Acompanhamentos', 10, 5, 'un', 2.00),
-
-  -- Bebidas
-  ('Coca-Cola Lata',     '🥤', 'Bebidas',    24, 12, 'un', 3.50),
-  ('Guaraná Lata',       '🥤', 'Bebidas',    24, 12, 'un', 3.00),
-  ('Água Mineral',       '💧', 'Bebidas',    20, 10, 'un', 2.00),
-  ('Suco Natural',       '🧃', 'Bebidas',    10, 5,  'un', 5.00),
-  ('Heineken Lata',      '🍺', 'Bebidas',    12, 6,  'un', 7.00)
+  ('Onion Rings',        '🧅', 'Acompanhamentos', 10, 5, 'un', 2.00)
 
 ON CONFLICT (nome) DO NOTHING;

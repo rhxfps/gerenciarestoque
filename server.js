@@ -1495,10 +1495,10 @@ app.get('/api/admin/backup', autenticar, async (req, res) => {
 app.get('/api/hamburguer/estoque', autenticar, async (req, res) => {
   try {
     const { data, error } = await supabase.from('hamburguer_estoque').select('*').order('categoria').order('nome');
-    if (error) throw error;
+    if (error) { console.warn('hamburguer_estoque:', error.message); return res.json([]); }
     res.json(data || []);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar estoque hamburguer' });
+    res.json([]);
   }
 });
 
@@ -1548,10 +1548,10 @@ app.delete('/api/hamburguer/estoque/:id', autenticar, async (req, res) => {
 app.get('/api/hamburguer/movimentacoes', autenticar, async (req, res) => {
   try {
     const { data, error } = await supabase.from('hamburguer_movimentacoes').select('*').order('data', { ascending: false }).limit(200);
-    if (error) throw error;
+    if (error) { console.warn('hamburguer_movimentacoes:', error.message); return res.json([]); }
     res.json(data || []);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar movimentações' });
+    res.json([]);
   }
 });
 
@@ -1582,7 +1582,7 @@ app.get('/api/hamburguer/vendas', autenticar, async (req, res) => {
   try {
     const { data: vendas, error: vErr } = await supabase
       .from('hamburguer_vendas').select('*').order('data', { ascending: false }).limit(500);
-    if (vErr) throw vErr;
+    if (vErr) { console.warn('hamburguer_vendas:', vErr.message); return res.json([]); }
 
     const ids = (vendas || []).map(v => v.id);
     let itensMap = {};
@@ -1634,7 +1634,7 @@ app.get('/api/hamburguer/cardapio', autenticar, async (req, res) => {
   try {
     const { data: cardapio, error } = await supabase
       .from('hamburguer_cardapio').select('*').eq('ativo', true).order('categoria').order('nome');
-    if (error) throw error;
+    if (error) { console.warn('hamburguer_cardapio:', error.message); return res.json([]); }
 
     const ids = (cardapio || []).map(c => c.id);
     let ingsMap = {}, extrasMap = {};
