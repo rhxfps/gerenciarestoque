@@ -1800,104 +1800,106 @@ function renderHDashboard() {
   if (elMes) elMes.textContent = nomeMes;
   var elMesNome = document.getElementById('h-dash-chart-mes-nome');
   if (elMesNome) elMesNome.textContent = nomeMes;
-  var vendasHoje = vendas.filter(function(v) {
-    var d = new Date(v.data);
-    return d.getDate() === hoje.getDate() && d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
-  });
-  var vendasMes = vendas.filter(function(v) {
-    var d = new Date(v.data);
-    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
-  });
-  var valorHoje = vendasHoje.reduce(function(a, v) { return a + (v.total || 0); }, 0);
-  var valorMes = vendasMes.reduce(function(a, v) { return a + (v.total || 0); }, 0);
-  var ticketMedio = vendasMes.length ? valorMes / vendasMes.length : 0;
   var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  var e1 = document.getElementById('h-dash-vendas-hoje');
-  var e2 = document.getElementById('h-dash-faturamento-hoje');
-  var e3 = document.getElementById('h-dash-ticket-medio');
-  var e4 = document.getElementById('h-dash-vendas-mes');
-  if (e1) e1.textContent = vendasHoje.length;
-  if (e2) e2.textContent = fmt.format(valorHoje);
-  if (e3) e3.textContent = fmt.format(ticketMedio);
-  if (e4) e4.textContent = vendasMes.length;
-  var produtosVendidos = {};
-  vendasMes.forEach(function(venda) {
-    if (venda.itens && venda.itens.length) {
-      venda.itens.forEach(function(item) {
-        produtosVendidos[item.produto_nome] = (produtosVendidos[item.produto_nome] || 0) + item.qtd;
-      });
-    } else if (venda.produto_nome) {
-      produtosVendidos[venda.produto_nome] = (produtosVendidos[venda.produto_nome] || 0) + venda.qtd;
+
+  fetch("/api/hamburguer/vendas").then(function(r) { return r.json(); }).then(function(hvendas) {
+    var vendas = hvendas || [];
+    var vendasHoje = vendas.filter(function(v) {
+      var d = new Date(v.data);
+      return d.getDate() === hoje.getDate() && d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+    });
+    var vendasMes = vendas.filter(function(v) {
+      var d = new Date(v.data);
+      return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+    });
+    var valorHoje = vendasHoje.reduce(function(a, v) { return a + (v.total || 0); }, 0);
+    var valorMes = vendasMes.reduce(function(a, v) { return a + (v.total || 0); }, 0);
+    var ticketMedio = vendasMes.length ? valorMes / vendasMes.length : 0;
+    var e1 = document.getElementById('h-dash-vendas-hoje');
+    var e2 = document.getElementById('h-dash-faturamento-hoje');
+    var e3 = document.getElementById('h-dash-ticket-medio');
+    var e4 = document.getElementById('h-dash-vendas-mes');
+    if (e1) e1.textContent = vendasHoje.length;
+    if (e2) e2.textContent = fmt.format(valorHoje);
+    if (e3) e3.textContent = fmt.format(ticketMedio);
+    if (e4) e4.textContent = vendasMes.length;
+    var produtosVendidos = {};
+    vendasMes.forEach(function(venda) {
+      if (venda.itens && venda.itens.length) {
+        venda.itens.forEach(function(item) {
+          produtosVendidos[item.nome] = (produtosVendidos[item.nome] || 0) + item.qtd;
+        });
+      }
+    });
+    var topProdutos = Object.entries(produtosVendidos).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+    var elTop = document.getElementById('h-dash-top-produtos');
+    if (elTop) {
+      if (!topProdutos.length) {
+        elTop.innerHTML = '<div style="padding:1rem;color:#666;font-size:0.85rem">Sem vendas ainda</div>';
+      } else {
+        var maxV = topProdutos[0][1];
+        var medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49','',''];
+        elTop.innerHTML = topProdutos.map(function(p, i) {
+          return '<div class="h-dash-ranking-item">' +
+            '<span class="h-dash-ranking-medal">' + (medals[i]||'') + '</span>' +
+            '<span class="h-dash-ranking-name">' + p[0] + '</span>' +
+            '<span class="h-dash-ranking-val">' + p[1] + ' un.</span>' +
+            '<div class="h-dash-ranking-bar-wrap"><div class="h-dash-ranking-bar" style="width:' + Math.round((p[1]/maxV)*100) + '%"></div></div>' +
+          '</div>';
+        }).join('');
+      }
     }
-  });
-  var topProdutos = Object.entries(produtosVendidos).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
-  var elTop = document.getElementById('h-dash-top-produtos');
-  if (elTop) {
-    if (!topProdutos.length) {
-      elTop.innerHTML = '<div style="padding:1rem;color:#666;font-size:0.85rem">Sem vendas ainda</div>';
-    } else {
-      var maxV = topProdutos[0][1];
-      var medals = ['🥇','🥈','🥉','',''];
-      elTop.innerHTML = topProdutos.map(function(p, i) {
-        return '<div class="h-dash-ranking-item">' +
-          '<span class="h-dash-ranking-medal">' + (medals[i]||'') + '</span>' +
-          '<span class="h-dash-ranking-name">' + p[0] + '</span>' +
-          '<span class="h-dash-ranking-val">' + p[1] + ' un.</span>' +
-          '<div class="h-dash-ranking-bar-wrap"><div class="h-dash-ranking-bar" style="width:' + Math.round((p[1]/maxV)*100) + '%"></div></div>' +
-        '</div>';
-      }).join('');
+    var pagamentos = { dinheiro: 0, cartao: 0, pix: 0 };
+    vendasMes.forEach(function(v) {
+      if (v.pagamento === 'dinheiro') pagamentos.dinheiro++;
+      else if (v.pagamento === 'pix') pagamentos.pix++;
+      else if (v.pagamento === 'cartao') pagamentos.cartao++;
+    });
+    var elPag = document.getElementById('h-dash-pagamentos');
+    if (elPag) {
+      var totalPag = pagamentos.dinheiro + pagamentos.cartao + pagamentos.pix;
+      if (!totalPag) {
+        elPag.innerHTML = '<div style="padding:1rem;color:#666;font-size:0.85rem">Sem dados ainda</div>';
+      } else {
+        var items = [
+          { label: 'Dinheiro', count: pagamentos.dinheiro, color: '#22c55e', icon: 'ti ti-cash' },
+          { label: 'Cartão', count: pagamentos.cartao, color: '#3b82f6', icon: 'ti ti-credit-card' },
+          { label: 'PIX', count: pagamentos.pix, color: '#a855f7', icon: 'ti ti-qrcode' }
+        ];
+        elPag.innerHTML = items.map(function(it) {
+          var pct = Math.round((it.count / totalPag) * 100);
+          return '<div class="h-dash-ranking-item">' +
+            '<span class="h-dash-ranking-medal" style="color:' + it.color + '"><i class="' + it.icon + '"></i></span>' +
+            '<span class="h-dash-ranking-name">' + it.label + '</span>' +
+            '<span class="h-dash-ranking-val">' + it.count + ' (' + pct + '%)</span>' +
+            '<div class="h-dash-ranking-bar-wrap"><div class="h-dash-ranking-bar" style="width:' + pct + '%;background:' + it.color + '"></div></div>' +
+          '</div>';
+        }).join('');
+      }
     }
-  }
-  var pagamentos = { dinheiro: 0, cartao: 0, pix: 0 };
-  vendasMes.forEach(function(v) {
-    if (v.pagamento === 'dinheiro') pagamentos.dinheiro++;
-    else if (v.pagamento === 'pix') pagamentos.pix++;
-    else if (v.pagamento === 'cartao') pagamentos.cartao++;
-  });
-  var elPag = document.getElementById('h-dash-pagamentos');
-  if (elPag) {
-    var totalPag = pagamentos.dinheiro + pagamentos.cartao + pagamentos.pix;
-    if (!totalPag) {
-      elPag.innerHTML = '<div style="padding:1rem;color:#666;font-size:0.85rem">Sem dados ainda</div>';
-    } else {
-      var items = [
-        { label: 'Dinheiro', count: pagamentos.dinheiro, color: '#22c55e', icon: 'ti ti-cash' },
-        { label: 'Cartão', count: pagamentos.cartao, color: '#3b82f6', icon: 'ti ti-credit-card' },
-        { label: 'PIX', count: pagamentos.pix, color: '#a855f7', icon: 'ti ti-qrcode' }
-      ];
-      elPag.innerHTML = items.map(function(it) {
-        var pct = Math.round((it.count / totalPag) * 100);
-        return '<div class="h-dash-ranking-item">' +
-          '<span class="h-dash-ranking-medal" style="color:' + it.color + '"><i class="' + it.icon + '"></i></span>' +
-          '<span class="h-dash-ranking-name">' + it.label + '</span>' +
-          '<span class="h-dash-ranking-val">' + it.count + ' (' + pct + '%)</span>' +
-          '<div class="h-dash-ranking-bar-wrap"><div class="h-dash-ranking-bar" style="width:' + pct + '%;background:' + it.color + '"></div></div>' +
-        '</div>';
-      }).join('');
+    hRenderSparkSemana(vendas);
+    hRenderSparkMes(vendas);
+    var elUltimas = document.getElementById('h-dash-ultimas-vendas');
+    if (elUltimas) {
+      var recentes = vendas.slice().sort(function(a, b) { return new Date(b.data) - new Date(a.data); }).slice(0, 8);
+      if (!recentes.length) {
+        elUltimas.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:1rem">Nenhuma venda registrada</td></tr>';
+      } else {
+        elUltimas.innerHTML = recentes.map(function(v) {
+          var nomes = v.itens && v.itens.length ? v.itens.map(function(it) { return it.nome; }).join(', ') : '-';
+          var qtd = v.itens && v.itens.length ? v.itens.reduce(function(a, it) { return a + it.qtd; }, 0) : 0;
+          var pagClass = v.pagamento === 'dinheiro' ? 'h-badge--green' : v.pagamento === 'pix' ? 'h-badge--purple' : 'h-badge--blue';
+          var tipoPag = v.pagamento ? v.pagamento.charAt(0).toUpperCase() + v.pagamento.slice(1) : '-';
+          var dataFmt = new Date(v.data).toLocaleDateString('pt-BR');
+          return '<tr><td>' + dataFmt + '</td><td>' + nomes + '</td><td>' + qtd + '</td><td>' + fmt.format(v.total || 0) + '</td><td><span class="h-badge ' + pagClass + '">' + tipoPag + '</span></td><td>' + (v.comanda_num ? '#' + v.comanda_num : '-') + '</td></tr>';
+        }).join('');
+      }
     }
-  }
-  hRenderSparkSemana();
-  hRenderSparkMes();
-  var elUltimas = document.getElementById('h-dash-ultimas-vendas');
-  if (elUltimas) {
-    var recentes = vendas.slice().sort(function(a, b) { return new Date(b.data) - new Date(a.data); }).slice(0, 8);
-    if (!recentes.length) {
-      elUltimas.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:1rem">Nenhuma venda registrada</td></tr>';
-    } else {
-      elUltimas.innerHTML = recentes.map(function(v) {
-        var nomes = v.itens && v.itens.length ? v.itens.map(function(it) { return it.produto_nome; }).join(', ') : (v.produto_nome || '-');
-        var qtd = v.itens && v.itens.length ? v.itens.reduce(function(a, it) { return a + it.qtd; }, 0) : (v.qtd || 0);
-        var pagClass = v.pagamento === 'dinheiro' ? 'h-badge--green' : v.pagamento === 'pix' ? 'h-badge--purple' : 'h-badge--blue';
-        var tipoPag = v.pagamento ? v.pagamento.charAt(0).toUpperCase() + v.pagamento.slice(1) : '-';
-        var tipoDelivery = v.tipo_venda === 'delivery' ? '<span class="h-badge h-badge--orange">' + (v.plataforma || 'Delivery') + '</span>' : '<span class="h-badge h-badge--green">Balcão</span>';
-        var dataFmt = new Date(v.data).toLocaleDateString('pt-BR');
-        return '<tr><td>' + dataFmt + '</td><td>' + nomes + '</td><td>' + qtd + '</td><td>' + fmt.format(v.total || 0) + '</td><td><span class="h-badge ' + pagClass + '">' + tipoPag + '</span></td><td>' + tipoDelivery + '</td></tr>';
-      }).join('');
-    }
-  }
+  }).catch(function() { console.error("Erro ao carregar vendas hamburguer"); });
 }
 
-function hRenderSparkSemana() {
+function hRenderSparkSemana(hvendas) {
+  hvendas = hvendas || [];
   var hoje = new Date();
   var diaSemana = hoje.getDay();
   var segunda = new Date(hoje);
@@ -1905,7 +1907,7 @@ function hRenderSparkSemana() {
   segunda.setHours(0, 0, 0, 0);
   var labels = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
   var valores = [0,0,0,0,0,0,0];
-  vendas.forEach(function(v) {
+  hvendas.forEach(function(v) {
     var d = new Date(v.data);
     var diff = Math.floor((d - segunda) / 86400000);
     if (diff >= 0 && diff <= 6) valores[diff] += v.total || 0;
@@ -1928,14 +1930,15 @@ function hRenderSparkSemana() {
   }).join('');
 }
 
-function hRenderSparkMes() {
+function hRenderSparkMes(hvendas) {
+  hvendas = hvendas || [];
   var hoje = new Date();
   var mes = hoje.getMonth();
   var ano = hoje.getFullYear();
   var diaAtual = hoje.getDate();
   var valores = [];
   for (var i = 0; i < diaAtual; i++) valores.push(0);
-  vendas.forEach(function(v) {
+  hvendas.forEach(function(v) {
     var d = new Date(v.data);
     if (d.getMonth() === mes && d.getFullYear() === ano) {
       var dia = d.getDate() - 1;
@@ -1949,7 +1952,7 @@ function hRenderSparkMes() {
   var totalEl = document.getElementById('h-dash-spark-mes-total');
   var qtdEl = document.getElementById('h-dash-spark-mes-qtd');
   if (totalEl) totalEl.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
-  if (qtdEl) qtdEl.textContent = vendas.filter(function(v) {
+  if (qtdEl) qtdEl.textContent = hvendas.filter(function(v) {
     var d = new Date(v.data);
     return d.getMonth() === mes && d.getFullYear() === ano;
   }).length;
@@ -2520,10 +2523,8 @@ function hVendasCarregar() {
   if (di) inicio = new Date(di + "T00:00:00");
   if (df) fim = new Date(df + "T23:59:59");
 
-  fetch("/api/vendas").then(function(r) { return r.json(); }).then(function(vendas) {
+  fetch("/api/hamburguer/vendas").then(function(r) { return r.json(); }).then(function(vendas) {
     var filtradas = (vendas || []).filter(function(v) {
-      if (!v.obs) return false;
-      if (v.obs.toLowerCase().indexOf("comanda #") === -1 && v.obs.toLowerCase().indexOf("cliente:") === -1) return false;
       var d = new Date(v.data);
       if (inicio && d < inicio) return false;
       if (fim && d > fim) return false;
