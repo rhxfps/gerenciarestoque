@@ -247,7 +247,8 @@ function showApp() {
   updateMenuByRole();
   if (typeof applyAppMode === 'function') applyAppMode();
   renderConsumoBars();
-  nav('dashboard');
+  if (typeof appMode !== 'undefined' && appMode === 'hamburguer') nav('h-dashboard');
+  else nav('dashboard');
 }
 
 // Atualizar menu por role
