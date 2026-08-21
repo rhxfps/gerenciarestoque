@@ -245,7 +245,6 @@ function showApp() {
   document.getElementById('app-container').style.display = 'flex';
   document.getElementById('user-name').textContent = currentUser.nome;
   updateMenuByRole();
-  if (typeof applyAppMode === 'function') applyAppMode();
   renderConsumoBars();
   nav('dashboard');
 }
@@ -351,13 +350,12 @@ const titles = {
   contagem:     'Contagem de Estoque',
   gastos:       'Gastos',
   admin:        'Admin',
-  usuarios:     'Usuários'
+  usuarios:     'Usuários',
+  hamburguer:   'Hambúrguer PDV'
 };
 
 function nav(screen) {
-  if (screen && screen.indexOf('h-') === 0) {
-    // hamburguer screens: skip access control
-  } else if (screen === 'consumo') {
+  if (screen === 'consumo') {
     if (currentUser.role !== 'dono' && currentUser.role !== 'funcionario') {
       toast('Acesso negado!', false);
       nav('vendas');
@@ -382,9 +380,10 @@ function nav(screen) {
   if (adminSection) adminSection.classList.toggle('active', screen === 'admin');
   const mobileAdmin = document.getElementById('mobile-admin-section');
   if (mobileAdmin) mobileAdmin.classList.toggle('active', screen === 'admin');
-  document.getElementById('topbar-title').textContent = titles[screen] || (typeof hTitles !== 'undefined' && hTitles[screen]) || screen;
+  document.getElementById('topbar-title').textContent = titles[screen] || screen;
 
   if (screen === 'dashboard')    renderDashboardProfissional();
+  if (screen === 'hamburguer')  { hpdvRenderCategorias(); hpdvRenderCardapio(); hpdvRenderComanda(); }
   if (screen === 'estoque')      renderEstoque();
   if (screen === 'registrar') {
     populateSelect('e-produto');
@@ -433,12 +432,6 @@ function nav(screen) {
     }
     atualizaEstiloOpcoes();
   }
-  if (screen === 'h-dashboard') { if (typeof renderHDashboard === 'function') renderHDashboard(); }
-  if (screen === 'h-estoque') { if (typeof hRenderEstoque === 'function') hRenderEstoque(); }
-  if (screen === 'h-vendas') { if (typeof hRenderVendas === 'function') hRenderVendas(); }
-  if (screen === 'h-pdv') { if (typeof hpdvRenderCategorias === 'function') { hpdvRenderCategorias(); hpdvRenderCardapio(); hpdvRenderComanda(); } }
-  if (screen === 'h-produtos') { if (typeof hRenderProdutos === 'function') hRenderProdutos(); }
-  if (screen === 'h-caixa') { if (typeof hRenderCaixa === 'function') hRenderCaixa(); }
 }
 
 document.getElementById('nav').addEventListener('click', e => {
@@ -4417,6 +4410,409 @@ async function deleteGasto(id) {
       }
     }
   });
+}
+
+// ==================== HAMBÚRGUER PDV ====================
+const hpdvCardapio = [
+  {
+    id: 1, nome: "Smash Burger", desc: "2 smash 80g, queijo duplo, cebola caramelizada e molho especial",
+    preco: 29.90, emoji: "💥", categoria: "Especiais", tags: ["popular"],
+    ingredientes: [
+      { id: "pao", nome: "Pão smash", icone: "🍞", removivel: false },
+      { id: "smash", nome: "2x Smash 80g", icone: "🥩", removivel: false },
+      { id: "queijo", nome: "Queijo duplo", icone: "🧀", removivel: true },
+      { id: "cebola", nome: "Cebola caramelizada", icone: "🧅", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "🥓", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "🧀", preco: 3.00 },
+      { id: "jalapeno", nome: "Jalapeño", icone: "🌶️", preco: 2.50 },
+    ]
+  },
+  {
+    id: 2, nome: "Classic Burger", desc: "Pão brioche, hambúrguer 150g, cheddar, alface, tomate e molho especial",
+    preco: 22.90, emoji: "🍔", categoria: "Clássicos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pão brioche", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "Queijo cheddar", icone: "🧀", removivel: true },
+      { id: "alface", nome: "Alface", icone: "🥬", removivel: true },
+      { id: "tomate", nome: "Tomate", icone: "🍅", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "🥓", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "onion_rings", nome: "Onion rings", icone: "🧅", preco: 5.00 },
+    ]
+  },
+  {
+    id: 3, nome: "Cheese Burger", desc: "Pão brioche, hambúrguer 150g, 2x cheddar e molho da casa",
+    preco: 24.90, emoji: "🧀", categoria: "Clássicos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pão brioche", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "Cheddar duplo", icone: "🧀", removivel: true },
+      { id: "molho", nome: "Molho da casa", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "🥓", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "presunto", nome: "Presunto", icone: "🍖", preco: 3.00 },
+    ]
+  },
+  {
+    id: 4, nome: "Bacon Burger", desc: "Pão brioche, hambúrguer 150g, queijo, bacon crocante e molho BBQ",
+    preco: 27.90, emoji: "🥓", categoria: "Clássicos", tags: ["popular"],
+    ingredientes: [
+      { id: "pao", nome: "Pão brioche", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "Queijo cheddar", icone: "🧀", removivel: true },
+      { id: "bacon", nome: "Bacon crocante", icone: "🥓", removivel: true },
+      { id: "alface", nome: "Alface", icone: "🥬", removivel: true },
+      { id: "molho_bbq", nome: "Molho BBQ", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "onion_rings", nome: "Onion rings", icone: "🧅", preco: 5.00 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "🧀", preco: 3.00 },
+    ]
+  },
+  {
+    id: 5, nome: "Mushroom Burger", desc: "Pão brioche, hambúrguer 150g, queijo suíço, cogumelos e molho trufado",
+    preco: 32.90, emoji: "🍄", categoria: "Especiais", tags: ["novo"],
+    ingredientes: [
+      { id: "pao", nome: "Pão brioche", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "queijo_sui", nome: "Queijo suíço", icone: "🧀", removivel: true },
+      { id: "cogumelos", nome: "Cogumelos grelhados", icone: "🍄", removivel: true },
+      { id: "molho_truf", nome: "Molho trufado", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "🥓", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "rucula", nome: "Rúcula", icone: "🌿", preco: 2.00 },
+    ]
+  },
+  {
+    id: 6, nome: "BBQ Bacon", desc: "Pão australiano, hambúrguer 180g, queijo, bacon, onion rings e BBQ defumado",
+    preco: 34.90, emoji: "🔥", categoria: "Especiais", tags: ["popular"],
+    ingredientes: [
+      { id: "pao", nome: "Pão australiano", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "Hambúrguer 180g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "Queijo cheddar", icone: "🧀", removivel: true },
+      { id: "bacon", nome: "Bacon defumado", icone: "🥓", removivel: true },
+      { id: "onion_rings", nome: "Onion rings", icone: "🧅", removivel: true },
+      { id: "molho_bbq", nome: "Molho BBQ defumado", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "🧀", preco: 3.00 },
+      { id: "jalapeno", nome: "Jalapeño", icone: "🌶️", preco: 2.50 },
+    ]
+  },
+  {
+    id: 7, nome: "Double Cheddar", desc: "Pão brioche, 2x hambúrguer 150g, 3x cheddar, alface e molho especial",
+    preco: 36.90, emoji: "🍔", categoria: "Duplos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pão brioche", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "2x Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "3x Queijo cheddar", icone: "🧀", removivel: true },
+      { id: "alface", nome: "Alface", icone: "🥬", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "🥓", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", preco: 2.50 },
+      { id: "onion_rings", nome: "Onion rings", icone: "🧅", preco: 5.00 },
+    ]
+  },
+  {
+    id: 8, nome: "Monster Burger", desc: "Pão australiano, 3x hambúrguer 150g, queijo, bacon, ovo, alface, tomate",
+    preco: 45.90, emoji: "👑", categoria: "Duplos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pão australiano", icone: "🍞", removivel: false },
+      { id: "hamburg", nome: "3x Hambúrguer 150g", icone: "🥩", removivel: false },
+      { id: "cheddar", nome: "Queijo cheddar", icone: "🧀", removivel: true },
+      { id: "bacon", nome: "Bacon", icone: "🥓", removivel: true },
+      { id: "ovo", nome: "Ovo frito", icone: "🍳", removivel: true },
+      { id: "alface", nome: "Alface", icone: "🥬", removivel: true },
+      { id: "tomate", nome: "Tomate", icone: "🍅", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "🫙", removivel: true },
+    ],
+    extras: [
+      { id: "cheddar", nome: "Cheddar extra", icone: "🧀", preco: 3.00 },
+      { id: "onion_rings", nome: "Onion rings", icone: "🧅", preco: 5.00 },
+      { id: "jalapeno", nome: "Jalapeño", icone: "🌶️", preco: 2.50 },
+    ]
+  },
+];
+
+let hpdvComandaItens = [];
+let hpdvCatAtiva = "Todos";
+let hpdvModalLanche = null;
+let hpdvModalQtd = 1;
+let hpdvModalIngs = [];
+let hpdvModalExtras = [];
+
+const hpdvFmt = v => "R$ " + v.toFixed(2).replace(".", ",");
+
+function hpdvGetCategorias() {
+  const cats = [...new Set(hpdvCardapio.map(l => l.categoria))];
+  return ["Todos", ...cats];
+}
+
+function hpdvRenderCategorias() {
+  const el = document.getElementById("hpdv-categorias");
+  if (!el) return;
+  el.innerHTML = hpdvGetCategorias().map(c =>
+    `<button class="hpdv-cat-btn${c === hpdvCatAtiva ? ' active' : ''}" onclick="hpdvSelectCat('${c}')">${c}</button>`
+  ).join("");
+}
+
+function hpdvSelectCat(c) {
+  hpdvCatAtiva = c;
+  hpdvRenderCategorias();
+  hpdvRenderCardapio();
+}
+
+function hpdvRenderCardapio() {
+  const grid = document.getElementById("hpdv-cardapio-grid");
+  if (!grid) return;
+  const busca = (document.getElementById("hpdv-busca")?.value || "").toLowerCase().trim();
+  let lista = hpdvCardapio;
+  if (hpdvCatAtiva !== "Todos") lista = lista.filter(l => l.categoria === hpdvCatAtiva);
+  if (busca) lista = lista.filter(l => l.nome.toLowerCase().includes(busca) || l.desc.toLowerCase().includes(busca));
+  grid.innerHTML = lista.map(l => {
+    const tags = l.tags.map(t => {
+      if (t === "popular") return `<span class="hpdv-lanche-tag hpdv-tag-popular">Popular</span>`;
+      if (t === "novo") return `<span class="hpdv-lanche-tag hpdv-tag-novo">Novo</span>`;
+      return '';
+    }).join("");
+    return `
+      <div class="hpdv-lanche-card" onclick="hpdvAbrirModal(${l.id})">
+        <span class="hpdv-lanche-emoji">${l.emoji}</span>
+        <div class="hpdv-lanche-info">
+          <div class="hpdv-lanche-nome">${l.nome}</div>
+          <div class="hpdv-lanche-desc">${l.desc}</div>
+        </div>
+        <div class="hpdv-lanche-rodape">
+          <span class="hpdv-lanche-preco">${hpdvFmt(l.preco)}</span>
+          ${tags}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function hpdvAbrirModal(id) {
+  hpdvModalLanche = hpdvCardapio.find(l => l.id === id);
+  if (!hpdvModalLanche) return;
+  hpdvModalQtd = 1;
+  hpdvModalIngs = hpdvModalLanche.ingredientes.map(i => ({ ...i, ativo: true }));
+  hpdvModalExtras = hpdvModalLanche.extras.map(e => ({ ...e, qtd: 0 }));
+  document.getElementById("hpdv-modal-emoji").textContent = hpdvModalLanche.emoji;
+  document.getElementById("hpdv-modal-nome").textContent = hpdvModalLanche.nome;
+  document.getElementById("hpdv-modal-desc").textContent = hpdvModalLanche.desc;
+  document.getElementById("hpdv-modal-obs").value = "";
+  document.getElementById("hpdv-modal-qtd").textContent = "1";
+  hpdvRenderModalIngs();
+  hpdvRenderModalExtras();
+  hpdvAtualizarModalTotal();
+  document.getElementById("hpdv-modal-overlay").classList.add("show");
+}
+
+function hpdvFecharModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById("hpdv-modal-overlay").classList.remove("show");
+}
+
+function hpdvRenderModalIngs() {
+  const el = document.getElementById("hpdv-modal-ingredientes");
+  el.innerHTML = hpdvModalIngs.map((ing, i) => `
+    <div class="hpdv-ingrediente-item${ing.removivel && !ing.ativo ? ' removido' : ''}">
+      <div class="hpdv-ingrediente-esq">
+        <span class="hpdv-ingrediente-ic">${ing.icone}</span>
+        <span class="hpdv-ingrediente-nome">${ing.nome}</span>
+      </div>
+      ${ing.removivel
+        ? `<button class="hpdv-ing-toggle${ing.ativo ? '' : ' off'}" onclick="hpdvToggleIng(${i})"></button>`
+        : `<span style="font-size:11px;color:var(--text-muted)">base</span>`
+      }
+    </div>
+  `).join("");
+}
+
+function hpdvToggleIng(i) {
+  hpdvModalIngs[i].ativo = !hpdvModalIngs[i].ativo;
+  hpdvRenderModalIngs();
+  hpdvAtualizarModalTotal();
+}
+
+function hpdvRenderModalExtras() {
+  const el = document.getElementById("hpdv-modal-extras");
+  el.innerHTML = hpdvModalExtras.map((ext, i) => `
+    <div class="hpdv-extra-item">
+      <div class="hpdv-extra-esq">
+        <span class="hpdv-extra-ic">${ext.icone}</span>
+        <div class="hpdv-extra-info">
+          <span class="hpdv-extra-nome">${ext.nome}</span>
+          <span class="hpdv-extra-preco">+${hpdvFmt(ext.preco)}</span>
+        </div>
+      </div>
+      <div class="hpdv-extra-controle">
+        <button onclick="hpdvMudarExtra(${i}, -1)"><i class="ti ti-minus"></i></button>
+        <span class="hpdv-extra-qtd">${ext.qtd}</span>
+        <button onclick="hpdvMudarExtra(${i}, 1)"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function hpdvMudarExtra(i, delta) {
+  hpdvModalExtras[i].qtd = Math.max(0, hpdvModalExtras[i].qtd + delta);
+  hpdvRenderModalExtras();
+  hpdvAtualizarModalTotal();
+}
+
+function hpdvMudarQtd(delta) {
+  hpdvModalQtd = Math.max(1, Math.min(20, hpdvModalQtd + delta));
+  document.getElementById("hpdv-modal-qtd").textContent = hpdvModalQtd;
+  hpdvAtualizarModalTotal();
+}
+
+function hpdvAtualizarModalTotal() {
+  const precoBase = hpdvModalLanche.preco;
+  let totalExtras = hpdvModalExtras.reduce((s, e) => s + (e.preco * e.qtd), 0);
+  let total = (precoBase + totalExtras) * hpdvModalQtd;
+  document.getElementById("hpdv-modal-total").textContent = hpdvFmt(total);
+}
+
+function hpdvAdicionarAoPedido() {
+  if (!hpdvModalLanche) return;
+  const ingsMarcados = hpdvModalIngs.filter(i => i.removivel && !i.ativo);
+  const extrasSel = hpdvModalExtras.filter(e => e.qtd > 0);
+  const totalExtras = extrasSel.reduce((s, e) => s + (e.preco * e.qtd), 0);
+  const precoUnit = hpdvModalLanche.preco + totalExtras;
+  const obs = document.getElementById("hpdv-modal-obs").value.trim();
+  hpdvComandaItens.push({
+    id: Date.now(), lancheId: hpdvModalLanche.id, nome: hpdvModalLanche.nome,
+    emoji: hpdvModalLanche.emoji, qtd: hpdvModalQtd, precoUnit: precoUnit,
+    total: precoUnit * hpdvModalQtd, removidos: ingsMarcados.map(i => i.nome),
+    adicionados: extrasSel.map(e => `${e.nome} x${e.qtd}`), obs: obs
+  });
+  hpdvFecharModal();
+  hpdvRenderComanda();
+}
+
+function hpdvRenderComanda() {
+  const container = document.getElementById("hpdv-comanda-itens");
+  const vazio = document.getElementById("hpdv-comanda-vazio");
+  if (!container) return;
+  if (!hpdvComandaItens.length) {
+    container.innerHTML = "";
+    container.appendChild(vazio);
+    vazio.style.display = "block";
+    hpdvAtualizarTotal();
+    return;
+  }
+  vazio.style.display = "none";
+  container.innerHTML = hpdvComandaItens.map((item, idx) => {
+    let custom = [];
+    if (item.removidos.length) custom.push(`<span class="removido">Sem ${item.removidos.join(", ")}</span>`);
+    if (item.adicionados.length) custom.push(`<span class="adicionado">+ ${item.adicionados.join(", ")}</span>`);
+    const customHtml = custom.length ? `<div class="hpdv-comanda-item-custom">${custom.join(" · ")}</div>` : "";
+    const obsHtml = item.obs ? `<div class="hpdv-comanda-item-obs"><i class="ti ti-note"></i> ${item.obs}</div>` : "";
+    return `
+      <div class="hpdv-comanda-item">
+        <div class="hpdv-comanda-item-topo">
+          <span class="hpdv-comanda-item-nome">${item.emoji} ${item.nome}</span>
+          <span class="hpdv-comanda-item-qtd">x${item.qtd}</span>
+        </div>
+        ${customHtml}${obsHtml}
+        <div class="hpdv-comanda-item-bottom">
+          <div class="hpdv-comanda-item-acoes">
+            <button onclick="hpdvMudarItemQtd(${idx}, -1)"><i class="ti ti-minus"></i></button>
+            <button onclick="hpdvMudarItemQtd(${idx}, 1)"><i class="ti ti-plus"></i></button>
+            <button class="hpdv-btn-remover" onclick="hpdvRemoverItem(${idx})"><i class="ti ti-trash"></i></button>
+          </div>
+          <span class="hpdv-comanda-item-valor">${hpdvFmt(item.total)}</span>
+        </div>
+      </div>`;
+  }).join("");
+  hpdvAtualizarTotal();
+}
+
+function hpdvMudarItemQtd(idx, delta) {
+  const item = hpdvComandaItens[idx];
+  if (!item) return;
+  item.qtd += delta;
+  if (item.qtd <= 0) { hpdvComandaItens.splice(idx, 1); }
+  else { item.total = item.precoUnit * item.qtd; }
+  hpdvRenderComanda();
+}
+
+function hpdvRemoverItem(idx) {
+  hpdvComandaItens.splice(idx, 1);
+  hpdvRenderComanda();
+}
+
+function hpdvAtualizarTotal() {
+  const total = hpdvComandaItens.reduce((s, i) => s + i.total, 0);
+  const el = document.getElementById("hpdv-comanda-total");
+  if (el) el.textContent = hpdvFmt(total);
+}
+
+function hpdvLimparComanda() {
+  if (!hpdvComandaItens.length) return;
+  hpdvComandaItens = [];
+  hpdvRenderComanda();
+}
+
+function hpdvFinalizarComanda() {
+  if (!hpdvComandaItens.length) return;
+  const num = document.getElementById("hpdv-comanda-num")?.value;
+  const cliente = document.getElementById("hpdv-cliente-nome")?.value?.trim() || "Sem nome";
+  const total = hpdvComandaItens.reduce((s, i) => s + i.total, 0);
+  const agora = new Date();
+  const hora = agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  let html = `
+    <div class="hpdv-resumo-info"><span>Comanda Nº</span><strong>${num || "—"}</strong></div>
+    <div class="hpdv-resumo-info"><span>Cliente</span><strong>${cliente}</strong></div>
+    <div class="hpdv-resumo-info"><span>Hora</span><strong>${hora}</strong></div>
+    <div style="margin-top:.75rem">`;
+  hpdvComandaItens.forEach(item => {
+    let custom = [];
+    if (item.removidos.length) custom.push(`Sem ${item.removidos.join(", ")}`);
+    if (item.adicionados.length) custom.push(`+ ${item.adicionados.join(", ")}`);
+    html += `
+      <div class="hpdv-resumo-item">
+        <div class="hpdv-resumo-item-top">
+          <span class="hpdv-resumo-item-nome">${item.emoji} ${item.nome}</span>
+          <span class="hpdv-resumo-item-qtd">x${item.qtd}</span>
+        </div>
+        ${custom.length ? `<div class="hpdv-resumo-item-custom">${custom.join(" · ")}</div>` : ""}
+        ${item.obs ? `<div class="hpdv-resumo-item-custom" style="color:var(--yellow)">${item.obs}</div>` : ""}
+        <div class="hpdv-resumo-item-valor">${hpdvFmt(item.total)}</div>
+      </div>`;
+  });
+  html += `</div><div class="hpdv-resumo-total"><span>Total</span><strong>${hpdvFmt(total)}</strong></div>`;
+  document.getElementById("hpdv-resumo-body").innerHTML = html;
+  document.getElementById("hpdv-resumo-overlay").classList.add("show");
+}
+
+function hpdvFecharResumo(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById("hpdv-resumo-overlay").classList.remove("show");
+  hpdvComandaItens = [];
+  hpdvRenderComanda();
+  const numEl = document.getElementById("hpdv-comanda-num");
+  const clienteEl = document.getElementById("hpdv-cliente-nome");
+  const obsEl = document.getElementById("hpdv-comanda-obs");
+  if (numEl) numEl.value = "";
+  if (clienteEl) clienteEl.value = "";
+  if (obsEl) obsEl.value = "";
 }
 
 // ==================== INICIALIZAÇÃO ====================

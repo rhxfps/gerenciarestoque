@@ -18,7 +18,6 @@
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="style-hamburguer.css">
 </head>
 <body>
 
@@ -50,17 +49,12 @@
 <div class="app" id="app-container" style="display:none">
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-title" id="sidebar-logo-title"><i class="ti ti-box"></i> Pastel de Rei</div>
-      <div class="logo-sub" id="sidebar-logo-sub">Sistema de estoque</div>
-    </div>
-    <div class="mode-toggle-wrap">
-      <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="toggleAppMode()" title="Alternar modo">
-        <i class="ti ti-burger" id="mode-toggle-icon"></i>
-        <span id="mode-toggle-label">Hambúrguer</span>
-      </button>
+      <div class="logo-title"><i class="ti ti-box"></i> Pastel de Rei</div>
+      <div class="logo-sub">Sistema de estoque</div>
     </div>
     <nav id="nav">
       <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
+      <div class="nav-item" data-screen="hamburguer" id="nav-hamburguer"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
@@ -73,13 +67,6 @@
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
-      <!-- HAMBURGUER NAV -->
-      <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-estoque" id="nav-h-estoque" style="display:none"><i class="ti ti-package"></i> <span>Estoque</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-vendas" id="nav-h-vendas" style="display:none"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>PDV</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-produtos" id="nav-h-produtos" style="display:none"><i class="ti ti-list"></i> <span>Produtos</span></div>
-      <div class="nav-item hamburguer-only" data-screen="h-caixa" id="nav-h-caixa" style="display:none"><i class="ti ti-cash"></i> <span>Caixa</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="user-info">
@@ -128,6 +115,7 @@
     </div>
     <nav class="mobile-nav" id="mobileNav">
       <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
+      <div class="mobile-nav-item" data-screen="hamburguer"><i class="ti ti-burger"></i> Hambúrguer</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
@@ -140,13 +128,6 @@
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
-      <!-- HAMBURGUER MOBILE NAV -->
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-estoque" style="display:none"><i class="ti ti-package"></i> Estoque</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-vendas" style="display:none"><i class="ti ti-receipt"></i> Vendas</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> PDV</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-produtos" style="display:none"><i class="ti ti-list"></i> Produtos</div>
-      <div class="mobile-nav-item hamburguer-only" data-screen="h-caixa" style="display:none"><i class="ti ti-cash"></i> Caixa</div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
       <button class="btn btn-danger" onclick="logout(); toggleMobileMenu();" style="width:100%;">
@@ -270,6 +251,128 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- HAMBÚRGUER PDV -->
+      <div class="screen" id="screen-hamburguer">
+        <div class="hpdv">
+          <!-- COLUNA ESQUERDA: Cardápio -->
+          <div class="hpdv-cardapio">
+            <div class="hpdv-cardapio-topo">
+              <div class="hpdv-cardapio-busca">
+                <i class="ti ti-search"></i>
+                <input type="text" id="hpdv-busca" placeholder="Buscar lanche..." oninput="hpdvRenderCardapio()">
+              </div>
+              <div class="hpdv-cardapio-categorias" id="hpdv-categorias"></div>
+            </div>
+            <div class="hpdv-cardapio-grid" id="hpdv-cardapio-grid"></div>
+          </div>
+          <!-- COLUNA DIREITA: Comanda -->
+          <div class="hpdv-comanda">
+            <div class="hpdv-comanda-topo">
+              <div class="hpdv-comanda-titulo">
+                <i class="ti ti-receipt"></i>
+                <span>Comanda</span>
+              </div>
+              <div class="hpdv-comanda-numero">
+                <label>Nº</label>
+                <input type="number" id="hpdv-comanda-num" placeholder="#" min="1">
+              </div>
+            </div>
+            <div class="hpdv-comanda-cliente">
+              <i class="ti ti-user"></i>
+              <input type="text" id="hpdv-cliente-nome" placeholder="Nome do cliente...">
+            </div>
+            <div class="hpdv-comanda-itens" id="hpdv-comanda-itens">
+              <div class="hpdv-comanda-vazio" id="hpdv-comanda-vazio">
+                <i class="ti ti-shopping-cart"></i>
+                <span>Selecione um lanche no cardápio</span>
+              </div>
+            </div>
+            <div class="hpdv-comanda-footer">
+              <div class="hpdv-comanda-total">
+                <span>Total</span>
+                <strong id="hpdv-comanda-total">R$ 0,00</strong>
+              </div>
+              <div class="hpdv-comanda-obs">
+                <input type="text" id="hpdv-comanda-obs" placeholder="Observação geral (ex: entrega rápida)">
+              </div>
+              <div class="hpdv-comanda-botoes">
+                <button class="hpdv-btn-limpar" onclick="hpdvLimparComanda()">
+                  <i class="ti ti-trash"></i> Limpar
+                </button>
+                <button class="hpdv-btn-finalizar" onclick="hpdvFinalizarComanda()">
+                  <i class="ti ti-check"></i> Finalizar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL PERSONALIZAÇÃO -->
+        <div class="hpdv-modal-overlay" id="hpdv-modal-overlay" onclick="hpdvFecharModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji" id="hpdv-modal-emoji"></span>
+                <div>
+                  <h2 id="hpdv-modal-nome"></h2>
+                  <p id="hpdv-modal-desc"></p>
+                </div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hpdvFecharModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo">
+                  <i class="ti ti-list"></i> Ingredientes
+                  <span class="hpdv-modal-secao-sub">Remova o que não quiser</span>
+                </div>
+                <div class="hpdv-modal-ingredientes" id="hpdv-modal-ingredientes"></div>
+              </div>
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo">
+                  <i class="ti ti-plus"></i> Extras
+                  <span class="hpdv-modal-secao-sub">Adicione complementos</span>
+                </div>
+                <div class="hpdv-modal-extras" id="hpdv-modal-extras"></div>
+              </div>
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo">
+                  <i class="ti ti-note"></i> Observação
+                </div>
+                <input type="text" id="hpdv-modal-obs" class="hpdv-modal-obs-input" placeholder="Ex: Sem cebola, bem passado...">
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div class="hpdv-modal-qtd">
+                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(-1)"><i class="ti ti-minus"></i></button>
+                <span id="hpdv-modal-qtd">1</span>
+                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(1)"><i class="ti ti-plus"></i></button>
+              </div>
+              <div class="hpdv-modal-valor">
+                <span>Total</span>
+                <strong id="hpdv-modal-total">R$ 0,00</strong>
+              </div>
+              <button class="hpdv-btn-adicionar" onclick="hpdvAdicionarAoPedido()">
+                <i class="ti ti-check"></i> Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL RESUMO -->
+        <div class="hpdv-modal-overlay" id="hpdv-resumo-overlay" onclick="hpdvFecharResumo(event)">
+          <div class="hpdv-modal-resumo" onclick="event.stopPropagation()">
+            <div class="hpdv-resumo-topo">
+              <h2><i class="ti ti-check-circle"></i> Comanda Registrada!</h2>
+            </div>
+            <div class="hpdv-resumo-body" id="hpdv-resumo-body"></div>
+            <div class="hpdv-resumo-footer">
+              <button class="hpdv-btn-adicionar" onclick="hpdvFecharResumo()">
+                <i class="ti ti-check"></i> OK
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ESTOQUE -->
@@ -1820,212 +1923,6 @@
         </div>
       </div>
 
-      <!-- ==================== HAMBÚRGUER SCREENS ==================== -->
-
-      <!-- H-DASHBOARD -->
-      <div class="screen hamburguer-screen" id="screen-h-dashboard">
-        <div class="h-dash-kpi-grid">
-          <div class="h-dash-kpi">
-            <div class="h-dash-kpi-icon"><i class="ti ti-cash"></i></div>
-            <div class="h-dash-kpi-body">
-              <span class="h-dash-kpi-label">Vendas Hoje</span>
-              <span class="h-dash-kpi-value" id="h-kpi-vendas-hoje">R$ 0,00</span>
-              <span class="h-dash-kpi-sub">0 pedido(s)</span>
-            </div>
-          </div>
-          <div class="h-dash-kpi">
-            <div class="h-dash-kpi-icon"><i class="ti ti-burger"></i></div>
-            <div class="h-dash-kpi-body">
-              <span class="h-dash-kpi-label">Lanches Vendidos</span>
-              <span class="h-dash-kpi-value" id="h-kpi-lanches">0</span>
-              <span class="h-dash-kpi-sub">hoje</span>
-            </div>
-          </div>
-          <div class="h-dash-kpi">
-            <div class="h-dash-kpi-icon"><i class="ti ti-package"></i></div>
-            <div class="h-dash-kpi-body">
-              <span class="h-dash-kpi-label">Estoque Baixo</span>
-              <span class="h-dash-kpi-value" id="h-kpi-estoque-baixo">0</span>
-              <span class="h-dash-kpi-sub">itens abaixo do mínimo</span>
-            </div>
-          </div>
-          <div class="h-dash-kpi">
-            <div class="h-dash-kpi-icon"><i class="ti ti-receipt"></i></div>
-            <div class="h-dash-kpi-body">
-              <span class="h-dash-kpi-label">Ticket Médio</span>
-              <span class="h-dash-kpi-value" id="h-kpi-ticket">R$ 0,00</span>
-              <span class="h-dash-kpi-sub">por pedido</span>
-            </div>
-          </div>
-        </div>
-        <div style="padding:1.25rem;color:var(--h-text-dim)">
-          <p>Mais detalhes em breve...</p>
-        </div>
-      </div>
-
-      <!-- H-ESTOQUE -->
-      <div class="screen hamburguer-screen" id="screen-h-estoque">
-        <div style="padding:1.25rem">
-          <div class="h-estoque-header">
-            <div class="h-estoque-busca">
-              <i class="ti ti-search"></i>
-              <input type="text" id="h-estoque-busca" placeholder="Buscar ingrediente..." oninput="hRenderEstoque()">
-            </div>
-            <button class="h-btn-primary" onclick="hAbrirModalProduto()">
-              <i class="ti ti-plus"></i> Novo Ingrediente
-            </button>
-          </div>
-          <div class="h-estoque-cats" id="h-estoque-cats"></div>
-          <div class="h-estoque-tabela-wrap">
-            <table class="h-estoque-tabela">
-              <thead>
-                <tr>
-                  <th>Ingrediente</th>
-                  <th>Categoria</th>
-                  <th>Qtd</th>
-                  <th>Mínima</th>
-                  <th>Preço</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="h-estoque-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- H-VENDAS -->
-      <div class="screen hamburguer-screen" id="screen-h-vendas">
-        <div style="padding:1.25rem">
-          <h3 style="color:var(--h-text);margin-bottom:1rem">Vendas / Comandas</h3>
-          <div id="h-vendas-lista" style="color:var(--h-text-dim)">
-            <p>Nenhuma venda registrada ainda.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- H-PDV -->
-      <div class="screen hamburguer-screen" id="screen-h-pdv">
-        <div class="hpdv">
-          <div class="hpdv-cardapio">
-            <div class="hpdv-cardapio-topo">
-              <div class="hpdv-cardapio-busca">
-                <i class="ti ti-search"></i>
-                <input type="text" id="hpdv-busca" placeholder="Buscar lanche..." oninput="hpdvRenderCardapio()">
-              </div>
-              <div class="hpdv-cardapio-categorias" id="hpdv-categorias"></div>
-            </div>
-            <div class="hpdv-cardapio-grid" id="hpdv-cardapio-grid"></div>
-          </div>
-          <div class="hpdv-comanda">
-            <div class="hpdv-comanda-topo">
-              <div class="hpdv-comanda-titulo"><i class="ti ti-receipt"></i> <span>Comanda</span></div>
-              <div class="hpdv-comanda-numero"><label>Nº</label> <input type="number" id="hpdv-comanda-num" placeholder="#" min="1"></div>
-            </div>
-            <div class="hpdv-comanda-cliente">
-              <i class="ti ti-user"></i>
-              <input type="text" id="hpdv-cliente-nome" placeholder="Nome do cliente...">
-            </div>
-            <div class="hpdv-comanda-itens" id="hpdv-comanda-itens">
-              <div class="hpdv-comanda-vazio" id="hpdv-comanda-vazio">
-                <i class="ti ti-shopping-cart"></i>
-                <span>Selecione um lanche no cardápio</span>
-              </div>
-            </div>
-            <div class="hpdv-comanda-footer">
-              <div class="hpdv-comanda-total"><span>Total</span> <strong id="hpdv-comanda-total">R$ 0,00</strong></div>
-              <div class="hpdv-comanda-obs"><input type="text" id="hpdv-comanda-obs" placeholder="Observação geral"></div>
-              <div class="hpdv-comanda-botoes">
-                <button class="hpdv-btn-limpar" onclick="hpdvLimparComanda()"><i class="ti ti-trash"></i> Limpar</button>
-                <button class="hpdv-btn-finalizar" onclick="hpdvFinalizarComanda()"><i class="ti ti-check"></i> Finalizar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- MODAL PERSONALIZAÇÃO -->
-        <div class="hpdv-modal-overlay" id="hpdv-modal-overlay" onclick="hpdvFecharModal(event)">
-          <div class="hpdv-modal" onclick="event.stopPropagation()">
-            <div class="hpdv-modal-topo">
-              <div class="hpdv-modal-topo-info">
-                <span class="hpdv-modal-emoji" id="hpdv-modal-emoji"></span>
-                <div><h2 id="hpdv-modal-nome"></h2><p id="hpdv-modal-desc"></p></div>
-              </div>
-              <button class="hpdv-modal-fechar" onclick="hpdvFecharModal()"><i class="ti ti-x"></i></button>
-            </div>
-            <div class="hpdv-modal-body">
-              <div class="hpdv-modal-secao">
-                <div class="hpdv-modal-secao-titulo"><i class="ti ti-list"></i> Ingredientes <span class="hpdv-modal-secao-sub">Remova o que não quiser</span></div>
-                <div class="hpdv-modal-ingredientes" id="hpdv-modal-ingredientes"></div>
-              </div>
-              <div class="hpdv-modal-secao">
-                <div class="hpdv-modal-secao-titulo"><i class="ti ti-plus"></i> Extras <span class="hpdv-modal-secao-sub">Adicione complementos</span></div>
-                <div class="hpdv-modal-extras" id="hpdv-modal-extras"></div>
-              </div>
-              <div class="hpdv-modal-secao">
-                <div class="hpdv-modal-secao-titulo"><i class="ti ti-note"></i> Observação</div>
-                <input type="text" id="hpdv-modal-obs" class="hpdv-modal-obs-input" placeholder="Ex: Sem cebola, bem passado...">
-              </div>
-            </div>
-            <div class="hpdv-modal-footer">
-              <div class="hpdv-modal-qtd">
-                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(-1)"><i class="ti ti-minus"></i></button>
-                <span id="hpdv-modal-qtd">1</span>
-                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(1)"><i class="ti ti-plus"></i></button>
-              </div>
-              <div class="hpdv-modal-valor"><span>Total</span> <strong id="hpdv-modal-total">R$ 0,00</strong></div>
-              <button class="hpdv-btn-adicionar" onclick="hpdvAdicionarAoPedido()"><i class="ti ti-check"></i> Adicionar</button>
-            </div>
-          </div>
-        </div>
-        <!-- MODAL RESUMO -->
-        <div class="hpdv-modal-overlay" id="hpdv-resumo-overlay" onclick="hpdvFecharResumo(event)">
-          <div class="hpdv-modal-resumo" onclick="event.stopPropagation()">
-            <div class="hpdv-resumo-topo"><h2><i class="ti ti-check-circle"></i> Comanda Registrada!</h2></div>
-            <div class="hpdv-resumo-body" id="hpdv-resumo-body"></div>
-            <div class="hpdv-resumo-footer"><button class="hpdv-btn-adicionar" onclick="hpdvFecharResumo()"><i class="ti ti-check"></i> OK</button></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- H-PRODUTOS -->
-      <div class="screen hamburguer-screen" id="screen-h-produtos">
-        <div style="padding:1.25rem">
-          <div class="h-estoque-header">
-            <div class="h-estoque-busca">
-              <i class="ti ti-search"></i>
-              <input type="text" id="h-prod-busca" placeholder="Buscar produto..." oninput="hRenderProdutos()">
-            </div>
-            <button class="h-btn-primary" onclick="hAbrirModalProduto()">
-              <i class="ti ti-plus"></i> Novo Produto
-            </button>
-          </div>
-          <div class="h-estoque-tabela-wrap">
-            <table class="h-estoque-tabela">
-              <thead>
-                <tr>
-                  <th>Emoji</th>
-                  <th>Nome</th>
-                  <th>Categoria</th>
-                  <th>Preço</th>
-                  <th>Ingredientes</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="h-prod-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- H-CAIXA -->
-      <div class="screen hamburguer-screen" id="screen-h-caixa">
-        <div style="padding:1.25rem;color:var(--h-text-dim)">
-          <h3 style="color:var(--h-text);margin-bottom:1rem">Caixa Hambúrguer</h3>
-          <p>Gerenciamento de caixa em breve...</p>
-        </div>
-      </div>
-
 </div>
 
 <div class="toast" id="toast">
@@ -2079,6 +1976,5 @@
 </div>
 
 <script src="script.js"></script>
-<script src="script-hamburguer.js"></script>
 </body>
 </html>
