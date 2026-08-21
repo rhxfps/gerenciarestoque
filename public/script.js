@@ -1957,245 +1957,346 @@ function hRenderSparkMes() {
 
 
 // ==================== HAMBURGUER COMANDA (PDV) ====================
-var hpdvItens = [];
-var hpdvCategoriaAtiva = 'Todos';
-var hpdvProdutos = [
-  { id: 1, nome: 'X-Burger',  categoria: 'Hambúrguer', preco: 22.00, icon: '🍔',
-    ingredientes: ['Pão brioche','Hambúrguer 150g','Queijo cheddar','Alface','Tomate'],
-    extras: [{ nome: 'Bacon', preco: 3.00 },{ nome: 'Ovo', preco: 2.00 },{ nome: 'Cheddar extra', preco: 2.50 },{ nome: 'Cebola caramelizada', preco: 3.00 }] },
-  { id: 2, nome: 'X-Bacon',  categoria: 'Hambúrguer', preco: 25.00, icon: '🍔',
-    ingredientes: ['Pão brioche','Hambúrguer 150g','Queijo cheddar','Bacon crocante','Alface','Tomate'],
-    extras: [{ nome: 'Ovo', preco: 2.00 },{ nome: 'Cheddar extra', preco: 2.50 },{ nome: 'Cebola caramelizada', preco: 3.00 },{ nome: 'Molho especial', preco: 1.50 }] },
-  { id: 3, nome: 'X-Egg',    categoria: 'Hambúrguer', preco: 24.00, icon: '🍔',
-    ingredientes: ['Pão brioche','Hambúrguer 150g','Queijo cheddar','Ovo frito','Alface','Tomate'],
-    extras: [{ nome: 'Bacon', preco: 3.00 },{ nome: 'Cheddar extra', preco: 2.50 },{ nome: 'Cebola caramelizada', preco: 3.00 },{ nome: 'Molho especial', preco: 1.50 }] },
-  { id: 4, nome: 'X-Tudo',   categoria: 'Hambúrguer', preco: 28.00, icon: '🍔',
-    ingredientes: ['Pão brioche','Hambúrguer 150g','Queijo cheddar','Bacon crocante','Ovo frito','Alface','Tomate','Cebola'],
-    extras: [{ nome: 'Cheddar extra', preco: 2.50 },{ nome: 'Cebola caramelizada', preco: 3.00 },{ nome: 'Molho especial', preco: 1.50 },{ nome: 'Presunto', preco: 2.00 }] },
-  { id: 5, nome: 'Mini Burger', categoria: 'Hambúrguer', preco: 15.00, icon: '🍔',
-    ingredientes: ['Pão mini','Hambúrguer 100g','Queijo cheddar'],
-    extras: [{ nome: 'Bacon', preco: 3.00 },{ nome: 'Ovo', preco: 2.00 },{ nome: 'Cheddar extra', preco: 2.50 }] },
-  { id: 6, nome: 'Batata Frita',      categoria: 'Batata',   preco: 14.00, icon: '🍟' },
-  { id: 7, nome: 'Batata c/ Cheddar',  categoria: 'Batata',   preco: 18.00, icon: '🍟' },
-  { id: 8, nome: 'Batata c/ Bacon',    categoria: 'Batata',   preco: 20.00, icon: '🍟' },
-  { id: 9, nome: 'Coca-Cola 350ml',    categoria: 'Bebida',   preco: 6.00,  icon: '🥤' },
-  { id: 10, nome: 'Guaraná 350ml',     categoria: 'Bebida',   preco: 6.00,  icon: '🥤' },
-  { id: 11, nome: 'Água Mineral',      categoria: 'Bebida',   preco: 4.00,  icon: '💧' },
-  { id: 12, nome: 'Suco Natural',      categoria: 'Bebida',   preco: 8.00,  icon: '🧃' }
+var hpdvCardapio = [
+  { id: 1, nome: "Smash Burger", desc: "2 smash 80g, queijo duplo, cebola caramelizada e molho especial", preco: 29.90, emoji: "\uD83D\uDCA5", categoria: "Especiais", tags: ["popular"],
+    ingredientes: [
+      { id: "pao", nome: "Pao smash", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "smash", nome: "2x Smash 80g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "queijo", nome: "Queijo duplo", icone: "\uD83E\uDDC0", removivel: true },
+      { id: "cebola", nome: "Cebola caramelizada", icone: "\uD83E\uDDC5", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "\uD83E\uDED9", removivel: true }
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "\uD83E\uDD53", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", preco: 2.50 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "\uD83E\uDDC0", preco: 3.00 },
+      { id: "jalapeno", nome: "Jalapeno", icone: "\uD83C\uDF36\uFE0F", preco: 2.50 }
+    ]
+  },
+  { id: 2, nome: "Classic Burger", desc: "Pao brioche, hamburguer 150g, cheddar, alface, tomate e molho especial", preco: 22.90, emoji: "\uD83C\uDF54", categoria: "Classicos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pao brioche", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "hamburg", nome: "Hamburguer 150g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "cheddar", nome: "Queijo cheddar", icone: "\uD83E\uDDC0", removivel: true },
+      { id: "alface", nome: "Alface", icone: "\uD83E\uDD6C", removivel: true },
+      { id: "tomate", nome: "Tomate", icone: "\uD83C\uDF45", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "\uD83E\uDED9", removivel: true }
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "\uD83E\uDD53", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", preco: 2.50 },
+      { id: "onion", nome: "Onion rings", icone: "\uD83E\uDDC5", preco: 5.00 }
+    ]
+  },
+  { id: 3, nome: "X-Bacon", desc: "Pao brioche, hamburguer 150g, queijo, bacon crocante e molho", preco: 25.90, emoji: "\uD83E\uDD53", categoria: "Classicos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pao brioche", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "hamburg", nome: "Hamburguer 150g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "queijo", nome: "Queijo cheddar", icone: "\uD83E\uDDC0", removivel: true },
+      { id: "bacon", nome: "Bacon crocante", icone: "\uD83E\uDD53", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "\uD83E\uDED9", removivel: true }
+    ],
+    extras: [
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", preco: 2.50 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "\uD83E\uDDC0", preco: 3.00 },
+      { id: "cebola", nome: "Cebola caramelizada", icone: "\uD83E\uDDC5", preco: 3.00 }
+    ]
+  },
+  { id: 4, nome: "X-Egg", desc: "Pao brioche, hamburguer 150g, queijo, ovo frito e molho especial", preco: 24.90, emoji: "\uD83C\uDF73", categoria: "Classicos", tags: [],
+    ingredientes: [
+      { id: "pao", nome: "Pao brioche", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "hamburg", nome: "Hamburguer 150g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "queijo", nome: "Queijo cheddar", icone: "\uD83E\uDDC0", removivel: true },
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", removivel: true },
+      { id: "molho", nome: "Molho especial", icone: "\uD83E\uDED9", removivel: true }
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "\uD83E\uDD53", preco: 4.00 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "\uD83E\uDDC0", preco: 3.00 }
+    ]
+  },
+  { id: 5, nome: "X-Tudo", desc: "Pao brioche, hamburguer, queijo, bacon, ovo, presunto, alface e tomate", preco: 29.90, emoji: "\uD83C\uDF2E", categoria: "Especiais", tags: ["popular"],
+    ingredientes: [
+      { id: "pao", nome: "Pao brioche", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "hamburg", nome: "Hamburguer 150g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "queijo", nome: "Queijo cheddar", icone: "\uD83E\uDDC0", removivel: true },
+      { id: "bacon", nome: "Bacon", icone: "\uD83E\uDD53", removivel: true },
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", removivel: true },
+      { id: "presunto", nome: "Presunto", icone: "\uD83C\uDF54", removivel: true },
+      { id: "alface", nome: "Alface", icone: "\uD83E\uDD6C", removivel: true },
+      { id: "tomate", nome: "Tomate", icone: "\uD83C\uDF45", removivel: true }
+    ],
+    extras: [
+      { id: "cebola", nome: "Cebola caramelizada", icone: "\uD83E\uDDC5", preco: 3.00 },
+      { id: "cheddar", nome: "Cheddar extra", icone: "\uD83E\uDDC0", preco: 3.00 }
+    ]
+  },
+  { id: 6, nome: "Mini Burger", desc: "Pao mini, hamburguer 100g e queijo cheddar", preco: 15.90, emoji: "\uD83C\uDF54", categoria: "Classicos", tags: ["novo"],
+    ingredientes: [
+      { id: "pao", nome: "Pao mini", icone: "\uD83C\uDF5E", removivel: false },
+      { id: "hamburg", nome: "Hamburguer 100g", icone: "\uD83E\uDD69", removivel: false },
+      { id: "queijo", nome: "Queijo cheddar", icone: "\uD83E\uDDC0", removivel: true }
+    ],
+    extras: [
+      { id: "bacon", nome: "Bacon", icone: "\uD83E\uDD53", preco: 4.00 },
+      { id: "ovo", nome: "Ovo frito", icone: "\uD83C\uDF73", preco: 2.50 }
+    ]
+  },
+  { id: 10, nome: "Batata Frita", desc: "Porcao generosa de batata frita crocante", preco: 14.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: [] },
+  { id: 11, nome: "Batata c/ Cheddar", desc: "Batata frita com cheddar cremoso", preco: 18.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: ["popular"] },
+  { id: 12, nome: "Batata c/ Bacon", desc: "Batata frita com cheddar e bacon crocante", preco: 20.00, emoji: "\uD83C\uDF5F", categoria: "Batatas", tags: [] },
+  { id: 20, nome: "Coca-Cola 350ml", desc: "Lata gelada 350ml", preco: 6.00, emoji: "\uD83E\uDD64", categoria: "Bebidas", tags: [] },
+  { id: 21, nome: "Guarana 350ml", desc: "Lata gelada 350ml", preco: 6.00, emoji: "\uD83E\uDD64", categoria: "Bebidas", tags: [] },
+  { id: 22, nome: "Agua Mineral", desc: "Garrafa 500ml", preco: 4.00, emoji: "\uD83D\uDCA7", categoria: "Bebidas", tags: [] },
+  { id: 23, nome: "Suco Natural", desc: "Laranja ou limao, 400ml", preco: 8.00, emoji: "\uD83E\uDDC3", categoria: "Bebidas", tags: ["novo"] }
 ];
 
+var hpdvCatAtiva = "Todos";
+var hpdvPedido = [];
+var hpdvModalLanche = null;
+var hpdvModalQtd = 1;
+var hpdvModalIngs = [];
+var hpdvModalExtras = [];
+
+function hpdvFmt(v) { return "R$ " + v.toFixed(2).replace(".", ","); }
+
+function hpdvGetCategorias() {
+  var cats = [];
+  hpdvCardapio.forEach(function(l) { if (cats.indexOf(l.categoria) === -1) cats.push(l.categoria); });
+  return ["Todos"].concat(cats);
+}
+
 function renderHPDV() {
-  hpdvItens = [];
-  hpdvCategoriaAtiva = 'Todos';
+  hpdvPedido = [];
+  hpdvCatAtiva = "Todos";
   hpdvRenderCategorias();
-  hpdvRenderGrid();
-  hpdvRenderItens();
+  hpdvRenderCardapio();
+  hpdvRenderPedido();
 }
 
 function hpdvRenderCategorias() {
-  var cats = ['Todos', 'Hambúrguer', 'Batata', 'Bebida'];
-  var el = document.getElementById('hpdv-categorias');
+  var el = document.getElementById("hpdv-categorias");
   if (!el) return;
-  el.innerHTML = cats.map(function(c) {
-    var cls = c === hpdvCategoriaAtiva ? 'hpdv-cat active' : 'hpdv-cat';
-    return '<button class="' + cls + '" onclick="hpdvSetCategoria(\'' + c + '\', this)">' + c + '</button>';
-  }).join('');
+  el.innerHTML = hpdvGetCategorias().map(function(c) {
+    return '<button class="hpdv-cat-btn' + (c === hpdvCatAtiva ? ' active' : '') + '" onclick="hpdvSelectCat(\'' + c + '\')">' + c + '</button>';
+  }).join("");
 }
 
-function hpdvSetCategoria(cat) {
-  hpdvCategoriaAtiva = cat;
-  hpdvRenderCategorias();
-  hpdvRenderGrid();
+function hpdvSelectCat(c) { hpdvCatAtiva = c; hpdvRenderCategorias(); hpdvRenderCardapio(); }
+
+function hpdvRenderCardapio() {
+  var grid = document.getElementById("hpdv-cardapio-grid");
+  if (!grid) return;
+  var busca = (document.getElementById("hpdv-busca") ? document.getElementById("hpdv-busca").value : "").toLowerCase().trim();
+  var lista = hpdvCardapio;
+  if (hpdvCatAtiva !== "Todos") lista = lista.filter(function(l) { return l.categoria === hpdvCatAtiva; });
+  if (busca) lista = lista.filter(function(l) { return l.nome.toLowerCase().indexOf(busca) !== -1 || l.desc.toLowerCase().indexOf(busca) !== -1; });
+  grid.innerHTML = lista.map(function(l) {
+    var tags = l.tags.map(function(t) {
+      if (t === "popular") return '<span class="hpdv-lanche-tag hpdv-tag-popular">Popular</span>';
+      if (t === "novo") return '<span class="hpdv-lanche-tag hpdv-tag-novo">Novo</span>';
+      return '';
+    }).join("");
+    return '<div class="hpdv-lanche-card" onclick="hpdvAbrirModal(' + l.id + ')">' +
+      '<span class="hpdv-lanche-emoji">' + l.emoji + '</span>' +
+      '<div class="hpdv-lanche-info"><div class="hpdv-lanche-nome">' + l.nome + '</div>' +
+      '<div class="hpdv-lanche-desc">' + l.desc + '</div></div>' +
+      '<div class="hpdv-lanche-rodape"><span class="hpdv-lanche-preco">' + hpdvFmt(l.preco) + '</span>' + tags + '</div></div>';
+  }).join("");
 }
 
-function hpdvRenderGrid() {
-  var busca = (document.getElementById('hpdv-busca') || {}).value || '';
-  busca = busca.toLowerCase();
-  var filtered = hpdvProdutos.filter(function(p) {
-    var matchCat = hpdvCategoriaAtiva === 'Todos' || p.categoria === hpdvCategoriaAtiva;
-    var matchBusca = !busca || p.nome.toLowerCase().indexOf(busca) !== -1;
-    return matchCat && matchBusca;
-  });
-  var el = document.getElementById('hpdv-produtos-grid');
-  if (!el) return;
-  if (!filtered.length) {
-    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#666;padding:2rem">Nenhum produto encontrado</div>';
-    return;
-  }
-  el.innerHTML = filtered.map(function(p) {
-    return '<div class="hpdv-produto" onclick="hpdvAddProduto(' + p.id + ')">' +
-      '<div class="hpdv-produto-icon">' + p.icon + '</div>' +
-      '<span class="hpdv-produto-nome">' + p.nome + '</span>' +
-      '<span class="hpdv-produto-preco">R$ ' + p.preco.toFixed(2).replace('.', ',') + '</span>' +
-    '</div>';
-  }).join('');
+function hpdvAbrirModal(id) {
+  hpdvModalLanche = hpdvCardapio.find(function(l) { return l.id === id; });
+  if (!hpdvModalLanche) return;
+  hpdvModalQtd = 1;
+  hpdvModalIngs = hpdvModalLanche.ingredientes.map(function(i) { return Object.assign({}, i, { ativo: true }); });
+  hpdvModalExtras = hpdvModalLanche.extras.map(function(e) { return Object.assign({}, e, { qtd: 0 }); });
+  document.getElementById("hpdv-modal-emoji").textContent = hpdvModalLanche.emoji;
+  document.getElementById("hpdv-modal-nome").textContent = hpdvModalLanche.nome;
+  document.getElementById("hpdv-modal-desc").textContent = hpdvModalLanche.desc;
+  document.getElementById("hpdv-modal-obs").value = "";
+  document.getElementById("hpdv-modal-qtd").textContent = "1";
+  hpdvRenderModalIngs();
+  hpdvRenderModalExtras();
+  hpdvAtualizarModalTotal();
+  document.getElementById("hpdv-modal-overlay").classList.add("show");
 }
 
-function hpdvAddProduto(id) {
-  var prod = hpdvProdutos.find(function(p) { return p.id === id; });
-  if (!prod) return;
-  if (prod.ingredientes) {
-    hpdvOpenModal(prod);
-    return;
-  }
-  var existing = hpdvItens.find(function(i) { return i.id === id && !i.customId; });
-  if (existing) {
-    existing.qtd++;
-  } else {
-    hpdvItens.push({ id: prod.id, customId: prod.id, nome: prod.nome, preco: prod.preco, icon: prod.icon, qtd: 1, removidos: [], extras: [] });
-  }
-  hpdvRenderItens();
-}
-
-function hpdvChangeQtd(idx, delta) {
-  var item = hpdvItens[idx];
-  if (!item) return;
-  item.qtd += delta;
-  if (item.qtd <= 0) hpdvItens.splice(idx, 1);
-  hpdvRenderItens();
-}
-
-function hpdvRenderItens() {
-  var empty = document.getElementById('hpdv-itens-empty');
-  var container = document.getElementById('hpdv-itens-container');
-  var countEl = document.getElementById('hpdv-comanda-count');
-  var totalEl = document.getElementById('hpdv-total-valor');
-
-  var total = hpdvItens.reduce(function(a, i) { return a + (i.preco * i.qtd); }, 0);
-  var totalQtd = hpdvItens.reduce(function(a, i) { return a + i.qtd; }, 0);
-  var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-
-  if (countEl) countEl.textContent = totalQtd + ' item' + (totalQtd !== 1 ? 's' : '');
-  if (totalEl) totalEl.textContent = fmt.format(total);
-
-  if (!hpdvItens.length) {
-    if (empty) empty.style.display = 'block';
-    if (container) container.innerHTML = '';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-  if (!container) return;
-
-  container.innerHTML = hpdvItens.map(function(item, idx) {
-    var sub = item.preco * item.qtd;
-    var nota = '';
-    if (item.removidos && item.removidos.length) nota += '<div class="hpdv-item-nota">Sem: ' + item.removidos.join(', ') + '</div>';
-    if (item.extras && item.extras.length) {
-      var exNames = item.extras.map(function(e) { return e.nome; }).join(', ');
-      nota += '<div class="hpdv-item-nota hpdv-item-nota--extra">+ ' + exNames + '</div>';
-    }
-    return '<div class="hpdv-item">' +
-      '<span style="font-size:1.3rem">' + item.icon + '</span>' +
-      '<div class="hpdv-item-info">' +
-        '<div class="hpdv-item-nome">' + item.nome + '</div>' +
-        '<div class="hpdv-item-preco">R$ ' + item.preco.toFixed(2).replace('.', ',') + ' un.</div>' +
-        nota +
-      '</div>' +
-      '<div class="hpdv-item-qtd">' +
-        '<button onclick="hpdvChangeQtd(' + idx + ', -1)">−</button>' +
-        '<span>' + item.qtd + '</span>' +
-        '<button onclick="hpdvChangeQtd(' + idx + ', 1)">+</button>' +
-      '</div>' +
-      '<div class="hpdv-item-subtotal">' + fmt.format(sub) + '</div>' +
-    '</div>';
-  }).join('');
-
-  var pag = document.getElementById('hpdv-pagamento');
-  var trocoRow = document.getElementById('hpdv-troco-row');
-  if (trocoRow) trocoRow.style.display = (pag && pag.value === 'dinheiro') ? 'block' : 'none';
-}
-
-// ==================== MODAL PERSONALIZAÇÃO ====================
-var hpdvModalProd = null;
-var hpdvModalRemovidos = [];
-var hpdvModalExtras = [];
-
-function hpdvOpenModal(prod) {
-  hpdvModalProd = prod;
-  hpdvModalRemovidos = [];
-  hpdvModalExtras = [];
-  var modal = document.getElementById('hpdv-modal');
-  if (!modal) return;
-  document.getElementById('hpdv-modal-titulo').textContent = prod.icon + ' ' + prod.nome;
-  var ingrHtml = prod.ingredientes.map(function(ing) {
-    return '<label class="hpdv-modal-ing-item">' +
-      '<div class="hpdv-modal-ing-info"><i class="ti ti-check" style="color:#22c55e"></i> ' + ing + '</div>' +
-      '<div class="hpdv-toggle" onclick="hpdvToggleIngrediente(this, \'' + ing.replace(/'/g, "\\'") + '\')"><div class="hpdv-toggle-knob"></div></div>' +
-    '</label>';
-  }).join('');
-  document.getElementById('hpdv-modal-ingredientes').innerHTML = ingrHtml;
-
-  if (prod.extras && prod.extras.length) {
-    var exHtml = prod.extras.map(function(ex) {
-      return '<label class="hpdv-modal-extras-item">' +
-        '<div class="hpdv-modal-extra-info"><span>' + ex.nome + '</span><span class="hpdv-modal-extra-preco">+ R$ ' + ex.preco.toFixed(2).replace('.', ',') + '</span></div>' +
-        '<div class="hpdv-check" onclick="hpdvToggleExtra(this, ' + JSON.stringify(ex).replace(/"/g, '&quot;') + ')"><i class="ti ti-check"></i></div>' +
-      '</label>';
-    }).join('');
-    document.getElementById('hpdv-modal-extras').innerHTML = exHtml;
-    document.getElementById('hpdv-modal-extras-wrap').style.display = '';
-  } else {
-    document.getElementById('hpdv-modal-extras-wrap').style.display = 'none';
-  }
-  hpdvModalUpdatePreco();
-  modal.classList.add('show');
-}
-
-function hpdvCloseModal(e) {
+function hpdvFecharModal(e) {
   if (e && e.target !== e.currentTarget) return;
-  var modal = document.getElementById('hpdv-modal');
-  if (modal) modal.classList.remove('show');
+  document.getElementById("hpdv-modal-overlay").classList.remove("show");
 }
 
-function hpdvToggleIngrediente(el, nome) {
-  el.classList.toggle('off');
-  var idx = hpdvModalRemovidos.indexOf(nome);
-  if (idx === -1) hpdvModalRemovidos.push(nome);
-  else hpdvModalRemovidos.splice(idx, 1);
-  var icon = el.closest('.hpdv-modal-ing-item').querySelector('i');
-  if (icon) icon.className = el.classList.contains('off') ? 'ti ti-x' : 'ti ti-check';
-  if (icon) icon.style.color = el.classList.contains('off') ? '#f43f5e' : '#22c55e';
-  hpdvModalUpdatePreco();
+function hpdvRenderModalIngs() {
+  var el = document.getElementById("hpdv-modal-ingredientes");
+  el.innerHTML = hpdvModalIngs.map(function(ing, i) {
+    return '<div class="hpdv-ingrediente-item' + (ing.removivel && !ing.ativo ? ' removido' : '') + '">' +
+      '<div class="hpdv-ingrediente-esq"><span class="hpdv-ingrediente-ic">' + ing.icone + '</span>' +
+      '<span class="hpdv-ingrediente-nome">' + ing.nome + '</span></div>' +
+      (ing.removivel
+        ? '<button class="hpdv-ing-toggle' + (ing.ativo ? '' : ' off') + '" onclick="hpdvToggleIng(' + i + ')"></button>'
+        : '<span style="font-size:11px;color:#666">base</span>') +
+      '</div>';
+  }).join("");
 }
 
-function hpdvToggleExtra(el, ex) {
-  el.classList.toggle('on');
-  var idx = -1;
-  for (var i = 0; i < hpdvModalExtras.length; i++) {
-    if (hpdvModalExtras[i].nome === ex.nome) { idx = i; break; }
-  }
-  if (idx === -1) hpdvModalExtras.push(ex);
-  else hpdvModalExtras.splice(idx, 1);
-  hpdvModalUpdatePreco();
+function hpdvToggleIng(i) {
+  hpdvModalIngs[i].ativo = !hpdvModalIngs[i].ativo;
+  hpdvRenderModalIngs();
+  hpdvAtualizarModalTotal();
 }
 
-function hpdvModalUpdatePreco() {
-  if (!hpdvModalProd) return;
-  var preco = hpdvModalProd.preco;
-  hpdvModalExtras.forEach(function(ex) { preco += ex.preco; });
-  var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  var el = document.getElementById('hpdv-modal-preco');
-  if (el) el.textContent = fmt.format(preco);
+function hpdvRenderModalExtras() {
+  var el = document.getElementById("hpdv-modal-extras");
+  el.innerHTML = hpdvModalExtras.map(function(ex, i) {
+    return '<div class="hpdv-extra-item">' +
+      '<div class="hpdv-extra-esq"><span class="hpdv-extra-ic">' + ex.icone + '</span>' +
+      '<span class="hpdv-extra-nome">' + ex.nome + '</span>' +
+      '<span class="hpdv-extra-preco">+ ' + hpdvFmt(ex.preco) + '</span></div>' +
+      '<div class="hpdv-extra-qtd">' +
+        '<button class="hpdv-qtd-btn-sm" onclick="hpdvMudarExtra(' + i + ',-1)">-</button>' +
+        '<span>' + ex.qtd + '</span>' +
+        '<button class="hpdv-qtd-btn-sm" onclick="hpdvMudarExtra(' + i + ',1)">+</button>' +
+      '</div></div>';
+  }).join("");
 }
 
-function hpdvModalConfirmar() {
-  if (!hpdvModalProd) return;
-  var preco = hpdvModalProd.preco;
-  hpdvModalExtras.forEach(function(ex) { preco += ex.preco; });
-  var nome = hpdvModalProd.nome;
-  if (hpdvModalRemovidos.length) nome += ' (sem ' + hpdvModalRemovidos.join(', ') + ')';
-  hpdvItens.push({
-    id: hpdvModalProd.id,
-    customId: Date.now(),
-    nome: nome,
-    preco: preco,
-    icon: hpdvModalProd.icon,
-    qtd: 1,
-    removidos: hpdvModalRemovidos.slice(),
-    extras: hpdvModalExtras.slice()
+function hpdvMudarExtra(i, d) {
+  hpdvModalExtras[i].qtd = Math.max(0, hpdvModalExtras[i].qtd + d);
+  hpdvRenderModalExtras();
+  hpdvAtualizarModalTotal();
+}
+
+function hpdvMudarQtd(d) {
+  hpdvModalQtd = Math.max(1, hpdvModalQtd + d);
+  document.getElementById("hpdv-modal-qtd").textContent = hpdvModalQtd;
+  hpdvAtualizarModalTotal();
+}
+
+function hpdvAtualizarModalTotal() {
+  if (!hpdvModalLanche) return;
+  var preco = hpdvModalLanche.preco;
+  hpdvModalExtras.forEach(function(ex) { preco += ex.preco * ex.qtd; });
+  document.getElementById("hpdv-modal-total").textContent = hpdvFmt(preco * hpdvModalQtd);
+}
+
+function hpdvAdicionarAoPedido() {
+  if (!hpdvModalLanche) return;
+  var preco = hpdvModalLanche.preco;
+  var exAdicionados = [];
+  hpdvModalExtras.forEach(function(ex) {
+    if (ex.qtd > 0) { preco += ex.preco * ex.qtd; exAdicionados.push({ nome: ex.nome, icone: ex.icone, qtd: ex.qtd, preco: ex.preco }); }
   });
-  hpdvRenderItens();
-  hpdvCloseModal();
+  var ingsRemovidos = hpdvModalIngs.filter(function(i) { return i.removivel && !i.ativo; }).map(function(i) { return i.nome; });
+  var obs = (document.getElementById("hpdv-modal-obs").value || "").trim();
+  hpdvPedido.push({
+    id: hpdvModalLanche.id,
+    emoji: hpdvModalLanche.emoji,
+    nome: hpdvModalLanche.nome,
+    preco: preco,
+    qtd: hpdvModalQtd,
+    ingsRemovidos: ingsRemovidos,
+    exAdicionados: exAdicionados,
+    obs: obs
+  });
+  hpdvFecharModal();
+  hpdvRenderPedido();
+}
+
+function hpdvRenderPedido() {
+  var container = document.getElementById("hpdv-comanda-itens");
+  var vazio = document.getElementById("hpdv-comanda-vazio");
+  var totalEl = document.getElementById("hpdv-comanda-total");
+  if (!container) return;
+  if (!hpdvPedido.length) {
+    container.innerHTML = '<div class="hpdv-comanda-vazio" id="hpdv-comanda-vazio"><i class="ti ti-shopping-cart"></i><span>Selecione um lanche no cardápio</span></div>';
+    if (totalEl) totalEl.textContent = hpdvFmt(0);
+    return;
+  }
+  container.innerHTML = hpdvPedido.map(function(item, idx) {
+    var sub = item.preco * item.qtd;
+    var notas = "";
+    if (item.ingsRemovidos.length) notas += '<div class="hpdv-pedido-nota">Sem: ' + item.ingsRemovidos.join(", ") + "</div>";
+    if (item.exAdicionados.length) {
+      var exStr = item.exAdicionados.map(function(e) { return e.icone + " " + e.nome + (e.qtd > 1 ? " x" + e.qtd : ""); }).join(", ");
+      notas += '<div class="hpdv-pedido-nota hpdv-pedido-nota--extra">+ ' + exStr + "</div>";
+    }
+    if (item.obs) notas += '<div class="hpdv-pedido-nota hpdv-pedido-nota--obs">Obs: ' + item.obs + "</div>";
+    return '<div class="hpdv-pedido-item">' +
+      '<div class="hpdv-pedido-esq">' +
+        '<span class="hpdv-pedido-emoji">' + item.emoji + '</span>' +
+        '<div class="hpdv-pedido-info">' +
+          '<div class="hpdv-pedido-nome">' + item.nome + (item.qtd > 1 ? ' <span class="hpdv-pedido-x">x' + item.qtd + '</span>' : '') + '</div>' +
+          notas +
+        '</div>' +
+      '</div>' +
+      '<div class="hpdv-pedido-dir">' +
+        '<span class="hpdv-pedido-preco">' + hpdvFmt(sub) + '</span>' +
+        '<button class="hpdv-pedido-remover" onclick="hpdvRemoverPedido(' + idx + ')"><i class="ti ti-trash"></i></button>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+  var total = hpdvPedido.reduce(function(a, i) { return a + i.preco * i.qtd; }, 0);
+  if (totalEl) totalEl.textContent = hpdvFmt(total);
+}
+
+function hpdvRemoverPedido(idx) {
+  hpdvPedido.splice(idx, 1);
+  hpdvRenderPedido();
+}
+
+function hpdvLimparComanda() {
+  if (!hpdvPedido.length) return;
+  hpdvPedido = [];
+  hpdvRenderPedido();
+  var numEl = document.getElementById("hpdv-comanda-num");
+  var clienteEl = document.getElementById("hpdv-cliente-nome");
+  var obsEl = document.getElementById("hpdv-comanda-obs");
+  if (numEl) numEl.value = "";
+  if (clienteEl) clienteEl.value = "";
+  if (obsEl) obsEl.value = "";
+}
+
+function hpdvFinalizarComanda() {
+  if (!hpdvPedido.length) { toast("Adicione itens ao pedido!", false); return; }
+  if (typeof acquire === "function" && !acquire("hpdvFinalizar")) return;
+  var total = hpdvPedido.reduce(function(a, i) { return a + i.preco * i.qtd; }, 0);
+  var num = (document.getElementById("hpdv-comanda-num") || {}).value || "";
+  var cliente = (document.getElementById("hpdv-cliente-nome") || {}).value || "";
+  var obsGeral = (document.getElementById("hpdv-comanda-obs") || {}).value || "";
+  var itensStr = hpdvPedido.map(function(i) {
+    var s = i.qtd + "x " + i.nome;
+    if (i.ingsRemovidos.length) s += " (sem " + i.ingsRemovidos.join(", ") + ")";
+    if (i.exAdicionados.length) s += " (+" + i.exAdicionados.map(function(e) { return e.nome + (e.qtd > 1 ? " x" + e.qtd : ""); }).join(", ") + ")";
+    if (i.obs) s += " [" + i.obs + "]";
+    return s;
+  }).join("\n");
+  var venda = {
+    data: new Date().toISOString(),
+    total: total,
+    pagamento: "dinheiro",
+    tipo_venda: "balcao",
+    obs: (num ? "Comanda #" + num + ". " : "") + (cliente ? "Cliente: " + cliente + ". " : "") + (obsGeral ? obsGeral + ". " : "") + "\n" + itensStr,
+    itens: hpdvPedido.map(function(i) { return { produto_nome: i.nome, qtd: i.qtd, preco_unitario: i.preco }; }),
+    produto_nome: hpdvPedido.length === 1 ? hpdvPedido[0].nome : "Hambúrguer",
+    qtd: hpdvPedido.reduce(function(a, i) { return a + i.qtd; }, 0)
+  };
+  fetch("/api/vendas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(venda)
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.error) { toast("Erro: " + data.error, false); release("hpdvFinalizar"); return; }
+    toast("Comanda #" + (num || "?") + " registrada!");
+    hpdvPedido = [];
+    hpdvRenderPedido();
+    hpdvLimparComanda();
+    if (typeof loadAllData === "function") loadAllData();
+    release("hpdvFinalizar");
+  }).catch(function() {
+    toast("Erro ao enviar comanda", false);
+    release("hpdvFinalizar");
+  });
 }
 
 
