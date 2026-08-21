@@ -390,7 +390,9 @@ const titles = {
   admin:        'Admin',
   usuarios:     'Usuários',
   'h-dashboard': 'Dashboard Hamburguer',
-  'h-pdv':       'Comanda Hamburguer'
+  'h-pdv':       'Comanda Hamburguer',
+  'h-criar':     'Criar Hamburguer',
+  'h-vendas':    'Vendas Hamburguer'
 };
 
 function nav(screen) {
@@ -475,6 +477,8 @@ function nav(screen) {
   }
   if (screen === 'h-dashboard') renderHDashboard();
   if (screen === 'h-pdv')       renderHPDV();
+  if (screen === 'h-criar')     renderHCriar();
+  if (screen === 'h-vendas')    hVendasCarregar();
 }
 
 document.getElementById('nav').addEventListener('click', e => {
@@ -2299,6 +2303,301 @@ function hpdvFinalizarComanda() {
     toast("Erro ao enviar comanda", false);
     release("hpdvFinalizar");
   });
+}
+
+
+// ==================== CRIAR HAMBURGUER ====================
+var hCriarTags = [];
+var hCriarIngs = [];
+var hCriarExtras = [];
+
+function renderHCriar() {
+  hCriarTags = [];
+  hCriarIngs = [];
+  hCriarExtras = [];
+  document.getElementById("h-criar-emoji").value = "\uD83C\uDF54";
+  document.getElementById("h-criar-nome").value = "";
+  document.getElementById("h-criar-desc").value = "";
+  document.getElementById("h-criar-categoria").value = "Classicos";
+  document.getElementById("h-criar-preco").value = "";
+  document.getElementById("h-criar-ing-nome").value = "";
+  document.getElementById("h-criar-ing-icone").value = "";
+  document.getElementById("h-criar-ing-removivel").checked = false;
+  document.getElementById("h-criar-ex-nome").value = "";
+  document.getElementById("h-criar-ex-icone").value = "";
+  document.getElementById("h-criar-ex-preco").value = "";
+  document.getElementById("h-criar-tag-popular").classList.remove("active");
+  document.getElementById("h-criar-tag-novo").classList.remove("active");
+  hCriarUpdateEmoji();
+  hCriarRenderIngs();
+  hCriarRenderExtras();
+  hCriarUpdatePreview();
+}
+
+function hCriarToggleTag(tag) {
+  var idx = hCriarTags.indexOf(tag);
+  if (idx === -1) hCriarTags.push(tag);
+  else hCriarTags.splice(idx, 1);
+  document.getElementById("h-criar-tag-popular").classList.toggle("active", hCriarTags.indexOf("popular") !== -1);
+  document.getElementById("h-criar-tag-novo").classList.toggle("active", hCriarTags.indexOf("novo") !== -1);
+  hCriarUpdatePreview();
+}
+
+function hCriarUpdateEmoji() {
+  var v = document.getElementById("h-criar-emoji").value || "\uD83C\uDF54";
+  document.getElementById("h-criar-emoji-preview").textContent = v;
+  document.getElementById("h-criar-preview-emoji").textContent = v;
+}
+
+function hCriarAddIngrediente() {
+  var nome = document.getElementById("h-criar-ing-nome").value.trim();
+  var icone = document.getElementById("h-criar-ing-icone").value.trim() || "\uD83C\uDF54";
+  if (!nome) { toast("Nome do ingrediente obrigatório!", false); return; }
+  hCriarIngs.push({ id: "ing_" + Date.now(), nome: nome, icone: icone, removivel: document.getElementById("h-criar-ing-removivel").checked });
+  document.getElementById("h-criar-ing-nome").value = "";
+  document.getElementById("h-criar-ing-icone").value = "";
+  document.getElementById("h-criar-ing-removivel").checked = false;
+  hCriarRenderIngs();
+  hCriarUpdatePreview();
+}
+
+function hCriarRemoveIng(idx) {
+  hCriarIngs.splice(idx, 1);
+  hCriarRenderIngs();
+  hCriarUpdatePreview();
+}
+
+function hCriarRenderIngs() {
+  var el = document.getElementById("h-criar-ingredientes");
+  if (!el) return;
+  el.innerHTML = hCriarIngs.map(function(ing, i) {
+    return '<div class="h-criar-item-chip">' +
+      '<span>' + ing.icone + ' ' + ing.nome + '</span>' +
+      '<span class="h-criar-item-tag">' + (ing.removivel ? 'Removível' : 'Base') + '</span>' +
+      '<button onclick="hCriarRemoveIng(' + i + ')"><i class="ti ti-x"></i></button></div>';
+  }).join("");
+}
+
+function hCriarAddExtra() {
+  var nome = document.getElementById("h-criar-ex-nome").value.trim();
+  var icone = document.getElementById("h-criar-ex-icone").value.trim() || "\uD83C\uDF54";
+  var preco = parseFloat(document.getElementById("h-criar-ex-preco").value) || 0;
+  if (!nome) { toast("Nome do extra obrigatório!", false); return; }
+  hCriarExtras.push({ id: "ex_" + Date.now(), nome: nome, icone: icone, preco: preco });
+  document.getElementById("h-criar-ex-nome").value = "";
+  document.getElementById("h-criar-ex-icone").value = "";
+  document.getElementById("h-criar-ex-preco").value = "";
+  hCriarRenderExtras();
+  hCriarUpdatePreview();
+}
+
+function hCriarRemoveExtra(idx) {
+  hCriarExtras.splice(idx, 1);
+  hCriarRenderExtras();
+  hCriarUpdatePreview();
+}
+
+function hCriarRenderExtras() {
+  var el = document.getElementById("h-criar-extras");
+  if (!el) return;
+  el.innerHTML = hCriarExtras.map(function(ex, i) {
+    return '<div class="h-criar-item-chip">' +
+      '<span>' + ex.icone + ' ' + ex.nome + '</span>' +
+      '<span class="h-criar-item-tag h-criar-item-tag--preco">+' + hpdvFmt(ex.preco) + '</span>' +
+      '<button onclick="hCriarRemoveExtra(' + i + ')"><i class="ti ti-x"></i></button></div>';
+  }).join("");
+}
+
+function hCriarUpdatePreview() {
+  var emoji = document.getElementById("h-criar-emoji").value || "\uD83C\uDF54";
+  var nome = document.getElementById("h-criar-nome").value || "Nome do Hamburguer";
+  var desc = document.getElementById("h-criar-desc").value || "Descrição do lanche...";
+  var preco = parseFloat(document.getElementById("h-criar-preco").value) || 0;
+  var tagsHtml = hCriarTags.map(function(t) {
+    if (t === "popular") return '<span class="hpdv-lanche-tag hpdv-tag-popular">Popular</span>';
+    if (t === "novo") return '<span class="hpdv-lanche-tag hpdv-tag-novo">Novo</span>';
+    return '';
+  }).join("");
+  document.getElementById("h-criar-preview-emoji").textContent = emoji;
+  document.getElementById("h-criar-preview-nome").textContent = nome;
+  document.getElementById("h-criar-preview-desc").textContent = desc;
+  document.getElementById("h-criar-preview-tags").innerHTML = tagsHtml;
+  document.getElementById("h-criar-preview-preco").textContent = hpdvFmt(preco);
+  document.getElementById("h-criar-preview-ings").innerHTML = hCriarIngs.map(function(ing) {
+    return '<div class="h-criar-preview-chip">' + ing.icone + ' ' + ing.nome + ' <span class="h-criar-item-tag">' + (ing.removivel ? 'Remov.' : 'Base') + '</span></div>';
+  }).join("") || '<div style="color:var(--text-muted);font-size:12px">Nenhum ingrediente</div>';
+  document.getElementById("h-criar-preview-extras").innerHTML = hCriarExtras.map(function(ex) {
+    return '<div class="h-criar-preview-chip">' + ex.icone + ' ' + ex.nome + ' <span class="h-criar-item-tag h-criar-item-tag--preco">+' + hpdvFmt(ex.preco) + '</span></div>';
+  }).join("") || '<div style="color:var(--text-muted);font-size:12px">Nenhum extra</div>';
+}
+
+function hCriarSalvar() {
+  var nome = document.getElementById("h-criar-nome").value.trim();
+  var desc = document.getElementById("h-criar-desc").value.trim();
+  var preco = parseFloat(document.getElementById("h-criar-preco").value);
+  var categoria = document.getElementById("h-criar-categoria").value;
+  var emoji = document.getElementById("h-criar-emoji").value || "\uD83C\uDF54";
+  if (!nome) { toast("Informe o nome do hambúrguer!", false); return; }
+  if (!preco || preco <= 0) { toast("Informe um preço válido!", false); return; }
+  if (hCriarIngs.length === 0) { toast("Adicione pelo menos 1 ingrediente!", false); return; }
+  var newId = 1;
+  for (var i = 0; i < hpdvCardapio.length; i++) { if (hpdvCardapio[i].id >= newId) newId = hpdvCardapio[i].id + 1; }
+  var burger = {
+    id: newId, nome: nome, desc: desc || nome, preco: preco, emoji: emoji,
+    categoria: categoria, tags: hCriarTags.slice(),
+    ingredientes: hCriarIngs.map(function(ing) {
+      return { id: ing.id, nome: ing.nome, icone: ing.icone, removivel: ing.removivel };
+    }),
+    extras: hCriarExtras.map(function(ex) {
+      return { id: ex.id, nome: ex.nome, icone: ex.icone, preco: ex.preco };
+    })
+  };
+  hpdvCardapio.push(burger);
+  toast("\u2705 Hamburguer '" + nome + "' criado com sucesso!");
+  hCriarLimpar();
+}
+
+function hCriarLimpar() {
+  document.getElementById("h-criar-nome").value = "";
+  document.getElementById("h-criar-desc").value = "";
+  document.getElementById("h-criar-preco").value = "";
+  document.getElementById("h-criar-categoria").value = "Classicos";
+  document.getElementById("h-criar-emoji").value = "\uD83C\uDF54";
+  document.getElementById("h-criar-ing-nome").value = "";
+  document.getElementById("h-criar-ing-icone").value = "";
+  document.getElementById("h-criar-ing-removivel").checked = false;
+  document.getElementById("h-criar-ex-nome").value = "";
+  document.getElementById("h-criar-ex-icone").value = "";
+  document.getElementById("h-criar-ex-preco").value = "";
+  hCriarTags = [];
+  hCriarIngs = [];
+  hCriarExtras = [];
+  document.getElementById("h-criar-tag-popular").classList.remove("active");
+  document.getElementById("h-criar-tag-novo").classList.remove("active");
+  hCriarUpdateEmoji();
+  hCriarRenderIngs();
+  hCriarRenderExtras();
+  hCriarUpdatePreview();
+}
+
+
+// ==================== HAMBURGUER VENDAS ====================
+function hVendasCarregar() {
+  var periodo = (document.getElementById("h-vendas-periodo") || {}).value || "mes";
+  var agora = new Date();
+  var inicio = null;
+  var fim = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 23, 59, 59);
+  if (periodo === "hoje") {
+    inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  } else if (periodo === "semana") {
+    var dia = agora.getDay();
+    inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - dia);
+  } else if (periodo === "mes") {
+    inicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
+  } else if (periodo === "ano") {
+    inicio = new Date(agora.getFullYear(), 0, 1);
+  }
+  var di = (document.getElementById("h-vendas-data-inicio") || {}).value;
+  var df = (document.getElementById("h-vendas-data-fim") || {}).value;
+  if (di) inicio = new Date(di + "T00:00:00");
+  if (df) fim = new Date(df + "T23:59:59");
+
+  fetch("/api/vendas").then(function(r) { return r.json(); }).then(function(vendas) {
+    var filtradas = (vendas || []).filter(function(v) {
+      if (!v.obs) return false;
+      if (v.obs.toLowerCase().indexOf("comanda #") === -1 && v.obs.toLowerCase().indexOf("cliente:") === -1) return false;
+      var d = new Date(v.data);
+      if (inicio && d < inicio) return false;
+      if (fim && d > fim) return false;
+      return true;
+    });
+    hVendasRenderKPIs(filtradas);
+    hVendasRenderTopProdutos(filtradas);
+    hVendasRenderPagamentos(filtradas);
+    hVendasRenderHistorico(filtradas);
+  }).catch(function() {
+    toast("Erro ao carregar vendas", false);
+  });
+}
+
+function hVendasRenderKPIs(vendas) {
+  var total = vendas.length;
+  var faturamento = vendas.reduce(function(a, v) { return a + (parseFloat(v.total) || 0); }, 0);
+  var ticket = total > 0 ? faturamento / total : 0;
+  var itensQtd = 0;
+  vendas.forEach(function(v) {
+    if (v.itens) v.itens.forEach(function(it) { itensQtd += (it.qtd || 0); });
+  });
+  document.getElementById("h-vendas-total-vendas").textContent = total;
+  document.getElementById("h-vendas-faturamento").textContent = hpdvFmt(faturamento);
+  document.getElementById("h-vendas-ticket-medio").textContent = hpdvFmt(ticket);
+  document.getElementById("h-vendas-itens-qtd").textContent = itensQtd;
+}
+
+function hVendasRenderTopProdutos(vendas) {
+  var map = {};
+  vendas.forEach(function(v) {
+    if (v.itens) v.itens.forEach(function(it) {
+      var nome = it.produto_nome || "Hambúrguer";
+      if (!map[nome]) map[nome] = { qtd: 0, total: 0 };
+      map[nome].qtd += (it.qtd || 0);
+      map[nome].total += (parseFloat(it.preco_unitario) || 0) * (it.qtd || 0);
+    });
+  });
+  var arr = Object.keys(map).map(function(k) { return { nome: k, qtd: map[k].qtd, total: map[k].total }; });
+  arr.sort(function(a, b) { return b.qtd - a.qtd; });
+  var el = document.getElementById("h-vendas-top-produtos");
+  if (!arr.length) { el.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:13px;text-align:center">Nenhuma venda encontrada</div>'; return; }
+  var maxQtd = arr[0].qtd;
+  el.innerHTML = arr.slice(0, 10).map(function(p, i) {
+    var pct = maxQtd > 0 ? Math.round((p.qtd / maxQtd) * 100) : 0;
+    var medalha = i === 0 ? "\uD83E\uDD47" : i === 1 ? "\uD83E\uDD48" : i === 2 ? "\uD83E\uDD49" : (i + 1) + ".";
+    return '<div class="h-vendas-produto-row">' +
+      '<div class="h-vendas-produto-info"><span class="h-vendas-produto-rank">' + medalha + '</span> <span class="h-vendas-produto-nome">' + p.nome + '</span></div>' +
+      '<div class="h-vendas-produto-direita"><span class="h-vendas-produto-qtd">' + p.qtd + ' vendidos</span> <span class="h-vendas-produto-total">' + hpdvFmt(p.total) + '</span></div>' +
+      '<div class="h-vendas-barra-bg"><div class="h-vendas-barra-fill" style="width:' + pct + '%"></div></div></div>';
+  }).join("");
+}
+
+function hVendasRenderPagamentos(vendas) {
+  var map = {};
+  vendas.forEach(function(v) {
+    var pag = v.pagamento || "Não informado";
+    if (!map[pag]) map[pag] = { qtd: 0, total: 0 };
+    map[pag].qtd++;
+    map[pag].total += (parseFloat(v.total) || 0);
+  });
+  var arr = Object.keys(map).map(function(k) { return { nome: k, qtd: map[k].qtd, total: map[k].total }; });
+  arr.sort(function(a, b) { return b.total - a.total; });
+  var el = document.getElementById("h-vendas-pagamentos");
+  if (!arr.length) { el.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:13px;text-align:center">Nenhum dado</div>'; return; }
+  var cores = { "dinheiro": "#22c55e", "pix": "#06b6d4", "debito": "#8b5cf6", "credito": "#f59e0b" };
+  el.innerHTML = arr.map(function(p) {
+    var cor = cores[p.nome.toLowerCase()] || "#ff6a00";
+    return '<div class="h-vendas-pag-row">' +
+      '<div class="h-vendas-pag-nome"><span class="h-vendas-pag-dot" style="background:' + cor + '"></span> ' + p.nome.charAt(0).toUpperCase() + p.nome.slice(1) + '</div>' +
+      '<div class="h-vendas-pag-direita"><span class="h-vendas-pag-qtd">' + p.qtd + 'x</span> <span class="h-vendas-pag-total">' + hpdvFmt(p.total) + '</span></div></div>';
+  }).join("");
+}
+
+function hVendasRenderHistorico(vendas) {
+  var el = document.getElementById("h-vendas-historico");
+  if (!vendas.length) { el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">Nenhuma venda encontrada</td></tr>'; return; }
+  vendas.sort(function(a, b) { return new Date(b.data) - new Date(a.data); });
+  el.innerHTML = vendas.slice(0, 50).map(function(v) {
+    var d = new Date(v.data);
+    var dataStr = d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    var prodStr = "";
+    if (v.itens && v.itens.length) {
+      prodStr = v.itens.map(function(it) { return it.qtd + "x " + it.produto_nome; }).join(", ");
+    } else {
+      prodStr = v.produto_nome || "-";
+    }
+    var qtd = 0;
+    if (v.itens) v.itens.forEach(function(it) { qtd += (it.qtd || 0); });
+    if (!qtd) qtd = v.qtd || 1;
+    return '<tr><td>' + dataStr + '</td><td>' + prodStr + '</td><td>' + qtd + '</td><td><strong style="color:#22c55e">' + hpdvFmt(v.total) + '</strong></td><td>' + (v.pagamento || "-") + '</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (v.obs || "").replace(/"/g, '&quot;') + '">' + (v.obs || "-") + '</td></tr>';
+  }).join("");
 }
 
 

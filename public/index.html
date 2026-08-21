@@ -64,6 +64,8 @@
       <div class="nav-section hamburguer-only nav-section-link" id="nav-h-section" onclick="goHamburguer()"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>Comanda</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-criar" id="nav-h-criar" style="display:none"><i class="ti ti-chef-hat"></i> <span>Criar Hamburguer</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-vendas" id="nav-h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> <span>Vendas</span></div>
       <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
       <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
       <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
@@ -127,6 +129,8 @@
       <div class="mobile-nav-section hamburguer-only mobile-nav-section-link" id="mobile-h-section" onclick="toggleMobileMenu(); goHamburguer()"><i class="ti ti-burger"></i> Hambúrguer</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> Comanda</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-criar" style="display:none"><i class="ti ti-chef-hat"></i> Criar Hamburguer</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> Vendas</div>
       <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
       <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
       <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
@@ -430,6 +434,184 @@
               <div class="hpdv-modal-valor"><span>Total</span> <strong id="hpdv-modal-total">R$ 0,00</strong></div>
               <button class="hpdv-btn-adicionar" onclick="hpdvAdicionarAoPedido()"><i class="ti ti-check"></i> Adicionar</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER CRIAR -->
+      <div class="screen hamburguer-only" id="screen-h-criar" style="display:none">
+        <div class="h-criar-layout">
+          <div class="h-criar-form">
+            <div class="h-criar-form-header">
+              <i class="ti ti-chef-hat"></i>
+              <h2>Criar Hambúrguer</h2>
+            </div>
+            <div class="h-criar-field">
+              <label>Emoji</label>
+              <div class="h-criar-emoji-row">
+                <span class="h-criar-emoji-preview" id="h-criar-emoji-preview">🍔</span>
+                <input type="text" id="h-criar-emoji" value="🍔" maxlength="4" oninput="hCriarUpdateEmoji()">
+              </div>
+            </div>
+            <div class="h-criar-field">
+              <label>Nome</label>
+              <input type="text" id="h-criar-nome" placeholder="Ex: Smash Burger Artesanal">
+            </div>
+            <div class="h-criar-field">
+              <label>Descrição</label>
+              <input type="text" id="h-criar-desc" placeholder="Ex: 2 smash 80g, queijo duplo, molho especial...">
+            </div>
+            <div class="h-criar-field">
+              <label>Categoria</label>
+              <select id="h-criar-categoria">
+                <option value="Classicos">Clássicos</option>
+                <option value="Especiais">Especiais</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            <div class="h-criar-field">
+              <label>Preço (R$)</label>
+              <input type="number" id="h-criar-preco" placeholder="0.00" step="0.10" min="0">
+            </div>
+            <div class="h-criar-field">
+              <label>Tags</label>
+              <div class="h-criar-tags-row">
+                <button class="h-criar-tag-btn" id="h-criar-tag-popular" onclick="hCriarToggleTag('popular')"><i class="ti ti-star"></i> Popular</button>
+                <button class="h-criar-tag-btn" id="h-criar-tag-novo" onclick="hCriarToggleTag('novo')"><i class="ti ti-sparkles"></i> Novo</button>
+              </div>
+            </div>
+
+            <div class="h-criar-secao">
+              <div class="h-criar-secao-titulo"><i class="ti ti-list"></i> Ingredientes</div>
+              <div id="h-criar-ingredientes"></div>
+              <div class="h-criar-add-row">
+                <input type="text" id="h-criar-ing-nome" placeholder="Nome (ex: Queijo cheddar)">
+                <input type="text" id="h-criar-ing-icone" placeholder="Emoji" maxlength="4" style="width:60px">
+                <label class="h-criar-switch-label"><input type="checkbox" id="h-criar-ing-removivel"> Removível</label>
+                <button class="h-criar-add-btn" onclick="hCriarAddIngrediente()"><i class="ti ti-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="h-criar-secao">
+              <div class="h-criar-secao-titulo"><i class="ti ti-plus"></i> Extras</div>
+              <div id="h-criar-extras"></div>
+              <div class="h-criar-add-row">
+                <input type="text" id="h-criar-ex-nome" placeholder="Nome (ex: Bacon)">
+                <input type="text" id="h-criar-ex-icone" placeholder="Emoji" maxlength="4" style="width:60px">
+                <input type="number" id="h-criar-ex-preco" placeholder="R$" step="0.50" min="0" style="width:80px">
+                <button class="h-criar-add-btn" onclick="hCriarAddExtra()"><i class="ti ti-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="h-criar-acoes">
+              <button class="h-criar-btn-salvar" onclick="hCriarSalvar()"><i class="ti ti-device-floppy"></i> Salvar Hamburguer</button>
+              <button class="h-criar-btn-limpar" onclick="hCriarLimpar()"><i class="ti ti-eraser"></i> Limpar</button>
+            </div>
+          </div>
+
+          <div class="h-criar-preview">
+            <div class="h-criar-preview-header"><i class="ti ti-eye"></i> Pré-visualização</div>
+            <div class="h-criar-preview-card" id="h-criar-preview-card">
+              <span class="h-criar-preview-emoji" id="h-criar-preview-emoji">🍔</span>
+              <div class="h-criar-preview-nome" id="h-criar-preview-nome">Nome do Hamburguer</div>
+              <div class="h-criar-preview-desc" id="h-criar-preview-desc">Descrição do lanche...</div>
+              <div class="h-criar-preview-tags" id="h-criar-preview-tags"></div>
+              <div class="h-criar-preview-preco" id="h-criar-preview-preco">R$ 0,00</div>
+              <div class="h-criar-preview-secao">
+                <div class="h-criar-preview-secao-titulo">Ingredientes</div>
+                <div id="h-criar-preview-ings"></div>
+              </div>
+              <div class="h-criar-preview-secao">
+                <div class="h-criar-preview-secao-titulo">Extras</div>
+                <div id="h-criar-preview-extras"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER VENDAS -->
+      <div class="screen hamburguer-only" id="screen-h-vendas" style="display:none">
+        <div class="h-vendas-filtros">
+          <div class="h-vendas-filtro-group">
+            <label>Período</label>
+            <select id="h-vendas-periodo" onchange="hVendasCarregar()">
+              <option value="hoje">Hoje</option>
+              <option value="semana">Esta Semana</option>
+              <option value="mes" selected>Este Mês</option>
+              <option value="ano">Este Ano</option>
+              <option value="tudo">Tudo</option>
+            </select>
+          </div>
+          <div class="h-vendas-filtro-group">
+            <label>Data Início</label>
+            <input type="date" id="h-vendas-data-inicio">
+          </div>
+          <div class="h-vendas-filtro-group">
+            <label>Data Fim</label>
+            <input type="date" id="h-vendas-data-fim">
+          </div>
+          <button class="h-vendas-btn-filtrar" onclick="hVendasCarregar()"><i class="ti ti-filter"></i> Filtrar</button>
+        </div>
+
+        <div class="h-dash-kpi-grid" id="h-vendas-kpis">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Total Vendas</span>
+              <span class="h-dash-kpi-value" id="h-vendas-total-vendas">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Faturamento</span>
+              <span class="h-dash-kpi-value" id="h-vendas-faturamento">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-receipt"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Ticket Médio</span>
+              <span class="h-dash-kpi-value" id="h-vendas-ticket-medio">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-burger"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Itens Vendidos</span>
+              <span class="h-dash-kpi-value" id="h-vendas-itens-qtd">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-vendas-charts">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="h-vendas-top-produtos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="h-vendas-pagamentos"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin:0 0 1rem"><i class="ti ti-history"></i> Histórico de Vendas</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto(s)</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Obs</th>
+                </tr>
+              </thead>
+              <tbody id="h-vendas-historico"></tbody>
+            </table>
           </div>
         </div>
       </div>
