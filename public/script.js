@@ -1,3 +1,8 @@
+// ==================== ANTI-DUMP (lock por função) ====================
+const _busy = {};
+function acquire(name) { if (_busy[name]) return false; _busy[name] = true; return true; }
+function release(name) { _busy[name] = false; }
+
 // ==================== TEMA ====================
 function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
@@ -952,18 +957,19 @@ function toggleFormProduto(e) {
 }
 
 async function addProduto() {
-  const nome = document.getElementById('p-nome').value.trim();
-  const categoria = document.getElementById('p-cat').value.trim();
-  const qtd = parseInt(document.getElementById('p-qty').value) || 0;
-  const qtd_minima = parseInt(document.getElementById('p-min').value) || 0;
-  const preco = parseFloat(document.getElementById('p-preco').value) || 0;
-  
-  if (!nome) {
-    toast('Informe o nome do produto!', false);
-    return;
-  }
-  
+  if (!acquire('addProduto')) return;
   try {
+    const nome = document.getElementById('p-nome').value.trim();
+    const categoria = document.getElementById('p-cat').value.trim();
+    const qtd = parseInt(document.getElementById('p-qty').value) || 0;
+    const qtd_minima = parseInt(document.getElementById('p-min').value) || 0;
+    const preco = parseFloat(document.getElementById('p-preco').value) || 0;
+
+    if (!nome) {
+      toast('Informe o nome do produto!', false);
+      return;
+    }
+
     await apiRequest('/produtos', {
       method: 'POST',
       body: JSON.stringify({ nome, categoria, qtd, qtd_minima, preco })
@@ -976,6 +982,8 @@ async function addProduto() {
   } catch (error) {
     toast(error.message || 'Erro ao cadastrar produto!', false);
     console.error(error);
+  } finally {
+    release('addProduto');
   }
 }
 
@@ -1017,23 +1025,23 @@ function closeEditarProduto(e) {
 }
 
 async function salvarEdicaoProduto() {
-  const id        = parseInt(document.getElementById('edit-id').value);
-  const nome      = document.getElementById('edit-nome').value.trim();
-  const categoria = document.getElementById('edit-cat').value.trim();
-  const qtd       = parseFloat(document.getElementById('edit-qty').value) || 0;
-  const qtd_minima= parseInt(document.getElementById('edit-min').value) || 0;
-  const preco     = parseFloat(document.getElementById('edit-preco').value) || 0;
-
-  if (!nome) { toast('Informe o nome do produto!', false); return; }
-
+  if (!acquire('salvarEdicaoProduto')) return;
   try {
+    const id        = parseInt(document.getElementById('edit-id').value);
+    const nome      = document.getElementById('edit-nome').value.trim();
+    const categoria = document.getElementById('edit-cat').value.trim();
+    const qtd       = parseFloat(document.getElementById('edit-qty').value) || 0;
+    const qtd_minima= parseInt(document.getElementById('edit-min').value) || 0;
+    const preco     = parseFloat(document.getElementById('edit-preco').value) || 0;
+
+    if (!nome) { toast('Informe o nome do produto!', false); return; }
+
     await apiRequest(`/produtos/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ nome, categoria, qtd, qtd_minima, preco })
     });
     await loadAllData();
     renderProdutos();
-    // atualiza estoque se estiver visível
     if (document.getElementById('screen-estoque').classList.contains('active')) {
       renderEstoqueCats();
       filtrarEstoque();
@@ -1042,6 +1050,8 @@ async function salvarEdicaoProduto() {
     toast('Produto atualizado com sucesso!');
   } catch (error) {
     toast(error.message || 'Erro ao atualizar produto!', false);
+  } finally {
+    release('salvarEdicaoProduto');
   }
 }
 
@@ -2632,26 +2642,27 @@ function atualizaPreview() {
 }
 
 async function addVenda() {
-  const tipoVenda = document.getElementById('v-tipo-venda-hidden').value;
-  const isDelivery = tipoVenda === 'delivery';
-  const plataforma = document.getElementById('v-plataforma').value;
-  const obs = document.getElementById('v-obs').value.trim();
-  const pagamento = document.getElementById('v-pagamento-hidden').value;
-
-  if (!vendaItens.length) {
-    toast('Adicione pelo menos um item à venda!', false);
-    return;
-  }
-  if (isDelivery && !plataforma) {
-    toast('Selecione uma plataforma para delivery!', false);
-    return;
-  }
-
-  const totalVenda = vendaItens.reduce((acumulador, item) => {
-    return acumulador + (item.qtd * item.precoUnitario);
-  }, 0);
-  
+  if (!acquire('addVenda')) return;
   try {
+    const tipoVenda = document.getElementById('v-tipo-venda-hidden').value;
+    const isDelivery = tipoVenda === 'delivery';
+    const plataforma = document.getElementById('v-plataforma').value;
+    const obs = document.getElementById('v-obs').value.trim();
+    const pagamento = document.getElementById('v-pagamento-hidden').value;
+
+    if (!vendaItens.length) {
+      toast('Adicione pelo menos um item à venda!', false);
+      return;
+    }
+    if (isDelivery && !plataforma) {
+      toast('Selecione uma plataforma para delivery!', false);
+      return;
+    }
+
+    const totalVenda = vendaItens.reduce((acumulador, item) => {
+      return acumulador + (item.qtd * item.precoUnitario);
+    }, 0);
+
     await apiRequest('/vendas', {
       method: 'POST',
       body: JSON.stringify({
@@ -2663,7 +2674,7 @@ async function addVenda() {
         obs
       })
     });
-    
+
     await loadAllData();
     vendaItens = [];
     vendaCategoriaAtiva = 'Todos';
@@ -2680,12 +2691,14 @@ async function addVenda() {
     renderVendaItens();
     atualizaPreview();
     atualizaEstiloOpcoes();
-  renderDashboardProfissional();
-  renderEstoque();
-  toast('Venda registrada com sucesso!');
+    renderDashboardProfissional();
+    renderEstoque();
+    toast('Venda registrada com sucesso!');
   } catch (error) {
     toast(error.message || 'Erro ao registrar venda!', false);
     console.error(error);
+  } finally {
+    release('addVenda');
   }
 }
 
@@ -3351,27 +3364,27 @@ function atualizaConsumoPreview() {
 }
 
 async function addConsumo() {
-  if (!consumoItens.length) {
-    toast('Adicione pelo menos um item!', false);
-    return;
-  }
-
-  const obs = document.getElementById('c-obs').value.trim();
-  const totalConsumo = consumoItens.reduce((acumulador, item) => {
-    return acumulador + (item.qtd * item.precoUnitario);
-  }, 0);
-
-  // Não bloqueia: apenas notifica quando estiver passando do limite (só funcionários têm limite)
-  let acimaLimite = false;
-  if (currentUser.role === 'funcionario' && (!consumoUsuarioId || consumoUsuarioId === currentUser.id)) {
-    const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
-    acimaLimite = totalConsumo > disponivel;
-    if (acimaLimite) {
-      toastWarn(`Atenção! Você está passando do seu limite de ${fmtMoeda(LIMITE_CONSUMO)} do mês.`);
-    }
-  }
-
+  if (!acquire('addConsumo')) return;
   try {
+    if (!consumoItens.length) {
+      toast('Adicione pelo menos um item!', false);
+      return;
+    }
+
+    const obs = document.getElementById('c-obs').value.trim();
+    const totalConsumo = consumoItens.reduce((acumulador, item) => {
+      return acumulador + (item.qtd * item.precoUnitario);
+    }, 0);
+
+    let acimaLimite = false;
+    if (currentUser.role === 'funcionario' && (!consumoUsuarioId || consumoUsuarioId === currentUser.id)) {
+      const disponivel = Math.max(LIMITE_CONSUMO - consumoTotalMes, 0);
+      acimaLimite = totalConsumo > disponivel;
+      if (acimaLimite) {
+        toastWarn(`Atenção! Você está passando do seu limite de ${fmtMoeda(LIMITE_CONSUMO)} do mês.`);
+      }
+    }
+
     const resp = await apiRequest('/consumo', {
       method: 'POST',
       body: JSON.stringify({
@@ -3399,6 +3412,8 @@ async function addConsumo() {
   } catch (error) {
     toast(error.message || 'Erro ao registrar consumo!', false);
     console.error(error);
+  } finally {
+    release('addConsumo');
   }
 }
 
@@ -3662,13 +3677,14 @@ async function renderCaixa() {
 }
 
 async function registrarRetirada() {
-  const valor  = parseFloat(document.getElementById('retirada-valor')?.value);
-  const motivo = document.getElementById('retirada-motivo')?.value?.trim();
-
-  if (!valor || valor <= 0) { toast('Informe um valor válido!', false); return; }
-  if (!motivo)              { toast('Informe o motivo da retirada!', false); return; }
-
+  if (!acquire('registrarRetirada')) return;
   try {
+    const valor  = parseFloat(document.getElementById('retirada-valor')?.value);
+    const motivo = document.getElementById('retirada-motivo')?.value?.trim();
+
+    if (!valor || valor <= 0) { toast('Informe um valor válido!', false); return; }
+    if (!motivo)              { toast('Informe o motivo da retirada!', false); return; }
+
     await apiRequest('/caixa/retirada', {
       method: 'POST',
       body: JSON.stringify({ valor, motivo })
@@ -3680,19 +3696,22 @@ async function registrarRetirada() {
     renderCaixa();
   } catch (error) {
     toast(error.message || 'Erro ao registrar retirada!', false);
+  } finally {
+    release('registrarRetirada');
   }
 }
 
 async function abrirCaixa() {
-  const trocoInput = document.getElementById('caixa-troco');
-  const trocoInicial = parseFloat(trocoInput.value);
-
-  if (isNaN(trocoInicial) || trocoInicial < 0) {
-    toast('Informe um valor de troco inicial válido!', false);
-    return;
-  }
-
+  if (!acquire('abrirCaixa')) return;
   try {
+    const trocoInput = document.getElementById('caixa-troco');
+    const trocoInicial = parseFloat(trocoInput.value);
+
+    if (isNaN(trocoInicial) || trocoInicial < 0) {
+      toast('Informe um valor de troco inicial válido!', false);
+      return;
+    }
+
     await apiRequest('/caixa/abrir', {
       method: 'POST',
       body: JSON.stringify({ troco_inicial: trocoInicial })
@@ -3704,19 +3723,22 @@ async function abrirCaixa() {
   } catch (error) {
     toast(error.message || 'Erro ao abrir caixa!', false);
     console.error(error);
+  } finally {
+    release('abrirCaixa');
   }
 }
 
 async function fecharCaixa() {
-  const valorFinalInput = document.getElementById('caixa-valor-final');
-  const valorFinal = parseFloat(valorFinalInput.value);
-
-  if (isNaN(valorFinal) || valorFinal < 0) {
-    toast('Informe um valor final válido!', false);
-    return;
-  }
-
+  if (!acquire('fecharCaixa')) return;
   try {
+    const valorFinalInput = document.getElementById('caixa-valor-final');
+    const valorFinal = parseFloat(valorFinalInput.value);
+
+    if (isNaN(valorFinal) || valorFinal < 0) {
+      toast('Informe um valor final válido!', false);
+      return;
+    }
+
     await apiRequest('/caixa/fechar', {
       method: 'POST',
       body: JSON.stringify({ valor_final: valorFinal })
@@ -3728,6 +3750,8 @@ async function fecharCaixa() {
   } catch (error) {
     toast(error.message || 'Erro ao fechar caixa!', false);
     console.error(error);
+  } finally {
+    release('fecharCaixa');
   }
 }
 
@@ -3813,20 +3837,21 @@ function saveContagemField(id, val) {
 }
 
 async function confirmarContagem() {
-  const inputs = document.querySelectorAll('.contagem-input');
-  const items = [];
-  inputs.forEach(inp => {
-    if (inp.value !== '' && inp.value !== undefined && parseFloat(inp.value) >= 0) {
-      items.push({ produto_id: parseInt(inp.dataset.id), qtd: parseFloat(inp.value) });
-    }
-  });
-
-  if (!items.length) {
-    toast('Preencha pelo menos uma quantidade antes de confirmar!', false);
-    return;
-  }
-
+  if (!acquire('confirmarContagem')) return;
   try {
+    const inputs = document.querySelectorAll('.contagem-input');
+    const items = [];
+    inputs.forEach(inp => {
+      if (inp.value !== '' && inp.value !== undefined && parseFloat(inp.value) >= 0) {
+        items.push({ produto_id: parseInt(inp.dataset.id), qtd: parseFloat(inp.value) });
+      }
+    });
+
+    if (!items.length) {
+      toast('Preencha pelo menos uma quantidade antes de confirmar!', false);
+      return;
+    }
+
     const resp = await apiRequest('/contagem', {
       method: 'POST',
       body: JSON.stringify({ items })
@@ -3850,6 +3875,8 @@ async function confirmarContagem() {
     toast(`${items.length} produto(s) confirmado(s) e salvo(s) no servidor!`);
   } catch (e) {
     toast(e.message || 'Erro ao salvar contagem!', false);
+  } finally {
+    release('confirmarContagem');
   }
 }
 
@@ -4213,15 +4240,16 @@ function renderGastos() {
 }
 
 async function addGastoFixo() {
-  const descricao = document.getElementById('gf-descricao').value.trim();
-  const categoria = document.getElementById('gf-categoria').value.trim() || 'Outros';
-  const valor = parseFloat(document.getElementById('gf-valor').value) || 0;
-  const pagamento = document.getElementById('gf-pagamento').value;
-
-  if (!descricao) { toast('Informe a descrição do gasto fixo!', false); return; }
-  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
-
+  if (!acquire('addGastoFixo')) return;
   try {
+    const descricao = document.getElementById('gf-descricao').value.trim();
+    const categoria = document.getElementById('gf-categoria').value.trim() || 'Outros';
+    const valor = parseFloat(document.getElementById('gf-valor').value) || 0;
+    const pagamento = document.getElementById('gf-pagamento').value;
+
+    if (!descricao) { toast('Informe a descrição do gasto fixo!', false); return; }
+    if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
     await apiRequest('/gastos', {
       method: 'POST',
       body: JSON.stringify({ descricao, categoria, valor, pagamento, data: new Date().toISOString(), fixo: true })
@@ -4237,22 +4265,25 @@ async function addGastoFixo() {
     toast('Gasto fixo adicionado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao adicionar gasto fixo!', false);
+  } finally {
+    release('addGastoFixo');
   }
 }
 
 async function addGasto() {
-  const descricao = document.getElementById('g-descricao').value.trim();
-  const categoria = document.getElementById('g-categoria').value.trim() || 'Outros';
-  const valor = parseFloat(document.getElementById('g-valor').value) || 0;
-  const pagamento = document.getElementById('g-pagamento').value;
-  const data = document.getElementById('g-data').value;
-  const tipo = document.getElementById('g-tipo').value;
-  const itens = tipo === 'mercadoria' && mercItems.length ? [...mercItems] : null;
-
-  if (!descricao) { toast('Informe a descrição do gasto!', false); return; }
-  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
-
+  if (!acquire('addGasto')) return;
   try {
+    const descricao = document.getElementById('g-descricao').value.trim();
+    const categoria = document.getElementById('g-categoria').value.trim() || 'Outros';
+    const valor = parseFloat(document.getElementById('g-valor').value) || 0;
+    const pagamento = document.getElementById('g-pagamento').value;
+    const data = document.getElementById('g-data').value;
+    const tipo = document.getElementById('g-tipo').value;
+    const itens = tipo === 'mercadoria' && mercItems.length ? [...mercItems] : null;
+
+    if (!descricao) { toast('Informe a descrição do gasto!', false); return; }
+    if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
     await apiRequest('/gastos', {
       method: 'POST',
       body: JSON.stringify({ descricao, categoria, valor, pagamento, data: data || undefined, fixo: false, tipo, itens })
@@ -4272,6 +4303,8 @@ async function addGasto() {
     toast('Gasto adicionado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao adicionar gasto!', false);
+  } finally {
+    release('addGasto');
   }
 }
 
@@ -4329,18 +4362,19 @@ function closeEditarGasto(e) {
 }
 
 async function salvarEdicaoGasto() {
-  const id = document.getElementById('eg-id').value;
-  const descricao = document.getElementById('eg-descricao').value.trim();
-  const categoria = document.getElementById('eg-categoria').value.trim() || 'Outros';
-  const valor = parseFloat(document.getElementById('eg-valor').value) || 0;
-  const pagamento = document.getElementById('eg-pagamento').value;
-  const data = document.getElementById('eg-data').value;
-  const fixo = document.getElementById('eg-fixo').checked;
-
-  if (!descricao) { toast('Informe a descrição!', false); return; }
-  if (valor <= 0) { toast('Informe um valor válido!', false); return; }
-
+  if (!acquire('salvarEdicaoGasto')) return;
   try {
+    const id = document.getElementById('eg-id').value;
+    const descricao = document.getElementById('eg-descricao').value.trim();
+    const categoria = document.getElementById('eg-categoria').value.trim() || 'Outros';
+    const valor = parseFloat(document.getElementById('eg-valor').value) || 0;
+    const pagamento = document.getElementById('eg-pagamento').value;
+    const data = document.getElementById('eg-data').value;
+    const fixo = document.getElementById('eg-fixo').checked;
+
+    if (!descricao) { toast('Informe a descrição!', false); return; }
+    if (valor <= 0) { toast('Informe um valor válido!', false); return; }
+
     await apiRequest(`/gastos/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ descricao, categoria, valor, pagamento, data, fixo })
@@ -4352,6 +4386,8 @@ async function salvarEdicaoGasto() {
     toast('Gasto atualizado com sucesso!');
   } catch (e) {
     toast(e.message || 'Erro ao atualizar gasto!', false);
+  } finally {
+    release('salvarEdicaoGasto');
   }
 }
 
