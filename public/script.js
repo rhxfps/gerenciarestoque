@@ -2069,6 +2069,8 @@ function hpdvGetCategorias() {
 function renderHPDV() {
   hpdvPedido = [];
   hpdvCatAtiva = "Todos";
+  var numEl = document.getElementById("hpdv-comanda-num");
+  if (numEl) numEl.value = Math.floor(1000 + Math.random() * 9000);
   hpdvRenderCategorias();
   hpdvRenderCardapio();
   hpdvRenderPedido();
