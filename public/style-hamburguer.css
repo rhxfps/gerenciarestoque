@@ -5,6 +5,8 @@ body[data-app="pastel"] .hamburguer-only { display: none !important; }
 
 body[data-app="hamburguer"] .hamburguer-only { display: block !important; }
 body[data-app="hamburguer"] .hamburguer-only-flex { display: flex !important; }
+body[data-app="hamburguer"] .hamburguer-only.screen { display: none !important; }
+body[data-app="hamburguer"] .hamburguer-only.screen.active { display: block !important; }
 
 /* Esconder itens pastel quando no modo hamburguer */
 body[data-app="hamburguer"] #nav-dashboard,
