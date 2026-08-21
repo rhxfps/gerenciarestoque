@@ -2045,6 +2045,35 @@
   </div>
 </div>
 
+<!-- MODAL PERSONALIZAÇÃO HAMBÚRGUER -->
+<div class="modal-overlay" id="hpdv-modal" onclick="hpdvCloseModal(event)">
+  <div class="modal-content hpdv-modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="hpdv-modal-titulo">🍔 X-Burger</h3>
+      <button class="modal-close" onclick="hpdvCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="hpdv-modal-body">
+      <div class="hpdv-modal-section">
+        <div class="hpdv-modal-section-title"><i class="ti ti-list"></i> Ingredientes <small>desative para remover</small></div>
+        <div id="hpdv-modal-ingredientes"></div>
+      </div>
+      <div class="hpdv-modal-section" id="hpdv-modal-extras-wrap">
+        <div class="hpdv-modal-section-title"><i class="ti ti-plus-circle"></i> Extras <small>marque para adicionar</small></div>
+        <div id="hpdv-modal-extras"></div>
+      </div>
+    </div>
+    <div class="hpdv-modal-footer">
+      <div class="hpdv-modal-preco-row">
+        <span>Preço</span>
+        <strong id="hpdv-modal-preco">R$ 0,00</strong>
+      </div>
+      <button class="btn btn-primary hpdv-modal-confirmar" onclick="hpdvModalConfirmar()">
+        <i class="ti ti-check"></i> Adicionar à Comanda
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>
