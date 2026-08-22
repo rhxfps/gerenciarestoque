@@ -1633,7 +1633,7 @@ app.post('/api/hamburguer/vendas', autenticar, async (req, res) => {
 app.get('/api/hamburguer/cardapio', autenticar, async (req, res) => {
   try {
     const { data: cardapio, error } = await supabase
-      .from('hamburguer_cardapio').select('*').eq('ativo', true).order('categoria').order('nome');
+      .from('hamburguer_cardapio').select('*, produto:produto_id(id, nome, preco, qtd, categoria)').eq('ativo', true).order('categoria').order('nome');
     if (error) { console.warn('hamburguer_cardapio:', error.message); return res.json([]); }
 
     const ids = (cardapio || []).map(c => c.id);
@@ -1694,6 +1694,68 @@ app.delete('/api/hamburguer/cardapio/:id', autenticar, async (req, res) => {
     const { error } = await supabase.from('hamburguer_cardapio').update({ ativo: false }).eq('id', req.params.id);
     if (error) throw error;
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/hamburguer/cardapio/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { nome, descricao, emoji, preco, categoria, tags } = req.body;
+  try {
+    const updates = {};
+    if (nome !== undefined) updates.nome = nome;
+    if (descricao !== undefined) updates.descricao = descricao;
+    if (emoji !== undefined) updates.emoji = emoji;
+    if (preco !== undefined) updates.preco = preco;
+    if (categoria !== undefined) updates.categoria = categoria;
+    if (tags !== undefined) updates.tags = tags;
+    const { data, error } = await supabase
+      .from('hamburguer_cardapio').update(updates).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Toggle cardápio: marca/desmarca um produto do estoque como item do cardápio hamburguer
+app.post('/api/produtos/:id/cardapio', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const produtoId = parseInt(req.params.id);
+  try {
+    const { data: produto } = await supabase
+      .from('produtos').select('id, nome, preco, categoria').eq('id', produtoId).single();
+    if (!produto) return res.status(404).json({ error: 'Produto não encontrado' });
+
+    const { data: existente } = await supabase
+      .from('hamburguer_cardapio').select('id, ativo').eq('produto_id', produtoId).maybeSingle();
+
+    if (existente) {
+      if (existente.ativo) {
+        await supabase.from('hamburguer_cardapio').update({ ativo: false }).eq('id', existente.id);
+        return res.json({ ativo: false, id: existente.id });
+      } else {
+        const { data, error } = await supabase
+          .from('hamburguer_cardapio').update({ ativo: true }).eq('id', existente.id).select().single();
+        if (error) throw error;
+        return res.json({ ativo: true, id: data.id });
+      }
+    }
+
+    const { data: novo, error } = await supabase
+      .from('hamburguer_cardapio').insert([{
+        produto_id: produtoId,
+        nome: produto.nome,
+        descricao: produto.nome,
+        emoji: '🍔',
+        preco: produto.preco || 0,
+        categoria: produto.categoria || 'Classicos',
+        tags: [],
+        ativo: true
+      }]).select().single();
+    if (error) throw error;
+    res.json({ ativo: true, id: novo.id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
