@@ -1127,48 +1127,12 @@ function renderProdutos() {
       </button>`).join('');
   }
 
-  loadCardapioIds().then(() => {
-    markCardapioStatus();
-    filtrarProdutos();
-  });
+  filtrarProdutos();
 }
 
 function selectProdutosCat(cat) {
   produtosCatAtiva = cat;
   renderProdutos();
-}
-
-let cardapioProdutosIds = {};
-
-async function loadCardapioIds() {
-  try {
-    const data = await apiRequest('/hamburguer/cardapio');
-    cardapioProdutosIds = {};
-    (data || []).forEach(c => {
-      if (c.produto_id) cardapioProdutosIds[c.produto_id] = c.id;
-    });
-  } catch(e) { cardapioProdutosIds = {}; }
-}
-
-function markCardapioStatus() {
-  produtos.forEach(p => { p._cardapio = !!cardapioProdutosIds[p.id]; });
-}
-
-async function toggleProdutoCardapio(produtoId) {
-  try {
-    const result = await apiRequest(`/produtos/${produtoId}/cardapio`, { method: 'POST' });
-    if (result.ativo) {
-      cardapioProdutosIds[produtoId] = result.id;
-      toast('Adicionado ao cardápio!');
-    } else {
-      delete cardapioProdutosIds[produtoId];
-      toast('Removido do cardápio!');
-    }
-    markCardapioStatus();
-    renderProdutos();
-  } catch(e) {
-    toast(e.message || 'Erro ao alterar cardápio', false);
-  }
 }
 
 function filtrarProdutos() {
@@ -1192,7 +1156,7 @@ function filtrarProdutos() {
   if (count) count.textContent = (busca || produtosCatAtiva !== 'Todas') ? `${lista.length} produto(s)` : '';
 
   if (!lista.length) {
-    tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
     if (em) em.style.display = 'none';
     return;
   }
@@ -1206,10 +1170,6 @@ function filtrarProdutos() {
     const nome  = busca
       ? `<strong>${p.nome.replace(new RegExp(`(${esc})`,'gi'),'<mark class="estoque-highlight">$1</mark>')}</strong>`
       : `<strong>${p.nome}</strong>`;
-    const isCardapio = p._cardapio || false;
-    const cardapioBtn = `<button class="btn btn-sm${isCardapio ? ' btn-cardapio-on' : ' btn-cardapio-off'}" onclick="toggleProdutoCardapio(${p.id})" title="${isCardapio ? 'Remover do cardápio' : 'Adicionar ao cardápio'}">
-      <i class="ti ti-${isCardapio ? 'chef-hat' : 'plus'}"></i>
-    </button>`;
     return `<tr>
       <td>${nome}</td>
       <td>${p.categoria || '—'}</td>
@@ -1217,7 +1177,6 @@ function filtrarProdutos() {
       <td>${p.qtd_minima}</td>
       <td>${preco}</td>
       <td>${badge}</td>
-      <td>${cardapioBtn}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm" style="margin-right:4px" onclick="openEditarProduto(${p.id})" title="Editar">
           <i class="ti ti-edit"></i>
@@ -2117,39 +2076,11 @@ function renderHPDV() {
   hpdvCatAtiva = "Todos";
   var numEl = document.getElementById("hpdv-comanda-num");
   if (numEl) numEl.value = Math.floor(1000 + Math.random() * 9000);
-
-  // Fetch cardápio from DB + bebidas from produtos (pastel)
-  Promise.all([
-    apiRequest("/hamburguer/cardapio").catch(function() { return []; }),
-    apiRequest("/produtos").catch(function() { return []; })
-  ]).then(function(results) {
-    var cardapioDB = results[0] || [];
-    var produtos = results[1] || [];
-
-    hpdvCardapio = [];
-
-    // Itens do cardápio DB
-    cardapioDB.forEach(function(c) {
-      var tags = c.tags || [];
-      if (typeof tags === 'string') { try { tags = JSON.parse(tags); } catch(e) { tags = []; } }
-      if (!Array.isArray(tags)) tags = [];
-      hpdvCardapio.push({
-        id: c.id, nome: c.nome, desc: c.descricao || c.nome, preco: parseFloat(c.preco) || 0,
-        emoji: c.emoji || "🍔", categoria: c.categoria || "Hambúrguer", tags: tags,
-        produto_id: c.produto_id,
-        ingredientes: (c.ingredientes || []).map(function(i) {
-          return { id: i.nome.toLowerCase().replace(/\s+/g, "_"), nome: i.nome, icone: i.icone || "🍔", removivel: i.removivel || false };
-        }),
-        extras: (c.extras || []).map(function(e) {
-          return { id: e.nome.toLowerCase().replace(/\s+/g, "_"), nome: e.nome, icone: e.icone || "🍔", preco: parseFloat(e.preco) || 0 };
-        })
-      });
-    });
-
-    // Bebidas do estoque pastel
+  // Buscar bebidas do pastel e juntar ao cardápio
+  fetch("/api/produtos").then(function(r) { return r.json(); }).then(function(produtos) {
     var bebidasExistentes = {};
     hpdvCardapio.forEach(function(p) { if (p.categoria === "Bebidas") bebidasExistentes[p.nome] = true; });
-    produtos.forEach(function(p) {
+    (produtos || []).forEach(function(p) {
       if (bebidasExistentes[p.nome]) return;
       var cat = (p.categoria || "").toLowerCase();
       if (cat !== "bebidas" && cat !== "drinks") return;
@@ -2284,8 +2215,6 @@ function hpdvAdicionarAoPedido() {
   var obs = (document.getElementById("hpdv-modal-obs").value || "").trim();
   hpdvPedido.push({
     id: hpdvModalLanche.id,
-    cardapio_id: hpdvModalLanche.id,
-    produto_id: hpdvModalLanche.produto_id || null,
     emoji: hpdvModalLanche.emoji,
     nome: hpdvModalLanche.nome,
     preco: preco,
@@ -2394,7 +2323,6 @@ function hpdvFinalizarComanda() {
         obs: obsGeral,
         itens: hpdvPedido.map(function(i) {
           return { nome: i.nome, emoji: i.emoji || "🍔", qtd: i.qtd, preco_unitario: i.preco,
-            cardapio_id: i.cardapio_id || null, produto_id: i.produto_id || null,
             ingsRemovidos: i.ingsRemovidos, exAdicionados: i.exAdicionados, obs: i.obs || "" };
         })
       })
