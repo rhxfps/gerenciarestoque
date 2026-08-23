@@ -919,13 +919,16 @@
       <!-- REGISTRAR (Entrada / Saída unificado) -->
       <div class="screen" id="screen-registrar">
 
-        <!-- Toggle entrada/saída/histórico -->
+        <!-- Toggle entrada/saída/perda/histórico -->
         <div class="reg-toggle">
           <button class="reg-toggle-btn active" id="reg-btn-entrada" onclick="selectRegTipo('entrada')">
             <i class="ti ti-arrow-bar-to-down"></i> Entrada
           </button>
           <button class="reg-toggle-btn" id="reg-btn-saida" onclick="selectRegTipo('saida')">
             <i class="ti ti-arrow-bar-up"></i> Saída
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-perda" onclick="selectRegTipo('perda')">
+            <i class="ti ti-alert-triangle"></i> Perda
           </button>
           <button class="reg-toggle-btn" id="reg-btn-historico" onclick="selectRegTipo('historico')">
             <i class="ti ti-history"></i> Histórico
@@ -982,6 +985,31 @@
           <button class="btn btn-saida" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
         </div>
 
+        <!-- Formulário perda -->
+        <div class="card" id="reg-form-perda" style="display:none">
+          <div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--amber)"></i> Registrar perda</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><input type="text" id="p-perda-produto" list="p-perda-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="p-perda-produto-list"></datalist></div>
+            <div class="form-group">
+              <label>Quantidade perdida</label>
+              <div class="qty-unit-wrap">
+                <input type="number" id="p-perda-qty" placeholder="0" min="0" step="0.001">
+                <select id="p-perda-unidade" class="qty-unit-select">
+                  <option value="un">un</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="l">L</option>
+                  <option value="ml">ml</option>
+                  <option value="cx">cx</option>
+                  <option value="pct">pct</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"><label>Motivo da perda *</label><input type="text" id="p-perda-motivo" placeholder="Ex: Vencido, quebrado, deteriorado..."></div>
+          <button class="btn btn-perda" onclick="addPerda()"><i class="ti ti-check"></i> Confirmar perda</button>
+        </div>
+
         <!-- Histórico -->
         <div class="card" id="reg-form-historico" style="display:none">
           <div class="card-title"><i class="ti ti-history"></i> Histórico de movimentações</div>
@@ -990,6 +1018,7 @@
               <option value="">Todos os tipos</option>
               <option value="entrada">Entradas</option>
               <option value="saida">Saídas</option>
+              <option value="perda">Perdas</option>
             </select>
             <select id="h-filtro-prod" onchange="renderHistorico()" style="width:200px">
               <option value="">Todos os produtos</option>

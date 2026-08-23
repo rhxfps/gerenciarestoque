@@ -432,6 +432,7 @@ function nav(screen) {
   if (screen === 'registrar') {
     populateSelect('e-produto');
     populateSelect('s-produto');
+    populateSelect('p-perda-produto');
     const isFunc = currentUser.role !== 'dono';
     const histBtn = document.getElementById('reg-btn-historico');
     if (histBtn) histBtn.style.display = isFunc ? 'none' : '';
@@ -519,9 +520,11 @@ function selectRegTipo(tipo) {
   regTipoAtivo = tipo;
   document.getElementById('reg-btn-entrada').classList.toggle('active', tipo === 'entrada');
   document.getElementById('reg-btn-saida').classList.toggle('active', tipo === 'saida');
+  document.getElementById('reg-btn-perda').classList.toggle('active', tipo === 'perda');
   document.getElementById('reg-btn-historico').classList.toggle('active', tipo === 'historico');
   document.getElementById('reg-form-entrada').style.display = tipo === 'entrada' ? 'block' : 'none';
   document.getElementById('reg-form-saida').style.display   = tipo === 'saida'   ? 'block' : 'none';
+  document.getElementById('reg-form-perda').style.display   = tipo === 'perda'   ? 'block' : 'none';
   document.getElementById('reg-form-historico').style.display = tipo === 'historico' ? 'block' : 'none';
   if (tipo === 'historico') renderHistorico();
 }
@@ -1282,6 +1285,39 @@ async function addSaida() {
   }
 }
 
+async function addPerda() {
+  const produto = findProdutoByName(document.getElementById('p-perda-produto').value);
+  const produtoId = produto ? produto.id : null;
+  const qtdRaw    = parseFloat(document.getElementById('p-perda-qty').value);
+  const unidade   = document.getElementById('p-perda-unidade')?.value || 'un';
+  const motivo    = document.getElementById('p-perda-motivo').value.trim();
+
+  if (!produtoId) { toast('Selecione um produto!', false); return; }
+  if (!qtdRaw || qtdRaw <= 0) { toast('Quantidade deve ser maior que zero!', false); return; }
+  if (!motivo) { toast('Informe o motivo da perda!', false); return; }
+
+  const qtd = unidade === 'un' ? Math.round(qtdRaw) : qtdRaw;
+
+  const obs = `[${qtd} ${unidade}] Perda: ${motivo}`;
+
+  try {
+    await apiRequest('/movimentacoes', {
+      method: 'POST',
+      body: JSON.stringify({ tipo: 'perda', produto_id: produtoId, produto_nome: produto.nome, qtd, obs })
+    });
+
+    await loadAllData();
+    renderHistorico();
+    populateSelect('p-perda-produto');
+    document.getElementById('p-perda-qty').value = '';
+    document.getElementById('p-perda-motivo').value = '';
+    toast('Perda registrada com sucesso!');
+  } catch (error) {
+    toast(error.message || 'Erro ao registrar perda!', false);
+    console.error('Error in addPerda:', error);
+  }
+}
+
 function renderEntradas() {
   const tb = document.getElementById('tabela-entradas');
   const em = document.getElementById('entradas-empty');
@@ -1332,8 +1368,17 @@ function renderHistorico() {
   em.style.display = 'none';
   
   tb.innerHTML = mv.map(m => {
-    const badge = m.tipo === 'entrada' ? '<span class="badge badge-green">Entrada</span>' : '<span class="badge badge-red">Saída</span>';
-    const qtd = m.tipo === 'entrada' ? `<span class="tag-entrada">+${m.qtd}</span>` : `<span class="tag-saida">-${m.qtd}</span>`;
+    let badge, qtd;
+    if (m.tipo === 'entrada') {
+      badge = '<span class="badge badge-green">Entrada</span>';
+      qtd = `<span class="tag-entrada">+${m.qtd}</span>`;
+    } else if (m.tipo === 'perda') {
+      badge = '<span class="badge badge-amber">Perda</span>';
+      qtd = `<span class="tag-perda">-${m.qtd}</span>`;
+    } else {
+      badge = '<span class="badge badge-red">Saída</span>';
+      qtd = `<span class="tag-saida">-${m.qtd}</span>`;
+    }
     return `<tr><td>${fmt(m.data)}</td><td>${m.produto_nome}</td><td>${badge}</td><td>${qtd}</td><td>${m.obs || '—'}</td></tr>`;
   }).join('');
 }
