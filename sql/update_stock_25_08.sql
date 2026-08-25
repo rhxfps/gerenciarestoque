@@ -100,7 +100,7 @@ UPDATE produtos SET qtd = 0 WHERE id = 185;  -- Frango a Passarinho (3 - 3 = 0)
 -- DOCES E GULOSEIMAS
 -- ------------------------------------------------------------
 
-UPDATE produtos SET qtd = 0 WHERE id = 255;  -- Ouro Branco (15 - 19 = 0)
+UPDATE produtos SET qtd = 0 WHERE id = 255;  -- Ouro Branco (19 - 19 = 0)
 UPDATE produtos SET qtd = 2 WHERE id = 246;  -- Chup-chup (36 - 34 = 2)
 UPDATE produtos SET qtd = 0 WHERE id = 81;   -- Bala Freegells vermelhinha (61 - 66 = 0)
 UPDATE produtos SET qtd = 8 WHERE id = 221;  -- Bala Iceriss (116 - 108 = 8)
