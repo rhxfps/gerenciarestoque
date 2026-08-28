@@ -560,7 +560,8 @@ app.post('/api/vendas', autenticar, async (req, res) => {
 const LIMITE_CONSUMO_MENSAL = 50;
 
 function inicioDoMesLocal(agora = new Date()) {
-  return new Date(agora.getFullYear(), agora.getMonth(), 1);
+  // Período mensal: do dia 26 do mês anterior até o dia 25 deste mês
+  return new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
 }
 
 app.get('/api/consumo', autenticar, async (req, res) => {

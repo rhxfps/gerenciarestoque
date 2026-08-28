@@ -142,6 +142,13 @@ let toastTimer = null;
 // ==================== CONFIRMAÇÃO NO SITE (aceitar/recusar) ====================
 let confirmCallback = null;
 
+// Período mensal do sistema: começa no dia 26 do mês anterior e termina no dia 25 deste mês
+function inicioPeriodo(agora = new Date()) {
+  const d = new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function showConfirm({ title = 'Tem certeza?', message = '', confirmText = 'Confirmar', cancelText = 'Cancelar', danger = true, icon = 'ti ti-alert-triangle', onConfirm = null } = {}) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-message').textContent = message;
@@ -578,7 +585,7 @@ function renderListaVendas() {
   const segunda = new Date(hoje);
   segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
   segunda.setHours(0, 0, 0, 0);
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const primeiroDiaMes = inicioPeriodo(hoje);
   const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
 
   // Período personalizado (De/Até) tem prioridade sobre o preset
@@ -755,7 +762,7 @@ async function renderMinhasVendas() {
   const segunda = new Date(hoje);
   segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
   segunda.setHours(0, 0, 0, 0);
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const primeiroDiaMes = inicioPeriodo(hoje);
   const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
 
   const inicioDe = deVal ? new Date(deVal + 'T00:00:00') : null;
@@ -1550,9 +1557,10 @@ function renderDashboardProfissional() {
   const elValorHoje = document.getElementById('dash-valor-hoje');
   if (elValorHoje) elValorHoje.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorHoje);
 
+  const inicioPeriodoMes = inicioPeriodo(hoje);
   const vendasMes = vendas.filter(v => {
     const dataVenda = new Date(v.data);
-    return dataVenda.getMonth() === mesAtual && dataVenda.getFullYear() === anoAtual;
+    return dataVenda >= inicioPeriodoMes;
   });
   
   const elVendasMes = document.getElementById('dash-vendas-mes');
@@ -1806,20 +1814,24 @@ function renderDashSparkSemana() {
 function renderDashSparkMes() {
   const hoje  = new Date();
   const mes   = hoje.getMonth();
-  const ano   = hoje.getFullYear();
   const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const nomeEl = document.getElementById('dash-chart-mes-nome');
   if (nomeEl) nomeEl.textContent = meses[mes];
 
-  const diaAtual  = hoje.getDate();
-  const valores   = Array(diaAtual).fill(0);
-  const labels    = Array.from({length: diaAtual}, (_, i) => `Dia ${String(i+1).padStart(2,'0')}`);
+  const inicio = inicioPeriodo(hoje);
+  const fim = new Date(hoje); fim.setHours(23, 59, 59, 999);
+  const diasNoPeriodo = Math.floor((fim - inicio) / 86400000) + 1;
+  const valores   = Array(diasNoPeriodo).fill(0);
+  const labels    = Array.from({length: diasNoPeriodo}, (_, i) => {
+    const dia = new Date(inicio); dia.setDate(inicio.getDate() + i);
+    return `${String(dia.getDate()).padStart(2,'0')}/${String(dia.getMonth()+1).padStart(2,'0')}`;
+  });
 
   vendas.forEach(v => {
     const d = new Date(v.data);
-    if (d.getMonth() === mes && d.getFullYear() === ano) {
-      const dia = d.getDate() - 1;
-      if (dia < diaAtual) valores[dia] += v.total || 0;
+    if (d >= inicio && d <= fim) {
+      const idx = Math.floor((d - inicio) / 86400000);
+      if (idx >= 0 && idx < diasNoPeriodo) valores[idx] += v.total || 0;
     }
   });
 
@@ -1853,9 +1865,10 @@ function renderHDashboard() {
       var d = new Date(v.data);
       return d.getDate() === hoje.getDate() && d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
     });
+    var inicioPeriodoMes = inicioPeriodo(hoje);
     var vendasMes = vendas.filter(function(v) {
       var d = new Date(v.data);
-      return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+      return d >= inicioPeriodoMes;
     });
     var valorHoje = vendasHoje.reduce(function(a, v) { return a + (v.total || 0); }, 0);
     var valorMes = vendasMes.reduce(function(a, v) { return a + (v.total || 0); }, 0);
@@ -1978,16 +1991,16 @@ function hRenderSparkSemana(hvendas) {
 function hRenderSparkMes(hvendas) {
   hvendas = hvendas || [];
   var hoje = new Date();
-  var mes = hoje.getMonth();
-  var ano = hoje.getFullYear();
-  var diaAtual = hoje.getDate();
+  var inicio = inicioPeriodo(hoje);
+  var fim = new Date(hoje); fim.setHours(23, 59, 59, 999);
+  var diasNoPeriodo = Math.floor((fim - inicio) / 86400000) + 1;
   var valores = [];
-  for (var i = 0; i < diaAtual; i++) valores.push(0);
+  for (var i = 0; i < diasNoPeriodo; i++) valores.push(0);
   hvendas.forEach(function(v) {
     var d = new Date(v.data);
-    if (d.getMonth() === mes && d.getFullYear() === ano) {
-      var dia = d.getDate() - 1;
-      if (dia < diaAtual) valores[dia] += v.total || 0;
+    if (d >= inicio && d <= fim) {
+      var idx = Math.floor((d - inicio) / 86400000);
+      if (idx >= 0 && idx < diasNoPeriodo) valores[idx] += v.total || 0;
     }
   });
   var wrap = document.getElementById('h-dash-spark-mes');
@@ -1999,12 +2012,16 @@ function hRenderSparkMes(hvendas) {
   if (totalEl) totalEl.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
   if (qtdEl) qtdEl.textContent = hvendas.filter(function(v) {
     var d = new Date(v.data);
-    return d.getMonth() === mes && d.getFullYear() === ano;
+    return d >= inicio && d <= fim;
   }).length;
   wrap.innerHTML = valores.map(function(v, i) {
     var h = Math.max(4, Math.round((v / max) * 100));
-    var cls = i === diaAtual - 1 ? 'h-dash-spark-bar today' : 'h-dash-spark-bar';
-    return '<div class="' + cls + '" style="height:' + h + '%" title="Dia ' + (i+1) + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v) + '"></div>';
+    var cls = i === diasNoPeriodo - 1 ? 'h-dash-spark-bar today' : 'h-dash-spark-bar';
+    var dia = new Date(inicio); dia.setDate(inicio.getDate() + i);
+    var dd = (dia.getDate() < 10 ? '0' : '') + dia.getDate();
+    var mm = (dia.getMonth()+1 < 10 ? '0' : '') + (dia.getMonth()+1);
+    var titulo = dd + '/' + mm + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+    return '<div class="' + cls + '" style="height:' + h + '%" title="' + titulo + '"></div>';
   }).join('');
 }
 
@@ -2572,7 +2589,7 @@ function hVendasCarregar() {
     var dia = agora.getDay();
     inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - dia);
   } else if (periodo === "mes") {
-    inicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
+    inicio = inicioPeriodo(agora);
   } else if (periodo === "ano") {
     inicio = new Date(agora.getFullYear(), 0, 1);
   }
@@ -5122,7 +5139,7 @@ function exportarVendasSQL() {
   const segunda = new Date(hoje);
   segunda.setDate(hoje.getDate() - ((diaSemana + 6) % 7));
   segunda.setHours(0, 0, 0, 0);
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const primeiroDiaMes = inicioPeriodo(hoje);
   const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
 
   const inicioDe = deVal ? new Date(deVal + 'T00:00:00') : null;
@@ -5248,9 +5265,10 @@ async function loadGastos() {
 function updateGastosKPIs() {
   const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
   const hoje = new Date();
+  const inicioPeriodoMes = inicioPeriodo(hoje);
   const mesAtual = gastosData.filter(g => {
     const d = new Date(g.data);
-    return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+    return d >= inicioPeriodoMes;
   });
   const fixosMes = mesAtual.filter(g => g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
   const variaveisMes = mesAtual.filter(g => !g.fixo).reduce((s, g) => s + (g.valor || 0), 0);
