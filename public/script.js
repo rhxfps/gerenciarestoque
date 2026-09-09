@@ -333,7 +333,7 @@ function updateMenuByRole() {
   if (mobileFunc) mobileFunc.style.display = isDono ? 'flex' : 'none';
 
   // Itens da seção funcionários: sempre visíveis
-  const funcItems = ['minhas-vendas', 'vendas', 'caixa', 'consumo'];
+  const funcItems = ['minhas-vendas', 'vendas', 'caixa', 'consumo', 'receitas'];
   funcItems.forEach(item => {
     const el = document.getElementById(`nav-${item}`);
     if (el) el.style.display = 'block';
@@ -399,6 +399,7 @@ const titles = {
   vendas:       'Comandas/Vendas',
   caixa:        'Caixa',
   consumo:      'Consumo',
+  receitas:     'Receitas',
   contagem:     'Contagem de Estoque',
   gastos:       'Gastos',
   admin:        'Admin',
@@ -414,7 +415,7 @@ function nav(screen) {
   // Pular role guard para telas hamburguer
   if (screen && screen.indexOf('h-') === 0) {
     // hamburguer screens - sem restricao
-  } else if (screen === 'consumo') {
+  } else if (screen === 'consumo' || screen === 'receitas') {
     if (currentUser.role !== 'dono' && currentUser.role !== 'funcionario') {
       toast('Acesso negado!', false);
       nav('vendas');
@@ -455,6 +456,7 @@ function nav(screen) {
   }
   if (screen === 'lista-vendas') renderListaVendas();
   if (screen === 'minhas-vendas') renderMinhasVendas();
+  if (screen === 'receitas') renderReceitas();
   if (screen === 'relatorio')    renderRelatorio();
   if (screen === 'caixa')        renderCaixa();
   if (screen === 'admin')        selectAdminTipo(adminTipoAtivo);
@@ -3893,7 +3895,6 @@ function selectAdminTipo(tipo) {
   if (tipo === 'usuarios') renderUsuarios();
   if (tipo === 'consumo') selectAdminConsumo(adminConsumoAtivo);
   if (tipo === 'atividade') renderAtividade();
-  if (tipo === 'receitas') renderReceitas();
 }
 
 async function renderAtividade() {
@@ -3931,7 +3932,7 @@ async function renderAtividade() {
   }).join('');
 }
 
-// ==================== RECEITAS (Admin) ====================
+// ==================== RECEITAS ====================
 let receitas = [];
 let recDetalheAtual = null;
 
@@ -3943,14 +3944,16 @@ async function renderReceitas() {
   }
   const grid = document.getElementById('rec-grid');
   const em = document.getElementById('receitas-empty');
-  document.getElementById('rec-count').textContent = `${receitas.length} receita(s)`;
+  const cnt = document.getElementById('rec-count');
+  if (cnt) cnt.textContent = `${receitas.length} receita(s)`;
+  if (!grid) return;
 
   if (!receitas.length) {
     grid.innerHTML = '';
-    em.style.display = 'flex';
+    if (em) em.style.display = 'flex';
     return;
   }
-  em.style.display = 'none';
+  if (em) em.style.display = 'none';
 
   grid.innerHTML = receitas.map(r => {
     const n = (r.itens || []).length;
@@ -3966,47 +3969,12 @@ async function renderReceitas() {
   }).join('');
 }
 
-function recAbrirCriar() {
-  document.getElementById('rec-nome').value = '';
-  document.getElementById('rec-desc').value = '';
-  document.getElementById('modal-nova-receita').classList.add('show');
-}
-
-function recFecharCriar(e) {
-  if (e && e.target && e.target !== e.currentTarget) return;
-  document.getElementById('modal-nova-receita').classList.remove('show');
-}
-
-async function recSalvarCriar() {
-  const nome = document.getElementById('rec-nome').value.trim();
-  if (!nome) return toast('Informe o nome da receita', false);
-  const descricao = document.getElementById('rec-desc').value.trim();
-  try {
-    await apiRequest('/receitas', { method: 'POST', body: JSON.stringify({ nome, descricao }) });
-    toast('Receita criada!');
-    recFecharCriar();
-    renderReceitas();
-  } catch (err) {
-    toast(err.message, false);
-  }
-}
-
 async function recAbrirDetalhes(id) {
   recDetalheAtual = receitas.find(r => r.id === id);
   if (!recDetalheAtual) return;
-
-  const itens = recDetalheAtual.itens || [];
-  document.getElementById('rec-modal-id').value = id;
   document.getElementById('rec-modal-titulo').innerHTML = `<i class="ti ti-book-2"></i> ${esc(recDetalheAtual.nome)}`;
   document.getElementById('rec-modal-desc').textContent = recDetalheAtual.descricao || '';
-
   recRenderItens();
-
-  const dl = document.getElementById('rec-produto-list');
-  dl.innerHTML = (produtos || []).map(p => `<option value="${esc(p.nome)}">`).join('');
-  document.getElementById('rec-add-nome').value = '';
-  document.getElementById('rec-add-qtd').value = '';
-
   document.getElementById('modal-rec-detalhes').classList.add('show');
 }
 
@@ -4015,19 +3983,19 @@ function recRenderItens() {
   if (!recDetalheAtual) return;
   const itens = recDetalheAtual.itens || [];
   if (!itens.length) {
-    body.innerHTML = '<div class="empty" style="padding:.5rem"><i class="ti ti-list"></i>Nenhum ingrediente adicionado.</div>';
+    body.innerHTML = '<div class="empty" style="padding:.5rem"><i class="ti ti-list"></i>Nenhum ingrediente cadastrado.</div>';
     return;
   }
   body.innerHTML = itens.map(i => {
     const p = i.produtos || {};
+    const med = i.medida && i.medida !== 'un' ? ` <span style="color:var(--text-dim);font-weight:400">(${esc(i.medida)})</span>` : '';
     return `
       <div class="rec-item">
         <div class="rec-item-info">
-          <div class="rec-item-nome">${esc(p.nome || 'Produto')}</div>
+          <div class="rec-item-nome">${esc(p.nome || 'Produto')}${med}</div>
           <div class="rec-item-cat">${esc(p.categoria || '')}${p.preco ? ' · ' + fmtMoeda(p.preco) : ''}</div>
         </div>
-        <div class="rec-item-qtd">${fmtQtd(i.qtd)}</div>
-        <button class="rec-item-del" onclick="recRemoverItem(${i.id})" title="Remover"><i class="ti ti-trash"></i></button>
+        <div class="rec-item-qtd">${fmtQtd(i.qtd)} <span style="font-weight:400">${esc(i.medida || '')}</span></div>
       </div>`;
   }).join('');
 }
@@ -4038,67 +4006,60 @@ function recFecharDetalhes(e) {
   document.getElementById('modal-rec-detalhes').classList.remove('show');
 }
 
-async function recAddItem() {
-  const nome = document.getElementById('rec-add-nome').value.trim();
-  const qtd = parseFloat(document.getElementById('rec-add-qtd').value);
-  const info = (produtos || []).find(p => p.nome === nome);
-  if (!info) return toast('Selecione um produto válido', false);
-  if (!qtd || qtd <= 0) return toast('Informe a quantidade', false);
+// ==================== FAZER RECEITAS (Admin) ====================
+function recFazerAbrir() {
+  const sel = document.getElementById('fr-receita');
+  sel.innerHTML = receitas.map(r => `<option value="${r.id}">${esc(r.nome)}</option>`).join('') || '<option value="">Nenhuma receita cadastrada</option>';
+  document.getElementById('fr-qtd').value = '1';
+  document.getElementById('fr-obs').value = '';
+  recFazerSelecionar();
+  document.getElementById('modal-fazer-receita').classList.add('show');
+}
 
+function recFazerSelecionar() {
+  const id = Number(document.getElementById('fr-receita').value);
+  const rec = receitas.find(r => r.id === id);
+  const box = document.getElementById('fr-itens');
+  if (!rec || !(rec.itens || []).length) {
+    box.innerHTML = '<div class="empty" style="padding:.5rem"><i class="ti ti-list"></i>Nenhum ingrediente nesta receita.</div>';
+    return;
+  }
+  box.innerHTML = (rec.itens || []).map(i => {
+    const p = i.produtos || {};
+    const med = i.medida && i.medida !== 'un' ? ` <span style="color:var(--text-dim);font-weight:400">(${esc(i.medida)})</span>` : '';
+    return `
+      <div class="rec-item">
+        <div class="rec-item-info">
+          <div class="rec-item-nome">${esc(p.nome || 'Produto')}${med}</div>
+          <div class="rec-item-cat">${esc(p.categoria || '')}</div>
+        </div>
+        <div class="rec-item-qtd">${fmtQtd(i.qtd)}</div>
+      </div>`;
+  }).join('');
+}
+
+function recFazerFechar(e) {
+  if (e && e.target && e.target !== e.currentTarget) return;
+  document.getElementById('modal-fazer-receita').classList.remove('show');
+}
+
+async function recFazerRegistrar() {
+  const id = Number(document.getElementById('fr-receita').value);
+  const qtd = parseFloat(document.getElementById('fr-qtd').value);
+  const rec = receitas.find(r => r.id === id);
+  if (!rec) return toast('Selecione uma receita', false);
+  if (!qtd || qtd <= 0) return toast('Informe a quantidade produzida', false);
+  const obs = document.getElementById('fr-obs').value.trim();
   try {
-    await apiRequest(`/receitas/${recDetalheAtual.id}/itens`, {
+    await apiRequest(`/receitas/${id}/produzir`, {
       method: 'POST',
-      body: JSON.stringify({ produto_id: info.id, qtd })
+      body: JSON.stringify({ quantidade: qtd, obs })
     });
-    toast('Ingrediente adicionado!');
-    await recRefreshDetalhe();
-    recRenderItens();
+    toast(`Produção registrada: ${rec.nome}!`);
+    recFazerFechar();
   } catch (err) {
     toast(err.message, false);
   }
-}
-
-async function recRefreshDetalhe() {
-  receitas = await apiRequest('/receitas');
-  recDetalheAtual = receitas.find(r => r.id === recDetalheAtual.id);
-}
-
-async function recRemoverItem(itemId) {
-  showConfirm({
-    title: 'Remover ingrediente?',
-    message: 'Deseja remover este ingrediente da receita?',
-    confirmText: 'Remover',
-    icon: 'ti ti-trash',
-    onConfirm: async () => {
-      try {
-        await apiRequest(`/receitas/${recDetalheAtual.id}/itens/${itemId}`, { method: 'DELETE' });
-        toast('Ingrediente removido!');
-        await recRefreshDetalhe();
-        recRenderItens();
-      } catch (err) {
-        toast(err.message, false);
-      }
-    }
-  });
-}
-
-function recExcluirReceita() {
-  showConfirm({
-    title: 'Excluir receita?',
-    message: `Deseja excluir "${recDetalheAtual.nome}"? Os ingredientes também serão removidos.`,
-    confirmText: 'Excluir',
-    icon: 'ti ti-trash',
-    onConfirm: async () => {
-      try {
-        await apiRequest(`/receitas/${recDetalheAtual.id}`, { method: 'DELETE' });
-        toast('Receita excluída!');
-        recFecharDetalhes();
-        renderReceitas();
-      } catch (err) {
-        toast(err.message, false);
-      }
-    }
-  });
 }
 
 function fmtQtd(v) {

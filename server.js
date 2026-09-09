@@ -1764,12 +1764,12 @@ app.delete('/api/receitas/:id', autenticar, async (req, res) => {
 
 app.post('/api/receitas/:id/itens', autenticar, async (req, res) => {
   if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
-  const { produto_id, qtd } = req.body;
+  const { produto_id, qtd, medida } = req.body;
   if (!produto_id || !qtd) return res.status(400).json({ error: 'Informe o produto e a quantidade' });
   try {
     const { data, error } = await supabase
       .from('receita_itens')
-      .insert([{ receita_id: req.params.id, produto_id, qtd }])
+      .insert([{ receita_id: req.params.id, produto_id, qtd, ...(medida ? { medida } : {}) }])
       .select()
       .single();
     if (error) throw error;
@@ -1786,6 +1786,31 @@ app.delete('/api/receitas/:id/itens/:itemId', autenticar, async (req, res) => {
       .from('receita_itens').delete().eq('id', req.params.itemId);
     if (error) throw error;
     res.json({ deleted: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/receitas/:id/produzir', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono' && req.usuario.role !== 'funcionario') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+  const { quantidade, obs } = req.body;
+  const qtd = parseFloat(quantidade);
+  if (!qtd || qtd <= 0) return res.status(400).json({ error: 'Informe a quantidade produzida' });
+  try {
+    const { data, error } = await supabase
+      .from('receita_producoes')
+      .insert([{
+        receita_id: req.params.id,
+        quantidade: qtd,
+        obs: obs || '',
+        usuario_id: req.usuario.id
+      }])
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
