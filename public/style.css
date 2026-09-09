@@ -259,6 +259,110 @@ nav#nav { flex: 1; padding: 0.25rem 0; }
   opacity: .7;
 }
 
+/* ==================== RECEITAS (Admin) ==================== */
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.rec-card {
+  border: 1px solid var(--border-mid);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+  text-align: left;
+  min-height: 84px;
+}
+.rec-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.15);
+}
+.rec-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rec-card-nome {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.rec-card-ing {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.rec-card-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.rec-card-chevron {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.rec-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+.rec-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.rec-item-nome {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.rec-item-cat {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.rec-item-qtd {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.rec-item-del {
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: color .2s, background .2s;
+}
+.rec-item-del:hover {
+  color: var(--red);
+  background: rgba(239,68,68,.12);
+}
+
+.rec-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.rec-add-row input[type="text"] {
+  flex: 1;
+}
+
 /* sidebar footer */
 .sidebar-footer {
   padding: 1rem 1rem 0.85rem;

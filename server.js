@@ -500,19 +500,28 @@ app.get('/api/vendas', autenticar, async (req, res) => {
       .order('data', { ascending: false });
     if (vendasError) throw vendasError;
 
-    // Itens de todas as vendas em UMA consulta (evita N+1)
+    // Itens de todas as vendas em consultas em blocos (evita N+1 e passa de 1000 linhas)
     const ids = (vendas || []).map(v => v.id);
     const itensPorVenda = new Map();
     if (ids.length) {
-      const { data: itens, error: itensError } = await supabase
-        .from('venda_itens')
-        .select('*')
-        .in('venda_id', ids);
-      if (itensError) throw itensError;
-      for (const it of itens || []) {
-        const arr = itensPorVenda.get(it.venda_id) || [];
-        arr.push(it);
-        itensPorVenda.set(it.venda_id, arr);
+      const LIMITE = 1000;
+      let inicio = 0;
+      let maisLinhas = true;
+      while (maisLinhas) {
+        const { data: itens, error: itensError } = await supabase
+          .from('venda_itens')
+          .select('*')
+          .in('venda_id', ids)
+          .order('venda_id', { ascending: true })
+          .range(inicio, inicio + LIMITE - 1);
+        if (itensError) throw itensError;
+        for (const it of itens || []) {
+          const arr = itensPorVenda.get(it.venda_id) || [];
+          arr.push(it);
+          itensPorVenda.set(it.venda_id, arr);
+        }
+        maisLinhas = (itens || []).length === LIMITE;
+        inicio += LIMITE;
       }
     }
 
@@ -1695,6 +1704,88 @@ app.delete('/api/hamburguer/cardapio/:id', autenticar, async (req, res) => {
     const { error } = await supabase.from('hamburguer_cardapio').update({ ativo: false }).eq('id', req.params.id);
     if (error) throw error;
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== RECEITAS ====================
+app.get('/api/receitas', autenticar, async (req, res) => {
+  try {
+    const { data: receitas, error } = await supabase
+      .from('receitas').select('*').order('nome');
+    if (error) { console.warn('receitas:', error.message); return res.json([]); }
+
+    const ids = (receitas || []).map(r => r.id);
+    let itensMap = {};
+    if (ids.length) {
+      const { data: itens } = await supabase
+        .from('receita_itens')
+        .select('id, receita_id, produto_id, qtd, produtos(id, nome, categoria, preco)')
+        .in('receita_id', ids)
+        .order('id');
+      for (const i of itens || []) {
+        if (!itensMap[i.receita_id]) itensMap[i.receita_id] = [];
+        itensMap[i.receita_id].push(i);
+      }
+    }
+    res.json((receitas || []).map(r => ({ ...r, itens: itensMap[r.id] || [] })));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar receitas' });
+  }
+});
+
+app.post('/api/receitas', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { nome, descricao } = req.body;
+  if (!nome) return res.status(400).json({ error: 'Informe o nome da receita' });
+  try {
+    const { data, error } = await supabase
+      .from('receitas')
+      .insert([{ nome, descricao: descricao || '' }])
+      .select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/receitas/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { error } = await supabase.from('receitas').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ deleted: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/receitas/:id/itens', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { produto_id, qtd } = req.body;
+  if (!produto_id || !qtd) return res.status(400).json({ error: 'Informe o produto e a quantidade' });
+  try {
+    const { data, error } = await supabase
+      .from('receita_itens')
+      .insert([{ receita_id: req.params.id, produto_id, qtd }])
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/receitas/:id/itens/:itemId', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { error } = await supabase
+      .from('receita_itens').delete().eq('id', req.params.itemId);
+    if (error) throw error;
+    res.json({ deleted: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

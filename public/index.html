@@ -1633,6 +1633,9 @@
           <button class="reg-toggle-btn" id="admin-btn-atividade" onclick="selectAdminTipo('atividade')">
             <i class="ti ti-clipboard-list"></i> Atividade
           </button>
+          <button class="reg-toggle-btn" id="admin-btn-receitas" onclick="selectAdminTipo('receitas')">
+            <i class="ti ti-book-2"></i> Receitas
+          </button>
         </div>
 
         <div id="admin-view-usuarios">
@@ -1795,6 +1798,21 @@
             <div id="atividade-empty" class="empty" style="display:none">
               <i class="ti ti-clipboard-off"></i>Nenhuma movimentação registrada.
             </div>
+          </div>
+        </div>
+
+        <!-- ===== RECEITAS ===== -->
+        <div id="admin-view-receitas" style="display:none">
+          <div class="card">
+            <div class="section-header">
+              <h2><i class="ti ti-book-2"></i> Receitas de pastéis</h2>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span id="rec-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <button class="btn btn-primary" onclick="recAbrirCriar()"><i class="ti ti-plus"></i> Nova receita</button>
+              </div>
+            </div>
+            <div class="rec-grid" id="rec-grid"></div>
+            <div id="receitas-empty" class="empty" style="display:none"><i class="ti ti-book-off"></i>Nenhuma receita cadastrada ainda.<br>Clique em "Nova receita" para começar.</div>
           </div>
         </div>
 
@@ -2405,6 +2423,62 @@
         <button class="btn" onclick="closeEditarProduto()">
           <i class="ti ti-x"></i> Cancelar
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nova receita -->
+<div class="modal-overlay" id="modal-nova-receita" onclick="recFecharCriar(event)">
+  <div class="modal-content" style="max-width:460px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="ti ti-book-2"></i> Nova receita</h3>
+      <button class="modal-close" onclick="recFecharCriar()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <div class="form-group">
+        <label>Nome da receita</label>
+        <input type="text" id="rec-nome" placeholder="Ex: Pastel de Carne">
+      </div>
+      <div class="form-group">
+        <label>Descrição (opcional)</label>
+        <input type="text" id="rec-desc" placeholder="Ex: Massa + recheio de carne">
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem">
+        <button class="btn" onclick="recFecharCriar()"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn btn-primary" onclick="recSalvarCriar()"><i class="ti ti-check"></i> Criar receita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalhes / editar receita -->
+<div class="modal-overlay" id="modal-rec-detalhes" onclick="recFecharDetalhes(event)">
+  <div class="modal-content" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="rec-modal-titulo"><i class="ti ti-book-2"></i> Receita</h3>
+      <button class="modal-close" onclick="recFecharDetalhes()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <p id="rec-modal-desc" style="color:var(--text-secondary);margin-bottom:1rem;font-size:13px"></p>
+      <input type="hidden" id="rec-modal-id">
+
+      <div class="card-title" style="margin-bottom:.75rem"><i class="ti ti-list"></i> Ingredientes</div>
+      <div id="rec-modal-itens"></div>
+
+      <div class="form-group" style="margin-top:1rem">
+        <label>Adicionar produto</label>
+        <div class="rec-add-row">
+          <input type="text" id="rec-add-nome" list="rec-produto-list" placeholder="Pesquisar produto..." autocomplete="off">
+          <datalist id="rec-produto-list"></datalist>
+          <input type="number" id="rec-add-qtd" placeholder="Qtd" min="0" step="0.001" style="width:90px">
+          <button class="btn btn-primary" onclick="recAddItem()"><i class="ti ti-plus"></i></button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:space-between;margin-top:1.25rem">
+        <button class="btn btn-danger" onclick="recExcluirReceita()"><i class="ti ti-trash"></i> Excluir receita</button>
+        <button class="btn" onclick="recFecharDetalhes()"><i class="ti ti-x"></i> Fechar</button>
       </div>
     </div>
   </div>
