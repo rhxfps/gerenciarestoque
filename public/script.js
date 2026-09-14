@@ -63,6 +63,7 @@ function goHamburguer() {
 // Variáveis globais
 let produtos = [];
 let movimentacoes = [];
+let movimentacoesLog = []; // com usuario_nome
 let vendas = [];
 let usuarios = [];
 let vendaItens = [];
@@ -274,6 +275,7 @@ async function login() {
     await loadAllData();
     showApp();
     toast('Login realizado com sucesso!');
+    checkContagemHoje(); // verifica contagem ao entrar no sistema
   } catch (error) {
     console.error('Erro no login:', error);
     toast(error.message || 'Erro ao fazer login!', false);
@@ -353,6 +355,14 @@ async function loadAllData() {
       currentUser.role === 'dono' ? apiRequest('/movimentacoes') : [],
       apiRequest('/vendas')
     ]);
+
+    if (currentUser.role === 'dono') {
+      movimentacoesLog = await apiRequest('/movimentacoes/log').catch(() => []);
+      // Mesclar usuario_nome nas movimentacoes
+      const logMap = {};
+      (movimentacoesLog || []).forEach(m => { logMap[m.id] = m.usuario_nome; });
+      movimentacoes = movimentacoes.map(m => ({ ...m, usuario_nome: logMap[m.id] || null }));
+    }
 
     if (currentUser.role === 'dono') {
       gastosData = await apiRequest('/gastos').catch(() => []);
@@ -1364,39 +1374,220 @@ function renderSaidas() {
   tb.innerHTML = mv.slice(0, 50).map(m => `<tr><td>${m.produto_nome}</td><td class="text-red"><strong>-${m.qtd}</strong></td><td>${m.obs || '—'}</td><td>${fmt(m.data)}</td></tr>`).join('');
 }
 
+// ==================== HISTÓRICO — estado ====================
+let hPeriodo    = 'tudo';
+let hPagina     = 1;
+const H_POR_PAG = 50;
+
+function setHPeriodo(p) {
+  hPeriodo = p;
+  hPagina  = 1;
+  // chips
+  document.querySelectorAll('.h-chip').forEach(c =>
+    c.classList.toggle('active', c.dataset.periodo === p));
+  // mostrar/ocultar range customizado
+  const range = document.getElementById('h-custom-range');
+  if (range) range.style.display = p === 'custom' ? 'flex' : 'none';
+  renderHistorico();
+}
+
+function hFiltrarPeriodo(mv) {
+  const agora = new Date();
+  if (hPeriodo === 'hoje') {
+    const ini = new Date(agora); ini.setHours(0,0,0,0);
+    return mv.filter(m => new Date(m.data) >= ini);
+  }
+  if (hPeriodo === 'semana') {
+    const ini = new Date(agora);
+    ini.setDate(agora.getDate() - ((agora.getDay() + 6) % 7));
+    ini.setHours(0,0,0,0);
+    return mv.filter(m => new Date(m.data) >= ini);
+  }
+  if (hPeriodo === 'mes') {
+    const ini = new Date(agora.getFullYear(), agora.getMonth(), 1);
+    return mv.filter(m => new Date(m.data) >= ini);
+  }
+  if (hPeriodo === 'custom') {
+    const deVal  = document.getElementById('h-filtro-de')?.value;
+    const ateVal = document.getElementById('h-filtro-ate')?.value;
+    return mv.filter(m => {
+      const d = new Date(m.data);
+      if (deVal  && d < new Date(deVal + 'T00:00:00'))  return false;
+      if (ateVal && d > new Date(ateVal + 'T23:59:59')) return false;
+      return true;
+    });
+  }
+  return mv; // 'tudo'
+}
+
+function renderHistoricoKPIs(mv) {
+  const el = document.getElementById('h-kpis');
+  if (!el) return;
+  if (!mv.length) { el.style.display = 'none'; return; }
+  const totEnt   = mv.filter(m => m.tipo === 'entrada').reduce((a, m) => a + Number(m.qtd), 0);
+  const totSai   = mv.filter(m => m.tipo === 'saida').reduce((a, m) => a + Number(m.qtd), 0);
+  const totPerd  = mv.filter(m => m.tipo === 'perda').reduce((a, m) => a + Number(m.qtd), 0);
+  const nEnt     = mv.filter(m => m.tipo === 'entrada').length;
+  const nSai     = mv.filter(m => m.tipo === 'saida').length;
+  const nPerd    = mv.filter(m => m.tipo === 'perda').length;
+  el.style.display = 'flex';
+  el.innerHTML = `
+    <div class="h-kpi h-kpi--green">
+      <span class="h-kpi-label"><i class="ti ti-arrow-bar-to-down"></i> Entradas</span>
+      <span class="h-kpi-val">+${totEnt}</span>
+      <span class="h-kpi-sub">${nEnt} registro${nEnt !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="h-kpi h-kpi--red">
+      <span class="h-kpi-label"><i class="ti ti-arrow-bar-up"></i> Saídas</span>
+      <span class="h-kpi-val">-${totSai}</span>
+      <span class="h-kpi-sub">${nSai} registro${nSai !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="h-kpi h-kpi--amber">
+      <span class="h-kpi-label"><i class="ti ti-alert-triangle"></i> Perdas</span>
+      <span class="h-kpi-val">-${totPerd}</span>
+      <span class="h-kpi-sub">${nPerd} registro${nPerd !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="h-kpi h-kpi--blue">
+      <span class="h-kpi-label"><i class="ti ti-list"></i> Total</span>
+      <span class="h-kpi-val">${mv.length}</span>
+      <span class="h-kpi-sub">movimentações</span>
+    </div>`;
+}
+
+function renderHistoricoPaginacao(total) {
+  const el = document.getElementById('h-paginacao');
+  if (!el) return;
+  const totalPags = Math.ceil(total / H_POR_PAG);
+  if (totalPags <= 1) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+
+  let btns = '';
+  // Anterior
+  btns += `<button class="h-pag-btn${hPagina === 1 ? ' disabled' : ''}" onclick="hIrPagina(${hPagina - 1})"
+    ${hPagina === 1 ? 'disabled' : ''}><i class="ti ti-chevron-left"></i></button>`;
+
+  // Páginas: mostra janela de 5 ao redor da atual
+  const janela = 2;
+  for (let i = 1; i <= totalPags; i++) {
+    if (i === 1 || i === totalPags || (i >= hPagina - janela && i <= hPagina + janela)) {
+      btns += `<button class="h-pag-btn${i === hPagina ? ' active' : ''}" onclick="hIrPagina(${i})">${i}</button>`;
+    } else if (i === hPagina - janela - 1 || i === hPagina + janela + 1) {
+      btns += `<span class="h-pag-ellipsis">…</span>`;
+    }
+  }
+
+  // Próximo
+  btns += `<button class="h-pag-btn${hPagina === totalPags ? ' disabled' : ''}" onclick="hIrPagina(${hPagina + 1})"
+    ${hPagina === totalPags ? 'disabled' : ''}><i class="ti ti-chevron-right"></i></button>`;
+
+  const ini = (hPagina - 1) * H_POR_PAG + 1;
+  const fim = Math.min(hPagina * H_POR_PAG, total);
+  el.innerHTML = `<span class="h-pag-info">${ini}–${fim} de ${total}</span>${btns}`;
+}
+
+function hIrPagina(p) {
+  const total = hGetFiltrados().length;
+  const totalPags = Math.ceil(total / H_POR_PAG);
+  if (p < 1 || p > totalPags) return;
+  hPagina = p;
+  renderHistorico();
+  // Scroll suave até o topo da tabela
+  const card = document.getElementById('reg-form-historico');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hGetFiltrados() {
+  const tipo  = document.getElementById('h-filtro-tipo')?.value || '';
+  const pid   = document.getElementById('h-filtro-prod')?.value || '';
+  const busca = (document.getElementById('h-filtro-busca')?.value || '').toLowerCase().trim();
+  let mv = hFiltrarPeriodo([...movimentacoes]);
+  if (tipo)  mv = mv.filter(m => m.tipo === tipo);
+  if (pid)   mv = mv.filter(m => m.produto_id === parseInt(pid));
+  if (busca) mv = mv.filter(m =>
+    (m.produto_nome || '').toLowerCase().includes(busca) ||
+    (m.obs || '').toLowerCase().includes(busca) ||
+    (m.usuario_nome || '').toLowerCase().includes(busca));
+  return mv;
+}
+
 function renderHistorico() {
-  const tipo = document.getElementById('h-filtro-tipo').value;
-  const pid = document.getElementById('h-filtro-prod').value;
-  let mv = [...movimentacoes];
-  
-  if (tipo) mv = mv.filter(m => m.tipo === tipo);
-  if (pid) mv = mv.filter(m => m.produto_id === parseInt(pid));
-  
-  const tb = document.getElementById('tabela-historico');
-  const em = document.getElementById('historico-empty');
-  document.getElementById('h-count').textContent = `${mv.length} registro(s)`;
-  
+  const mv  = hGetFiltrados();
+  const tb  = document.getElementById('tabela-historico');
+  const em  = document.getElementById('historico-empty');
+
+  // Garantir que página não ultrapasse o máximo
+  const totalPags = Math.max(1, Math.ceil(mv.length / H_POR_PAG));
+  if (hPagina > totalPags) hPagina = totalPags;
+
+  document.getElementById('h-count').textContent =
+    mv.length ? `${mv.length} registro${mv.length !== 1 ? 's' : ''}` : '';
+
+  renderHistoricoKPIs(mv);
+
   if (!mv.length) {
     tb.innerHTML = '';
     em.style.display = 'block';
+    renderHistoricoPaginacao(0);
     return;
   }
   em.style.display = 'none';
-  
-  tb.innerHTML = mv.map(m => {
-    let badge, qtd;
+
+  // Fatia da página atual
+  const ini  = (hPagina - 1) * H_POR_PAG;
+  const page = mv.slice(ini, ini + H_POR_PAG);
+
+  tb.innerHTML = page.map(m => {
+    let badge, qtdHtml;
     if (m.tipo === 'entrada') {
-      badge = '<span class="badge badge-green">Entrada</span>';
-      qtd = `<span class="tag-entrada">+${m.qtd}</span>`;
+      badge   = '<span class="badge badge-green">Entrada</span>';
+      qtdHtml = `<span class="tag-entrada">+${m.qtd}</span>`;
     } else if (m.tipo === 'perda') {
-      badge = '<span class="badge badge-amber">Perda</span>';
-      qtd = `<span class="tag-perda">-${m.qtd}</span>`;
+      badge   = '<span class="badge badge-amber">Perda</span>';
+      qtdHtml = `<span class="tag-perda">-${m.qtd}</span>`;
     } else {
-      badge = '<span class="badge badge-red">Saída</span>';
-      qtd = `<span class="tag-saida">-${m.qtd}</span>`;
+      badge   = '<span class="badge badge-red">Saída</span>';
+      qtdHtml = `<span class="tag-saida">-${m.qtd}</span>`;
     }
-    return `<tr><td>${fmt(m.data)}</td><td>${m.produto_nome}</td><td>${badge}</td><td>${qtd}</td><td>${m.obs || '—'}</td></tr>`;
+    const usuario = m.usuario_nome
+      ? `<span class="h-user-badge"><i class="ti ti-user"></i>${esc(m.usuario_nome)}</span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+    return `<tr>
+      <td style="white-space:nowrap">${fmt(m.data)}</td>
+      <td>${esc(m.produto_nome)}</td>
+      <td>${badge}</td>
+      <td>${qtdHtml}</td>
+      <td style="color:var(--text-secondary);font-size:13px">${esc(m.obs) || '—'}</td>
+      <td>${usuario}</td>
+    </tr>`;
   }).join('');
+
+  renderHistoricoPaginacao(mv.length);
+}
+
+function exportHistoricoCSV() {
+  const mv = hGetFiltrados();
+  if (!mv.length) { toast('Nenhum registro para exportar!', false); return; }
+
+  const cabecalho = ['Data/Hora', 'Produto', 'Tipo', 'Qtd', 'Observação', 'Usuário'];
+  const linhas = mv.map(m => [
+    fmt(m.data),
+    m.produto_nome || '',
+    m.tipo || '',
+    m.qtd,
+    m.obs || '',
+    m.usuario_nome || ''
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+
+  const csv = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n'); // BOM para Excel
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const hoje = new Date().toISOString().slice(0, 10);
+  a.href     = url;
+  a.download = `historico-movimentacoes-${hoje}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${mv.length} registro(s) exportado(s)!`);
 }
 
 // ==================== ESTOQUE ====================
@@ -5213,6 +5404,47 @@ async function fecharCaixa() {
 // ==================== CONTAGEM DE ESTOQUE ====================
 let contagemServerData = null;
 
+// Verifica se a contagem foi feita hoje e atualiza badge + banner
+async function checkContagemHoje() {
+  try {
+    const res = await apiRequest('/contagem/ultima');
+
+    const badge        = document.getElementById('nav-contagem-badge');
+    const badgeMobile  = document.getElementById('mobile-contagem-badge');
+    const banner       = document.getElementById('contagem-alerta-banner');
+    const bannerMsg    = document.getElementById('contagem-alerta-msg');
+
+    if (res.feita_hoje) {
+      // Tudo certo — esconde alertas
+      if (badge)       badge.style.display       = 'none';
+      if (badgeMobile) badgeMobile.style.display  = 'none';
+      if (banner)      banner.style.display       = 'none';
+    } else {
+      // Pendente — mostra badge e banner com detalhes
+      if (badge)       badge.style.display       = 'inline-block';
+      if (badgeMobile) badgeMobile.style.display  = 'inline-block';
+
+      if (bannerMsg) {
+        if (res.ultima_data) {
+          const dias = Math.floor((Date.now() - new Date(res.ultima_data)) / 86400000);
+          const quem = res.ultima_usuario ? ` (última: ${res.ultima_usuario})` : '';
+          bannerMsg.textContent = dias === 0
+            ? `Contagem ainda não realizada hoje${quem}.`
+            : dias === 1
+              ? `Contagem não realizada hoje — última foi ontem${quem}.`
+              : `Contagem não realizada hoje — última foi há ${dias} dia${dias > 1 ? 's' : ''}${quem}.`;
+        } else {
+          bannerMsg.textContent = 'Nenhuma contagem registrada ainda. Faça a primeira contagem!';
+        }
+      }
+      if (banner) banner.style.display = 'flex';
+    }
+  } catch (e) {
+    // Falha silenciosa — não bloqueia o sistema
+    console.warn('checkContagemHoje:', e.message);
+  }
+}
+
 function renderContagem() {
   const container = document.getElementById('contagem-lista');
   if (!container) return;
@@ -5328,6 +5560,7 @@ async function confirmarContagem() {
     }
 
     toast(`${items.length} produto(s) confirmado(s) e salvo(s) no servidor!`);
+    checkContagemHoje(); // atualiza badge e banner imediatamente
   } catch (e) {
     toast(e.message || 'Erro ao salvar contagem!', false);
   } finally {
@@ -5871,6 +6104,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (loadAuth()) {
     loadAllData().then(() => {
       showApp();
+      checkContagemHoje(); // verifica contagem ao restaurar sessão
     }).catch(error => {
       console.error(error);
       document.getElementById('login-container').style.display = 'flex';

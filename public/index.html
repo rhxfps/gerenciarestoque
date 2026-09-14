@@ -75,7 +75,7 @@
       <div class="nav-item" data-screen="gastos" id="nav-gastos"><i class="ti ti-receipt-off"></i> <span>Gastos</span></div>
       <div class="nav-section" id="nav-func-section"><i class="ti ti-users"></i> <span>Funcionários</span></div>
       <div class="nav-item" data-screen="minhas-vendas" id="nav-minhas-vendas"><i class="ti ti-clipboard-list"></i> <span>Registrados</span></div>
-      <div class="nav-item" data-screen="contagem" id="nav-contagem"><i class="ti ti-clipboard-check"></i> <span>Contagem</span></div>
+      <div class="nav-item" data-screen="contagem" id="nav-contagem"><i class="ti ti-clipboard-check"></i> <span>Contagem</span><span class="nav-alert-badge" id="nav-contagem-badge" style="display:none" title="Contagem não feita hoje!"></span></div>
       <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
       <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
       <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
@@ -142,7 +142,7 @@
       <div class="mobile-nav-item" data-screen="gastos"><i class="ti ti-receipt-off"></i> Gastos</div>
       <div class="mobile-nav-section" id="mobile-func-section"><i class="ti ti-users"></i> Funcionários</div>
       <div class="mobile-nav-item" data-screen="minhas-vendas"><i class="ti ti-clipboard-list"></i> Registrados</div>
-      <div class="mobile-nav-item" data-screen="contagem"><i class="ti ti-clipboard-check"></i> Contagem</div>
+      <div class="mobile-nav-item" data-screen="contagem"><i class="ti ti-clipboard-check"></i> Contagem<span class="nav-alert-badge nav-alert-badge--mobile" id="mobile-contagem-badge" style="display:none"></span></div>
       <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
       <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
       <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
@@ -1014,26 +1014,67 @@
 
         <!-- Histórico -->
         <div class="card" id="reg-form-historico" style="display:none">
-          <div class="card-title"><i class="ti ti-history"></i> Histórico de movimentações</div>
-          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:1rem">
-            <select id="h-filtro-tipo" onchange="renderHistorico()" style="width:160px">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <span><i class="ti ti-history"></i> Histórico de movimentações</span>
+            <button class="btn btn-sm" onclick="exportHistoricoCSV()" style="font-size:12px;padding:6px 12px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary)">
+              <i class="ti ti-download"></i> Exportar CSV
+            </button>
+          </div>
+
+          <!-- KPIs resumo -->
+          <div id="h-kpis" class="h-kpis-row" style="display:none;margin-bottom:1rem"></div>
+
+          <!-- Filtros linha 1: tipo + produto + busca -->
+          <div class="h-filtros-row">
+            <select id="h-filtro-tipo" onchange="renderHistorico()" class="h-filtro-select">
               <option value="">Todos os tipos</option>
               <option value="entrada">Entradas</option>
               <option value="saida">Saídas</option>
               <option value="perda">Perdas</option>
             </select>
-            <select id="h-filtro-prod" onchange="renderHistorico()" style="width:200px">
+            <select id="h-filtro-prod" onchange="renderHistorico()" class="h-filtro-select" style="min-width:180px">
               <option value="">Todos os produtos</option>
             </select>
-            <span id="h-count" style="font-size:13px;color:var(--text-secondary);margin-left:auto"></span>
+            <input type="text" id="h-filtro-busca" oninput="renderHistorico()" placeholder="Buscar produto ou observação..." class="h-filtro-busca">
           </div>
-          <div style="overflow-x:auto">
+
+          <!-- Filtros linha 2: período -->
+          <div class="h-filtros-row" style="margin-top:8px;align-items:center">
+            <div class="h-chips">
+              <button class="h-chip active" data-periodo="tudo" onclick="setHPeriodo('tudo')">Tudo</button>
+              <button class="h-chip" data-periodo="hoje" onclick="setHPeriodo('hoje')">Hoje</button>
+              <button class="h-chip" data-periodo="semana" onclick="setHPeriodo('semana')">Semana</button>
+              <button class="h-chip" data-periodo="mes" onclick="setHPeriodo('mes')">Mês</button>
+              <button class="h-chip" data-periodo="custom" onclick="setHPeriodo('custom')">Período</button>
+            </div>
+            <div id="h-custom-range" style="display:none;gap:8px;align-items:center" class="h-custom-range">
+              <input type="date" id="h-filtro-de" onchange="renderHistorico()" class="h-filtro-date">
+              <span style="color:var(--text-muted);font-size:13px">até</span>
+              <input type="date" id="h-filtro-ate" onchange="renderHistorico()" class="h-filtro-date">
+            </div>
+            <span id="h-count" class="h-count-badge"></span>
+          </div>
+
+          <!-- Tabela -->
+          <div style="overflow-x:auto;margin-top:1rem">
             <table>
-              <thead><tr><th>Data/hora</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Observação</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Data/hora</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Qtd</th>
+                  <th>Observação</th>
+                  <th>Usuário</th>
+                </tr>
+              </thead>
               <tbody id="tabela-historico"></tbody>
             </table>
           </div>
-          <div id="historico-empty" class="empty" style="display:none"><i class="ti ti-history"></i>Nenhuma movimentação registrada ainda.</div>
+          <div id="historico-empty" class="empty" style="display:none"><i class="ti ti-history"></i>Nenhuma movimentação encontrada.</div>
+
+          <!-- Paginação -->
+          <div id="h-paginacao" class="h-paginacao" style="display:none"></div>
         </div>
       </div>
 
@@ -1823,6 +1864,14 @@
 
       <!-- CONTAGEM DE ESTOQUE -->
       <div class="screen" id="screen-contagem">
+        <!-- Banner de alerta: contagem pendente -->
+        <div id="contagem-alerta-banner" class="contagem-alerta-banner" style="display:none">
+          <i class="ti ti-alert-triangle"></i>
+          <span id="contagem-alerta-msg">Contagem não realizada hoje!</span>
+          <button class="contagem-alerta-btn" onclick="document.getElementById('contagem-lista').scrollIntoView({behavior:'smooth'})">
+            Fazer agora <i class="ti ti-arrow-down"></i>
+          </button>
+        </div>
         <div class="card">
           <div class="section-header">
             <h2><i class="ti ti-clipboard-check"></i> Contagem de Estoque</h2>

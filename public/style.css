@@ -3364,6 +3364,225 @@ tbody tr:hover td { background: var(--blue-50); }
 .tag-perda { color: var(--amber, #f59e0b); font-weight: 700; }
 
 /* ============================================================
+   HISTÓRICO DE MOVIMENTAÇÕES — melhorias
+   ============================================================ */
+
+/* Linha de filtros */
+.h-filtros-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.h-filtro-select {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 13px;
+  min-width: 140px;
+}
+
+.h-filtro-busca {
+  flex: 1;
+  min-width: 200px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.h-filtro-busca::placeholder { color: var(--text-muted); }
+.h-filtro-busca:focus { outline: none; border-color: var(--primary); }
+
+.h-filtro-date {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+/* Chips de período */
+.h-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.h-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.h-chip:hover  { border-color: var(--primary); color: var(--primary); }
+.h-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.h-custom-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Badge de contagem */
+.h-count-badge {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
+
+/* KPIs resumo */
+.h-kpis-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.h-kpi {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+}
+.h-kpi--green { background: var(--green-bg); border-color: rgba(16,185,129,.2); }
+.h-kpi--red   { background: var(--red-bg);   border-color: rgba(239,68,68,.2); }
+.h-kpi--amber { background: var(--amber-bg); border-color: rgba(245,158,11,.2); }
+.h-kpi--blue  { background: var(--blue-bg);  border-color: rgba(59,130,246,.2); }
+
+.h-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.h-kpi--green .h-kpi-label { color: var(--green); }
+.h-kpi--red   .h-kpi-label { color: var(--red); }
+.h-kpi--amber .h-kpi-label { color: var(--amber); }
+.h-kpi--blue  .h-kpi-label { color: var(--blue); }
+
+.h-kpi-val {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.h-kpi--green .h-kpi-val { color: var(--green); }
+.h-kpi--red   .h-kpi-val { color: var(--red); }
+.h-kpi--amber .h-kpi-val { color: var(--amber); }
+.h-kpi--blue  .h-kpi-val { color: var(--blue); }
+
+.h-kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Badge de usuário */
+.h-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.h-user-badge .ti { font-size: 11px; }
+
+/* Paginação */
+.h-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.h-pag-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: 8px;
+}
+
+.h-pag-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.h-pag-btn:hover:not(.disabled):not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.h-pag-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.h-pag-btn.disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.h-pag-ellipsis {
+  min-width: 28px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 34px;
+}
+
+/* Responsivo mobile */
+@media (max-width: 600px) {
+  .h-filtros-row  { gap: 8px; }
+  .h-filtro-busca { min-width: 100%; }
+  .h-kpis-row     { gap: 8px; }
+  .h-kpi          { min-width: calc(50% - 4px); padding: 10px 12px; }
+  .h-kpi-val      { font-size: 18px; }
+  .h-count-badge  { margin-left: 0; }
+}
+
+/* ============================================================
    LISTA DE VENDAS — filtros e KPIs
    ============================================================ */
 .vl-filtros {
@@ -4857,4 +5076,84 @@ mark.estoque-highlight {
 .dash-spark-mes-wrap .dash-spark-wrap {
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+/* ============================================================
+   ALERTA DE CONTAGEM DIÁRIA
+   ============================================================ */
+
+/* Dot vermelho pulsante no nav-item */
+.nav-alert-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red, #ef4444);
+  margin-left: auto;
+  flex-shrink: 0;
+  animation: nav-badge-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(239,68,68,.6);
+}
+
+.nav-alert-badge--mobile {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+@keyframes nav-badge-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(239,68,68,.6); }
+  60%  { box-shadow: 0 0 0 6px rgba(239,68,68,.0); }
+  100% { box-shadow: 0 0 0 0   rgba(239,68,68,.0); }
+}
+
+/* Banner de alerta na tela de contagem */
+.contagem-alerta-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(239,68,68,.12);
+  border: 1px solid rgba(239,68,68,.35);
+  border-left: 4px solid var(--red, #ef4444);
+  border-radius: var(--radius-lg, 10px);
+  padding: 14px 18px;
+  margin-bottom: 1rem;
+  color: var(--red, #ef4444);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.contagem-alerta-banner .ti {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.contagem-alerta-banner span {
+  flex: 1;
+  min-width: 160px;
+}
+
+.contagem-alerta-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius, 8px);
+  border: 1px solid var(--red, #ef4444);
+  background: transparent;
+  color: var(--red, #ef4444);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.contagem-alerta-btn:hover {
+  background: var(--red, #ef4444);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .contagem-alerta-banner { padding: 12px 14px; font-size: 13px; }
+  .contagem-alerta-btn    { width: 100%; justify-content: center; }
 }

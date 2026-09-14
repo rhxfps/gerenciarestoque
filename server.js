@@ -1350,6 +1350,37 @@ app.post('/api/contagem', autenticar, async (req, res) => {
   }
 });
 
+// GET /api/contagem/ultima — retorna data da última contagem e se foi feita hoje
+app.get('/api/contagem/ultima', autenticar, async (req, res) => {
+  try {
+    const { data: ultima, error } = await supabase
+      .from('contagem')
+      .select('data, usuarios:usuario_id (nome)')
+      .order('data', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!ultima) return res.json({ feita_hoje: false, ultima_data: null, ultima_usuario: null });
+
+    // Compara apenas a data (sem hora) no fuso de Brasília
+    const ultimaDate = new Date(ultima.data);
+    const agora      = new Date();
+    const feitoHoje  =
+      ultimaDate.getFullYear() === agora.getFullYear() &&
+      ultimaDate.getMonth()    === agora.getMonth()    &&
+      ultimaDate.getDate()     === agora.getDate();
+
+    res.json({
+      feita_hoje:    feitoHoje,
+      ultima_data:   ultima.data,
+      ultima_usuario: ultima.usuarios?.nome || null
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== GASTOS ====================
 
 // GET /api/gastos — lista gastos, opcionalmente filtrar por período
