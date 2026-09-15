@@ -169,8 +169,16 @@
 
     <div class="content">
 
+      <!-- Banner alerta contagem: aparece em todas as telas -->
+      <div id="contagem-alerta-banner" class="contagem-alerta-banner" style="display:none">
+        <i class="ti ti-alert-triangle"></i>
+        <span id="contagem-alerta-msg">Contagem não realizada hoje!</span>
+        <button class="contagem-alerta-btn" onclick="nav('contagem')">
+          Fazer agora <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+
       <!-- DASHBOARD -->
-      <div class="screen active" id="screen-dashboard">
 
         <!-- KPI cards -->
         <div class="dash-kpi-grid">
@@ -1864,14 +1872,6 @@
 
       <!-- CONTAGEM DE ESTOQUE -->
       <div class="screen" id="screen-contagem">
-        <!-- Banner de alerta: contagem pendente -->
-        <div id="contagem-alerta-banner" class="contagem-alerta-banner" style="display:none">
-          <i class="ti ti-alert-triangle"></i>
-          <span id="contagem-alerta-msg">Contagem não realizada hoje!</span>
-          <button class="contagem-alerta-btn" onclick="document.getElementById('contagem-lista').scrollIntoView({behavior:'smooth'})">
-            Fazer agora <i class="ti ti-arrow-down"></i>
-          </button>
-        </div>
         <div class="card">
           <div class="section-header">
             <h2><i class="ti ti-clipboard-check"></i> Contagem de Estoque</h2>
