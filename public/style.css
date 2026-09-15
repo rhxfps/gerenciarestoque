@@ -5124,23 +5124,21 @@ mark.estoque-highlight {
   100% { box-shadow: 0 0 0 0   rgba(239,68,68,.0); }
 }
 
-/* Banner de alerta na tela de contagem */
+/* Banner de alerta — fica entre topbar e content, não interfere nas screens */
 .contagem-alerta-banner {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
   background: rgba(239,68,68,.12);
-  border: 1px solid rgba(239,68,68,.35);
+  border-bottom: 2px solid rgba(239,68,68,.4);
   border-left: 4px solid var(--red, #ef4444);
-  border-radius: var(--radius-lg, 10px);
-  padding: 14px 18px;
-  margin: 0 0 1rem 0;
+  padding: 12px 1.5rem;
   color: var(--red, #ef4444);
   font-size: 14px;
   font-weight: 500;
-  /* Fica sobre o content, fora das screens */
   flex-shrink: 0;
+  /* Sem border-radius — fica colado entre topbar e content */
 }
 
 .contagem-alerta-banner .ti {
