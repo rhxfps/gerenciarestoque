@@ -2645,44 +2645,44 @@ tbody tr:hover td { background: var(--blue-50); }
    DARK THEME
    ============================================================ */
 [data-theme="dark"] {
-  --bg-page:      #0a0f1e;
-  --bg-primary:   #111827;
-  --bg-secondary: #1a2235;
-  --bg-tertiary:  #0d1526;
+  --bg-page:      #0a0a0a;
+  --bg-primary:   #131313;
+  --bg-secondary: #1b1b1b;
+  --bg-tertiary:  #000000;
 
-  --text-primary:   #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted:     #64748b;
+  --text-primary:   #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted:     #757575;
 
-  --border:     #1e2d45;
-  --border-mid: #243552;
+  --border:     #282828;
+  --border-mid: #3d3d3d;
 
   --blue:       #3b82f6;
   --blue-dark:  #2563eb;
-  --blue-light: #0f2044;
+  --blue-light: #202020;
   --blue-bg:    #1e3a5f;
-  --blue-50:    #0f1f38;
-  --blue-100:   #1e3a5f;
+  --blue-50:    #161616;
+  --blue-100:   #1f1f1f;
 
-  --green-bg:   #052e16;
-  --red-bg:     #1c0a0a;
-  --amber-bg:   #1c1200;
+  --green-bg:   #0b2e1a;
+  --red-bg:     #2a1111;
+  --amber-bg:   #2b2106;
 
   --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
   --shadow-sm: 0 1px 6px rgba(0,0,0,.5);
   --shadow-md: 0 4px 16px rgba(0,0,0,.55);
   --shadow-lg: 0 10px 40px rgba(0,0,0,.6);
 
-  --sidebar-bg:     #0d1526;
-  --sidebar-hover:  rgba(59,130,246,.15);
-  --sidebar-active: rgba(59,130,246,.25);
-  --sidebar-border: rgba(59,130,246,.12);
+  --sidebar-bg:     #000000;
+  --sidebar-hover:  rgba(255,255,255,.07);
+  --sidebar-active: rgba(255,255,255,.14);
+  --sidebar-border: rgba(255,255,255,.10);
 }
 
 /* dark: toast legível */
 [data-theme="dark"] .toast {
-  background: #1f2937;
-  color: #f1f5f9;
+  background: #1b1b1b;
+  color: #f8f8f8;
   box-shadow: 0 12px 32px rgba(0,0,0,.5);
 }
 
@@ -2692,7 +2692,7 @@ tbody tr:hover td { background: var(--blue-50); }
 }
 
 [data-theme="dark"] .nav-item.active {
-  border-left-color: #60a5fa;
+  border-left-color: #ffffff;
 }
 
 /* dark: topbar */
@@ -2703,7 +2703,7 @@ tbody tr:hover td { background: var(--blue-50); }
 
 /* dark: login */
 [data-theme="dark"] .login-container {
-  background: linear-gradient(135deg, #0d1526 0%, #060c18 60%, #0a1020 100%);
+  background: linear-gradient(135deg, #000000 0%, #0d0d0d 60%, #050505 100%);
 }
 
 /* dark: metric / KPI cards keep colorful gradient — no override needed */
@@ -2770,13 +2770,13 @@ tbody tr:hover td { background: var(--blue-50); }
 [data-theme="dark"] .theme-toggle {
   background: var(--bg-secondary);
   border-color: var(--border-mid);
-  color: #facc15;
+  color: #ffffff;
 }
 
 [data-theme="dark"] .theme-toggle:hover {
-  background: rgba(250,204,21,.1);
-  border-color: #facc15;
-  color: #facc15;
+  background: rgba(255,255,255,.12);
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 /* ============================================================
@@ -2903,10 +2903,10 @@ tbody tr:hover td { background: var(--blue-50); }
 
 /* dark mode adjustments */
 [data-theme="dark"] .bar-day-bar-wrap  { background: var(--bg-secondary); }
-[data-theme="dark"] .bar-day-bar       { background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%); }
-[data-theme="dark"] .bar-day--today .bar-day-bar { background: linear-gradient(180deg, #a78bfa 0%, #4f46e5 100%); }
-[data-theme="dark"] .bar-day-tooltip   { background: #e2e8f0; color: #0f172a; }
-[data-theme="dark"] .bar-day-tooltip::after { border-top-color: #e2e8f0; }
+[data-theme="dark"] .bar-day-bar       { background: linear-gradient(180deg, #ffffff 0%, #9ca3af 100%); }
+[data-theme="dark"] .bar-day--today .bar-day-bar { background: linear-gradient(180deg, #ffffff 0%, #d1d5db 100%); }
+[data-theme="dark"] .bar-day-tooltip   { background: #f8f8f8; color: #111111; }
+[data-theme="dark"] .bar-day-tooltip::after { border-top-color: #f8f8f8; }
 
 @media (max-width: 600px) {
   .bar-chart-wrap { gap: 4px; height: 130px; }
@@ -5086,8 +5086,8 @@ mark.estoque-highlight {
 .spark-tooltip b { font-weight: 800; }
 
 [data-theme="dark"] .spark-tooltip {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #f8f8f8;
+  color: #111111;
 }
 
 /* gráfico do mês com scroll */
