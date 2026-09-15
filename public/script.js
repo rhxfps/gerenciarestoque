@@ -1,4 +1,4 @@
-﻿// ==================== ANTI-DUMP (lock por função) ====================
+// ==================== ANTI-DUMP (lock por função) ====================
 const _busy = {};
 function acquire(name) { if (_busy[name]) return false; _busy[name] = true; return true; }
 function release(name) { _busy[name] = false; }
@@ -3125,6 +3125,7 @@ function renderRelatorio() {
 
 function renderRelatorioTab(tab) {
   if (tab === 'vendas')        renderRelVendas();
+  if (tab === 'produtos')      renderRelProdutos();
   if (tab === 'estoque')       renderRelEstoque();
   if (tab === 'movimentacoes') renderRelMovimentacoes();
   if (tab === 'caixa')         renderRelCaixa();
@@ -3219,6 +3220,107 @@ function renderRelVendas() {
         <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${Math.round((qtd/maxV)*100)}%"></div></div>
       </div>`).join('');
   }
+}
+
+// ===== ABA PRODUTOS =====
+let relProdPeriodo = 'semana';
+
+function setRelProdPeriodo(p) {
+  relProdPeriodo = p;
+  document.querySelectorAll('.rel-prod-chip').forEach(b => b.classList.toggle('active', b.dataset.per === p));
+  renderRelProdutos();
+}
+
+function renderRelProdutos() {
+  const hoje = new Date(); hoje.setHours(23, 59, 59, 999);
+  const filtro = v => {
+    const d = new Date(v.data);
+    if (relProdPeriodo === 'hoje') {
+      const ini = new Date(); ini.setHours(0, 0, 0, 0);
+      if (d < ini) return false;
+    } else if (relProdPeriodo === 'semana') {
+      if (!semanaAtual(v.data)) return false;
+    } else if (relProdPeriodo === 'mes') {
+      if (d < inicioPeriodo(hoje)) return false;
+    }
+    return true;
+  };
+
+  const vendasFiltradas = vendas.filter(filtro);
+  const mapa = {};
+  const fmt$ = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+  vendasFiltradas.forEach(v => {
+    const itens = (v.itens && v.itens.length) ? v.itens
+      : (v.produto_nome ? [{ produto_nome: v.produto_nome, qtd: v.qtd || 1, preco_unitario: null }] : []);
+    itens.forEach(i => {
+      const nome = i.produto_nome || 'Item';
+      const qtd  = i.qtd || 0;
+      const preco = parseFloat(i.preco_unitario);
+      const totalItem = (preco > 0) ? qtd * preco : (v.total || 0);
+      if (!mapa[nome]) mapa[nome] = { nome, qtd: 0, fat: 0, vendas: 0, categoria: '' };
+      mapa[nome].qtd    += qtd;
+      mapa[nome].fat    += totalItem;
+      mapa[nome].vendas += qtd > 0 ? 1 : 0;
+    });
+  });
+
+  Object.values(mapa).forEach(p => {
+    const prod = produtos.find(x => x.nome === p.nome);
+    if (prod) p.categoria = prod.categoria || '';
+  });
+
+  // KPIs (antes do filtro de busca)
+  const totalUnidades = Object.values(mapa).reduce((s, p) => s + p.qtd, 0);
+  const totalFat      = Object.values(mapa).reduce((s, p) => s + p.fat, 0);
+  document.getElementById('rp-unidades').textContent   = `${totalUnidades} un.`;
+  document.getElementById('rp-distintos').textContent = Object.keys(mapa).length;
+  document.getElementById('rp-faturamento').textContent = fmt$(totalFat);
+  document.getElementById('rp-vendas').textContent    = vendasFiltradas.length;
+
+  // Filtro de busca + ordenação
+  let lista = Object.values(mapa);
+  const busca = (document.getElementById('rel-prod-busca')?.value || '').toLowerCase().trim();
+  if (busca) lista = lista.filter(p => p.nome.toLowerCase().includes(busca));
+  lista.sort((a, b) => b.qtd - a.qtd || b.fat - a.fat);
+
+  const rk = document.getElementById('rp-ranking');
+  const tb = document.getElementById('rp-tabela');
+  if (!lista.length) {
+    rk.innerHTML = '<div class="empty" style="padding:1rem">Sem produtos vendidos neste período</div>';
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-secondary)">Nenhum produto encontrado</td></tr>';
+    return;
+  }
+
+  const medals   = ['🥇', '🥈', '🥉', '', ''];
+  const top      = lista.slice(0, 5);
+  const maxQtd   = Math.max(top[0].qtd, 1);
+  const dif      = Math.max(top[0].qtd, 1);
+
+  rk.innerHTML = top.map((p, i) => `
+    <div class="dash-rank-item">
+      <div class="dash-rank-header">
+        <span class="dash-rank-name"><span class="dash-rank-medal">${medals[i] || ''}</span>${esc(p.nome)}</span>
+        <span class="dash-rank-val">${p.qtd} un. · ${fmt$(p.fat)}</span>
+      </div>
+      <div class="dash-rank-bar"><div class="dash-rank-fill" style="background:var(--blue);width:${Math.round((p.qtd / maxQtd) * 100)}%"></div></div>
+    </div>`).join('');
+
+  tb.innerHTML = lista.map((p, i) => `
+    <tr>
+      <td><strong>${i + 1}º</strong>${i < 3 ? ' ' + medals[i] : ''}</td>
+      <td><strong>${esc(p.nome)}</strong></td>
+      <td>${esc(p.categoria) || '—'}</td>
+      <td>${p.qtd} un.</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;min-width:120px">
+          <div class="progress-bar" style="flex:1;min-width:60px"><div class="progress-fill" style="background:var(--blue);width:${Math.round((p.qtd / dif) * 100)}%"></div></div>
+          <span style="font-size:12px;color:var(--text-secondary)">${Math.round((p.qtd / Math.max(totalUnidades, 1)) * 100)}%</span>
+        </div>
+      </td>
+      <td><strong>${fmt$(p.fat)}</strong></td>
+      <td>${fmt$(p.qtd ? p.fat / p.qtd : 0)}</td>
+    </tr>`).join('');
 }
 
 function renderRelEstoque() {

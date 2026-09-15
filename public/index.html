@@ -1099,6 +1099,9 @@
           <button class="rel-tab active" data-tab="vendas" onclick="selectRelTab('vendas')">
             <i class="ti ti-shopping-cart"></i> <span>Vendas</span>
           </button>
+          <button class="rel-tab" data-tab="produtos" onclick="selectRelTab('produtos')">
+            <i class="ti ti-chart-pie"></i> <span>Produtos</span>
+          </button>
           <button class="rel-tab" data-tab="estoque" onclick="selectRelTab('estoque')">
             <i class="ti ti-package"></i> <span>Estoque</span>
           </button>
@@ -1183,6 +1186,77 @@
                 </div>
                 <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-balcao" style="background:var(--blue);width:0%"></div></div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ABA PRODUTOS ===== -->
+        <div class="rel-panel" id="rel-produtos">
+
+          <div class="card vl-filtros" style="margin-bottom:1.5rem">
+            <div class="vl-filtros-row">
+              <div class="vl-filtro-group">
+                <label>Período</label>
+                <div class="vl-chips">
+                  <button type="button" class="rel-prod-chip" data-per="hoje" onclick="setRelProdPeriodo('hoje')">Hoje</button>
+                  <button type="button" class="rel-prod-chip active" data-per="semana" onclick="setRelProdPeriodo('semana')">7 dias</button>
+                  <button type="button" class="rel-prod-chip" data-per="mes" onclick="setRelProdPeriodo('mes')">1 mês</button>
+                  <button type="button" class="rel-prod-chip" data-per="tudo" onclick="setRelProdPeriodo('tudo')">Tudo</button>
+                </div>
+              </div>
+              <div class="vl-filtro-group vl-filtro-produto-group">
+                <label>Produto</label>
+                <input type="text" id="rel-prod-busca" placeholder="Buscar produto..." oninput="renderRelProdutos()">
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-kpi-grid" style="margin-bottom:1.5rem">
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-box"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Unidades vendidas</span>
+                <span class="dash-kpi-value" id="rp-unidades">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> No período</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-tags"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Produtos distintos</span>
+                <span class="dash-kpi-value" id="rp-distintos">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-package"></i> Itens diferentes</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Faturamento</span>
+                <span class="dash-kpi-value" id="rp-faturamento">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Total no período</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Vendas no período</span>
+                <span class="dash-kpi-value" id="rp-vendas">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-clock"></i> Comandas/vendas</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Ranking de produtos vendidos</div>
+            <div id="rp-ranking" class="dash-ranking"></div>
+
+            <div style="overflow-x:auto;margin-top:1.25rem">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Produto</th><th>Categoria</th><th>Unid.</th><th>% vendas</th><th>Faturamento</th><th>Preço médio</th></tr>
+                </thead>
+                <tbody id="rp-tabela"></tbody>
+              </table>
             </div>
           </div>
         </div>
