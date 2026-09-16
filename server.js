@@ -1322,11 +1322,14 @@ app.post('/api/contagem', autenticar, async (req, res) => {
     const now = new Date().toISOString();
     const usuario_id = req.usuario.id;
 
-    // Deleta contagens anteriores deste usuário (não confirmadas)
+    // Deleta apenas as contagens de HOJE deste usuário (preserva o histórico dos dias anteriores)
+    const hojeInicio = new Date();
+    hojeInicio.setHours(0, 0, 0, 0);
     const { error: delErr } = await supabase
       .from('contagem')
       .delete()
-      .eq('usuario_id', usuario_id);
+      .eq('usuario_id', usuario_id)
+      .gte('data', hojeInicio.toISOString());
 
     if (delErr) throw delErr;
 
@@ -1375,6 +1378,66 @@ app.get('/api/contagem/ultima', autenticar, async (req, res) => {
       feita_hoje:    feitoHoje,
       ultima_data:   ultima.data,
       ultima_usuario: ultima.usuarios?.nome || null
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/contagem/historico — lista as contagens realizadas (uma sessão por confirmação)
+app.get('/api/contagem/historico', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { data, error } = await supabase
+      .from('contagem')
+      .select('data, usuarios:usuario_id (nome)')
+      .order('data', { ascending: false });
+
+    if (error) throw error;
+
+    const linhas = data || [];
+    const sessoes = [];
+
+    for (let i = 0; i < linhas.length; i++) {
+      const r = linhas[i];
+      if (i > 0 && linhas[i - 1].data === r.data) continue;
+      sessoes.push({ data: r.data, usuario: r.usuarios?.nome || 'Desconhecido', itens: 0 });
+    }
+
+    const porSessao = {};
+    for (const r of linhas) porSessao[r.data] = (porSessao[r.data] || 0) + 1;
+    for (const s of sessoes) s.itens = porSessao[s.data] || 0;
+
+    res.json(sessoes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/contagem/sessao?data= — detalhes (itens) de uma contagem específica
+app.get('/api/contagem/sessao', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { data, error } = await supabase
+      .from('contagem')
+      .select('produto_id, qtd, produtos:produto_id (nome), usuarios:usuario_id (nome)')
+      .eq('data', req.query.data)
+      .order('qtd', { ascending: false });
+
+    if (error) throw error;
+
+    const linhas = data || [];
+    const total = linhas.reduce((acc, r) => acc + Number(r.qtd || 0), 0);
+
+    res.json({
+      data: req.query.data,
+      usuario: linhas[0]?.usuarios?.nome || 'Desconhecido',
+      total,
+      items: linhas.map(r => ({
+        produto_id: r.produto_id,
+        nome: r.produtos?.nome || 'Produto removido',
+        qtd: Number(r.qtd || 0)
+      }))
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -4181,14 +4181,17 @@ function selectAdminTipo(tipo) {
   document.getElementById('admin-btn-consumo').classList.toggle('active', tipo === 'consumo');
   document.getElementById('admin-btn-atividade').classList.toggle('active', tipo === 'atividade');
   document.getElementById('admin-btn-receitas').classList.toggle('active', tipo === 'receitas');
+  document.getElementById('admin-btn-contagem').classList.toggle('active', tipo === 'contagem');
   document.getElementById('admin-view-usuarios').style.display = tipo === 'usuarios' ? 'block' : 'none';
   document.getElementById('admin-view-consumo').style.display = tipo === 'consumo' ? 'block' : 'none';
   document.getElementById('admin-view-atividade').style.display = tipo === 'atividade' ? 'block' : 'none';
   document.getElementById('admin-view-receitas').style.display = tipo === 'receitas' ? 'block' : 'none';
+  document.getElementById('admin-view-contagem').style.display = tipo === 'contagem' ? 'block' : 'none';
   if (tipo === 'usuarios') renderUsuarios();
   if (tipo === 'consumo') selectAdminConsumo(adminConsumoAtivo);
   if (tipo === 'atividade') renderAtividade();
   if (tipo === 'receitas') renderReceitas();
+  if (tipo === 'contagem') renderAdminContagem();
 }
 
 async function renderAtividade() {
@@ -4224,6 +4227,81 @@ async function renderAtividade() {
       <td>${m.obs || '—'}</td>
     </tr>`;
   }).join('');
+}
+
+// ==================== ADMIN: CONTAGENS (histórico) ====================
+let achData = [];
+
+async function renderAdminContagem() {
+  const tb = document.getElementById('tabela-ach');
+  const em = document.getElementById('ach-empty');
+  try {
+    achData = await apiRequest('/contagem/historico');
+  } catch (e) {
+    achData = [];
+    toast('Erro ao carregar histórico de contagens.', false);
+  }
+
+  const cnt = document.getElementById('ach-count');
+  const cntLabel = document.getElementById('ach-count-label');
+  const ult = document.getElementById('ach-ultima');
+  const ultU = document.getElementById('ach-ultima-usuario');
+  const itensEl = document.getElementById('ach-itens');
+  if (cnt) cnt.textContent = String(achData.length);
+  if (cntLabel) cntLabel.textContent = `${achData.length} contagem(ns) registrada(s)`;
+  if (itensEl) itensEl.textContent = String(achData.reduce((acc, s) => acc + s.itens, 0));
+  if (ult) ult.textContent = achData.length ? fmt(achData[0].data) : '—';
+  if (ultU) ultU.textContent = achData.length ? achData[0].usuario : '';
+
+  if (!tb || !em) return;
+  if (!achData.length) {
+    tb.innerHTML = '';
+    em.style.display = 'flex';
+    return;
+  }
+  em.style.display = 'none';
+
+  tb.innerHTML = achData.map((s, i) => `<tr>
+    <td>${fmt(s.data)}</td>
+    <td>${s.usuario}</td>
+    <td>${s.itens} produto(s)</td>
+    <td style="text-align:right">
+      <button class="btn" style="padding:6px 12px" onclick="achAbrirSessao(${i})">
+        <i class="ti ti-eye"></i> Ver itens
+      </button>
+    </td>
+  </tr>`).join('');
+}
+
+async function achAbrirSessao(index) {
+  const s = achData[index];
+  if (!s) return;
+  try {
+    const sessao = await apiRequest(`/contagem/sessao?data=${encodeURIComponent(s.data)}`);
+    document.getElementById('ach-sessao-info').innerHTML =
+      `<strong>${fmt(sessao.data)}</strong> - por ${sessao.usuario} - ${sessao.items.length} produto(s) - <strong>${sessao.total} unidade(s)</strong>`;
+    const tb = document.getElementById('ach-sessao-itens');
+    const em = document.getElementById('ach-sessao-empty');
+    if (!sessao.items.length) {
+      tb.innerHTML = '';
+      em.style.display = 'flex';
+    } else {
+      em.style.display = 'none';
+      tb.innerHTML = sessao.items.map(it => `<tr>
+        <td>${esc(it.nome)}</td>
+        <td style="text-align:right;font-weight:700">${it.qtd}</td>
+      </tr>`).join('');
+    }
+    document.getElementById('ach-sessao-modal').classList.add('show');
+  } catch (e) {
+    toast('Erro ao carregar os detalhes da contagem.', false);
+  }
+}
+
+function achFecharSessao(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('ach-sessao-modal');
+  if (modal) modal.classList.remove('show');
 }
 
 // ==================== RECEITAS ====================

@@ -1763,6 +1763,9 @@
           <button class="reg-toggle-btn" id="admin-btn-receitas" onclick="selectAdminTipo('receitas')">
             <i class="ti ti-book-2"></i> Receitas
           </button>
+          <button class="reg-toggle-btn" id="admin-btn-contagem" onclick="selectAdminTipo('contagem')">
+            <i class="ti ti-clipboard-check"></i> Contagens
+          </button>
         </div>
 
         <div id="admin-view-usuarios">
@@ -1941,6 +1944,59 @@
             </div>
             <div class="rec-grid" id="rec-grid"></div>
             <div id="receitas-empty" class="empty" style="display:none"><i class="ti ti-book-off"></i>Nenhuma receita cadastrada ainda.<br>Clique em "Nova receita" para começar.</div>
+          </div>
+        </div>
+
+        <!-- ===== CONTAGENS (admin) ===== -->
+        <div id="admin-view-contagem" style="display:none">
+          <div class="dash-kpi-grid">
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-clipboard-check"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Contagens realizadas</span>
+                <span class="dash-kpi-value" id="ach-count">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar"></i> total registrado</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-calendar-time"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Última contagem</span>
+                <span class="dash-kpi-value" id="ach-ultima" style="font-size:16px">—</span>
+                <span class="dash-kpi-sub"><i class="ti ti-user"></i> <span id="ach-ultima-usuario"></span></span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-stack-2"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Itens contados</span>
+                <span class="dash-kpi-value" id="ach-itens">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-box"></i> somando todas as contagens</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-header">
+              <h2><i class="ti ti-clipboard-list"></i> Histórico de contagens</h2>
+              <span id="ach-count-label" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Funcionário</th>
+                  <th>Produtos contados</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabela-ach"></tbody>
+            </table>
+            </div>
+            <div id="ach-empty" class="empty" style="display:none">
+              <i class="ti ti-clipboard-off"></i>Nenhuma contagem registrada ainda. Faça a primeira contagem em "Contagem" no menu lateral.
+            </div>
           </div>
         </div>
 
@@ -2504,6 +2560,26 @@
 
     </div>
   </main>
+      <!-- Modal detalhes da contagem (admin) -->
+      <div class="modal-overlay" id="ach-sessao-modal" onclick="achFecharSessao(event)">
+        <div class="modal-content" style="max-width:520px" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-clipboard-check"></i> Detalhes da contagem</h3>
+            <button class="modal-close" onclick="achFecharSessao()"><i class="ti ti-x"></i></button>
+          </div>
+          <div id="ach-sessao-info" style="padding:0 1.25rem .75rem;font-size:13px;color:var(--text-secondary)"></div>
+          <div style="max-height:52vh;overflow-y:auto;padding:0 1.25rem 1.25rem">
+            <table>
+              <thead><tr><th>Produto</th><th style="text-align:right">Qtd</th></tr></thead>
+              <tbody id="ach-sessao-itens"></tbody>
+            </table>
+            <div id="ach-sessao-empty" class="empty" style="display:none">
+              <i class="ti ti-box"></i>Sem itens nesta contagem.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-overlay" id="confirm-modal" onclick="closeConfirmModal(event)">
         <div class="modal-content confirm-content" onclick="event.stopPropagation()">
           <div class="confirm-icon" id="confirm-icon"><i class="ti ti-alert-triangle"></i></div>
