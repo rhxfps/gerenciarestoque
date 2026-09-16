@@ -225,6 +225,25 @@ body[data-app="pastel"] .topbar h1 {
 }
 .btn-danger:hover { box-shadow: 0 12px 26px -10px rgba(240, 68, 56, .55); }
 
+.btn-success {
+  background: linear-gradient(135deg, #12b76a 0%, #0d9b58 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 16px -8px rgba(18, 183, 106, .55);
+}
+.btn-success:hover {
+  background: linear-gradient(135deg, #17c473 0%, #12b76a 55%, #0d9b58 100%);
+  box-shadow: 0 12px 26px -10px rgba(18, 183, 106, .6);
+}
+.btn-success:disabled { opacity: .7; transform: none; cursor: wait; }
+
+.ach-detalhe-acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .btn-sm { border-radius: 4px; }
 
 /* ---------- Forms ---------- */

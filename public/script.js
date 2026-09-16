@@ -4300,7 +4300,14 @@ async function achAbrirSessao(index) {
       <strong><i class="ti ti-clipboard-check"></i> Contagem: ${fmt(sessao.data)}</strong>
       <span><i class="ti ti-user"></i> Feita por ${sessao.usuario}</span>
     </div>
-    <button class="btn" onclick="achFecharSessao()"><i class="ti ti-x"></i> Fechar</button>
+    <div class="ach-detalhe-acoes">
+      ${currentUser.role === 'dono'
+        ? `<button class="btn btn-success" onclick="achAplicarEstoque(${index})" title="Substitui o estoque pelas quantidades desta contagem">
+            <i class="ti ti-refresh"></i> Atualizar estoque
+          </button>`
+        : ''}
+      <button class="btn" onclick="achFecharSessao()"><i class="ti ti-x"></i> Fechar</button>
+    </div>
   </div>`;
 
   if (!cats.length) {
@@ -4337,6 +4344,50 @@ function achFecharSessao() {
   panel.dataset.open = '';
   const tb = document.getElementById('tabela-ach');
   if (tb) tb.querySelectorAll('.ach-row-active').forEach(r => r.classList.remove('ach-row-active'));
+}
+
+async function achAplicarEstoque(index) {
+  const s = achData[index];
+  if (!s) return;
+  if (currentUser.role !== 'dono') {
+    toast('Somente o dono pode atualizar o estoque.', false);
+    return;
+  }
+
+  showConfirm({
+    title: 'Atualizar estoque?',
+    message: `Isso vai substituir TODAS as quantidades do estoque pelas quantidades contadas na sessão de ${fmt(s.data)}. Essa ação não pode ser desfeita. Deseja continuar?`,
+    confirmText: 'Atualizar estoque',
+    danger: false,
+    icon: 'ti ti-refresh',
+    onConfirm: async () => {
+      const btn = document.querySelector(`#ach-sessao-detalhe .ach-detalhe-acoes .btn-success`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Atualizando...';
+      }
+      try {
+        await apiRequest('/contagem/aplicar', {
+          method: 'POST',
+          body: JSON.stringify({ data: s.data })
+        });
+        try {
+          produtos = await apiRequest('/produtos');
+          if (typeof renderEstoque === 'function') renderEstoque();
+          if (typeof renderProdutos === 'function') renderProdutos();
+          if (typeof renderContagem === 'function') renderContagem();
+        } catch (_) {}
+        toast('Estoque atualizado com as quantidades da contagem.');
+        achFecharSessao();
+      } catch (e) {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="ti ti-refresh"></i> Atualizar estoque';
+        }
+        toast(e.message || 'Erro ao atualizar o estoque.', false);
+      }
+    }
+  });
 }
 
 // ==================== RECEITAS ====================

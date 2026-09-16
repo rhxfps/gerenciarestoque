@@ -1445,6 +1445,81 @@ app.get('/api/contagem/sessao', autenticar, async (req, res) => {
   }
 });
 
+// POST /api/contagem/aplicar — substitui as quantidades do estoque pelas quantidades
+// contadas em uma sessão de contagem (somente dono)
+app.post('/api/contagem/aplicar', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+
+  const { data } = req.body;
+  if (!data) return res.status(400).json({ error: 'Informe a data da contagem' });
+
+  try {
+    const { data: linhas, error } = await supabase
+      .from('contagem')
+      .select('produto_id, qtd, produtos:produto_id (nome)')
+      .eq('data', data)
+      .not('produto_id', 'is', null);
+
+    if (error) throw error;
+    if (!linhas || !linhas.length) return res.status(400).json({ error: 'Contagem sem itens.' });
+
+    let atualizados = 0;
+    let total = 0;
+    const movs = [];
+
+    for (const linha of linhas) {
+      const produtoId = linha.produto_id;
+      const novaQtd = Number(linha.qtd || 0);
+
+      const { data: produto, error: prodErr } = await supabase
+        .from('produtos')
+        .select('qtd, nome')
+        .eq('id', produtoId)
+        .maybeSingle();
+
+      if (prodErr) throw prodErr;
+      if (!produto) continue;
+
+      const antigaQtd = Number(produto.qtd || 0);
+      if (antigaQtd === novaQtd) continue;
+
+      const { error: upErr } = await supabase
+        .from('produtos')
+        .update({ qtd: novaQtd })
+        .eq('id', produtoId);
+      if (upErr) throw upErr;
+
+      const diff = novaQtd - antigaQtd;
+      movs.push({
+        tipo: diff > 0 ? 'entrada' : 'saida',
+        produto_id: produtoId,
+        produto_nome: produto.nome || linha.produtos?.nome || 'Produto',
+        qtd: Math.abs(diff),
+        obs: `Ajuste por contagem (${novaQtd} contado, tinha ${antigaQtd})`,
+        usuario_id: req.usuario.id
+      });
+
+      atualizados++;
+      total += novaQtd;
+    }
+
+    if (movs.length) {
+      const { error: movErr } = await supabase.from('movimentacoes').insert(movs);
+      if (movErr) throw movErr;
+    }
+
+    res.json({
+      success: true,
+      data,
+      atualizados,
+      total,
+      observacao: `Estoque substituido pelas quantidades da contagem de ${new Date(data).toLocaleString('pt-BR')}`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== GASTOS ====================
 
 // GET /api/gastos — lista gastos, opcionalmente filtrar por período
