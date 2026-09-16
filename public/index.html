@@ -2569,7 +2569,7 @@
 
 <!-- Modal nova receita -->
 <div class="modal-overlay" id="modal-nova-receita" onclick="recFecharCriar(event)">
-  <div class="modal-content" style="max-width:460px" onclick="event.stopPropagation()">
+  <div class="modal-content" style="max-width:560px" onclick="event.stopPropagation()">
     <div class="modal-header">
       <h3><i class="ti ti-book-2"></i> Nova receita</h3>
       <button class="modal-close" onclick="recFecharCriar()"><i class="ti ti-x"></i></button>
@@ -2583,6 +2583,20 @@
         <label>Descrição (opcional)</label>
         <input type="text" id="rec-desc" placeholder="Ex: Massa + recheio de carne">
       </div>
+
+      <div class="card-title" style="margin-bottom:.75rem"><i class="ti ti-list"></i> Ingredientes</div>
+      <div id="rec-criar-itens" class="rec-items"></div>
+
+      <div class="form-group" style="margin-top:1rem">
+        <label>Adicionar produto</label>
+        <div class="rec-add-row">
+          <input type="text" id="rec-criar-nome" list="rec-produto-list" placeholder="Pesquisar produto..." autocomplete="off">
+          <select id="rec-criar-medida" class="qty-unit-select" style="width:92px" title="Unidade de medida"></select>
+          <input type="number" id="rec-criar-qtd" placeholder="Qtd" min="0" step="0.001" style="width:90px">
+          <button class="btn btn-primary" onclick="recCriarAddItem()" title="Adicionar"><i class="ti ti-plus"></i></button>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem">
         <button class="btn" onclick="recFecharCriar()"><i class="ti ti-x"></i> Cancelar</button>
         <button class="btn btn-primary" onclick="recSalvarCriar()"><i class="ti ti-check"></i> Criar receita</button>

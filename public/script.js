@@ -4229,6 +4229,7 @@ async function renderAtividade() {
 // ==================== RECEITAS ====================
 let receitas = [];
 let recDetalheAtual = null;
+let recCriarItens = [];
 
 let recMedidasSugeridas = ['un', 'kg', 'g', 'ml', 'L', 'cx', 'pacote', 'dúzia', 'unid'];
 
@@ -4281,9 +4282,23 @@ function recCardHtml(r, modo) {
     </div>`;
 }
 
+function recPopulateProdutoList() {
+  const dl = document.getElementById('rec-produto-list');
+  if (dl) dl.innerHTML = (produtos || []).map(p => `<option value="${esc(p.nome)}">`).join('');
+}
+
+function recPopulateMedidaSel(selId) {
+  const ml = document.getElementById(selId);
+  if (ml) ml.innerHTML = recMedidasSugeridas.map(m => `<option value="${esc(m)}">${esc(m.toUpperCase())}</option>`).join('');
+}
+
 function recAbrirCriar() {
   document.getElementById('rec-nome').value = '';
   document.getElementById('rec-desc').value = '';
+  recCriarItens = [];
+  recPopulateProdutoList();
+  recPopulateMedidaSel('rec-criar-medida');
+  recRenderCriarItens();
   document.getElementById('modal-nova-receita').classList.add('show');
 }
 
@@ -4292,12 +4307,55 @@ function recFecharCriar(e) {
   document.getElementById('modal-nova-receita').classList.remove('show');
 }
 
+function recRenderCriarItens() {
+  const body = document.getElementById('rec-criar-itens');
+  if (!body) return;
+  if (!recCriarItens.length) {
+    body.innerHTML = '<div class="empty" style="padding:.5rem"><i class="ti ti-list"></i>Nenhum ingrediente adicionado.</div>';
+    return;
+  }
+  body.innerHTML = recCriarItens.map((i, idx) => `
+      <div class="rec-item">
+        <div class="rec-item-info">
+          <div class="rec-item-nome">${esc(i.nome)}</div>
+          <div class="rec-item-cat">${esc(i.categoria || '')}${i.preco ? ' · ' + fmtMoeda(i.preco) : ''}</div>
+        </div>
+        <div class="rec-item-qtd">${fmtQtd(i.qtd)} <span style="font-weight:400;font-size:12px">${esc(i.medida || '')}</span></div>
+        <button class="rec-item-del" onclick="recCriarRemoveItem(${idx})" title="Remover"><i class="ti ti-trash"></i></button>
+      </div>`).join('');
+}
+
+function recCriarAddItem() {
+  const nome = document.getElementById('rec-criar-nome').value.trim();
+  const medida = document.getElementById('rec-criar-medida').value.trim() || 'un';
+  const qtd = parseFloat(document.getElementById('rec-criar-qtd').value);
+  const info = (produtos || []).find(p => p.nome === nome);
+  if (!info) return toast('Selecione um produto válido', false);
+  if (!qtd || qtd <= 0) return toast('Informe a quantidade', false);
+  if (recCriarItens.some(i => i.produto_id === info.id)) return toast('Este produto já está na receita', false);
+  recCriarItens.push({ produto_id: info.id, nome: info.nome, categoria: info.categoria, preco: info.preco, qtd, medida });
+  recRenderCriarItens();
+  document.getElementById('rec-criar-nome').value = '';
+  document.getElementById('rec-criar-qtd').value = '';
+}
+
+function recCriarRemoveItem(idx) {
+  recCriarItens.splice(idx, 1);
+  recRenderCriarItens();
+}
+
 async function recSalvarCriar() {
   const nome = document.getElementById('rec-nome').value.trim();
   if (!nome) return toast('Informe o nome da receita', false);
   const descricao = document.getElementById('rec-desc').value.trim();
   try {
     const nova = await apiRequest('/receitas', { method: 'POST', body: JSON.stringify({ nome, descricao }) });
+    for (const i of recCriarItens) {
+      await apiRequest(`/receitas/${nova.id}/itens`, {
+        method: 'POST',
+        body: JSON.stringify({ produto_id: i.produto_id, qtd: i.qtd, medida: i.medida || 'un' })
+      });
+    }
     toast('Receita criada!');
     recFecharCriar();
     await renderReceitas();
@@ -4325,10 +4383,8 @@ async function recAbrirDetalhes(id, modo) {
   if (delRow) delRow.style.display = editando ? 'flex' : 'none';
 
   if (editando) {
-    const dl = document.getElementById('rec-produto-list');
-    if (dl) dl.innerHTML = (produtos || []).map(p => `<option value="${esc(p.nome)}">`).join('');
-    const ml = document.getElementById('rec-add-medida');
-    if (ml) ml.innerHTML = recMedidasSugeridas.map(m => `<option value="${esc(m)}">${esc(m.toUpperCase())}</option>`).join('');
+    recPopulateProdutoList();
+    recPopulateMedidaSel('rec-add-medida');
     const n1 = document.getElementById('rec-add-nome');
     const n2 = document.getElementById('rec-add-medida');
     const n3 = document.getElementById('rec-add-qtd');
