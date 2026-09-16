@@ -2611,8 +2611,7 @@
         <div class="rec-add-row">
           <input type="text" id="rec-add-nome" list="rec-produto-list" placeholder="Pesquisar produto..." autocomplete="off">
           <datalist id="rec-produto-list"></datalist>
-          <input type="text" id="rec-add-medida" list="rec-medida-list" placeholder="Medida" autocomplete="off" style="width:86px">
-          <datalist id="rec-medida-list"></datalist>
+          <select id="rec-add-medida" class="qty-unit-select" style="width:92px" title="Unidade de medida"></select>
           <input type="number" id="rec-add-qtd" placeholder="Qtd" min="0" step="0.001" style="width:90px">
           <button class="btn btn-primary" onclick="recAddItem()" title="Adicionar"><i class="ti ti-plus"></i></button>
         </div>

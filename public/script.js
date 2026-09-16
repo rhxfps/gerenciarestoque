@@ -4327,8 +4327,8 @@ async function recAbrirDetalhes(id, modo) {
   if (editando) {
     const dl = document.getElementById('rec-produto-list');
     if (dl) dl.innerHTML = (produtos || []).map(p => `<option value="${esc(p.nome)}">`).join('');
-    const ml = document.getElementById('rec-medida-list');
-    if (ml) ml.innerHTML = recMedidasSugeridas.map(m => `<option value="${esc(m)}">`).join('');
+    const ml = document.getElementById('rec-add-medida');
+    if (ml) ml.innerHTML = recMedidasSugeridas.map(m => `<option value="${esc(m)}">${esc(m.toUpperCase())}</option>`).join('');
     const n1 = document.getElementById('rec-add-nome');
     const n2 = document.getElementById('rec-add-medida');
     const n3 = document.getElementById('rec-add-qtd');
@@ -4351,15 +4351,14 @@ function recRenderItens() {
   }
   body.innerHTML = itens.map(i => {
     const p = i.produtos || {};
-    const med = i.medida && i.medida !== 'un' ? ` <span style="color:var(--text-dim);font-weight:400">(${esc(i.medida)})</span>` : '';
     const delBtn = editando ? `<button class="rec-item-del" onclick="recRemoverItem(${i.id})" title="Remover"><i class="ti ti-trash"></i></button>` : '';
     return `
       <div class="rec-item">
         <div class="rec-item-info">
-          <div class="rec-item-nome">${esc(p.nome || 'Produto')}${med}</div>
+          <div class="rec-item-nome">${esc(p.nome || 'Produto')}</div>
           <div class="rec-item-cat">${esc(p.categoria || '')}${p.preco ? ' · ' + fmtMoeda(p.preco) : ''}</div>
         </div>
-        <div class="rec-item-qtd">${fmtQtd(i.qtd)} <span style="font-weight:400">${esc(i.medida || '')}</span></div>
+        <div class="rec-item-qtd">${fmtQtd(i.qtd)} <span style="font-weight:400;font-size:12px">${esc(i.medida || '')}</span></div>
         ${delBtn}
       </div>`;
   }).join('');
@@ -4458,14 +4457,13 @@ function recFazerSelecionar() {
   }
   box.innerHTML = (rec.itens || []).map(i => {
     const p = i.produtos || {};
-    const med = i.medida && i.medida !== 'un' ? ` <span style="color:var(--text-dim);font-weight:400">(${esc(i.medida)})</span>` : '';
     return `
       <div class="rec-item">
         <div class="rec-item-info">
-          <div class="rec-item-nome">${esc(p.nome || 'Produto')}${med}</div>
+          <div class="rec-item-nome">${esc(p.nome || 'Produto')}</div>
           <div class="rec-item-cat">${esc(p.categoria || '')}</div>
         </div>
-        <div class="rec-item-qtd">${fmtQtd(i.qtd)}</div>
+        <div class="rec-item-qtd">${fmtQtd(i.qtd)} <span style="font-weight:400;font-size:12px">${esc(i.medida || '')}</span></div>
       </div>`;
   }).join('');
 }

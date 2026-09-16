@@ -1752,7 +1752,7 @@ app.get('/api/receitas', autenticar, async (req, res) => {
     if (ids.length) {
       const { data: itens } = await supabase
         .from('receita_itens')
-        .select('id, receita_id, produto_id, qtd, produtos(id, nome, categoria, preco)')
+        .select('id, receita_id, produto_id, qtd, medida, produtos(id, nome, categoria, preco)')
         .in('receita_id', ids)
         .order('id');
       for (const i of itens || []) {
