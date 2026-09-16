@@ -599,9 +599,17 @@ body[data-app="pastel"] .acai-comp-btn.active {
 }
 body[data-app="pastel"] .acai-comp-check { display: none; color: #fff; font-size: 13px; }
 body[data-app="pastel"] .acai-comp-btn.active .acai-comp-check { display: inline-flex; }
-body[data-app="pastel"] .acai-comp-nome { font-size: 13px; font-weight: 600; }
+body[data-app="pastel"] .acai-comp-btn { color: var(--text-primary); }
+body[data-app="pastel"] .acai-comp-nome { font-size: 13px; font-weight: 600; color: inherit; }
 body[data-app="pastel"] .acai-comp-preco { font-size: 12px; font-weight: 800; color: var(--purple); }
 body[data-app="pastel"] .acai-comp-btn.active .acai-comp-preco { color: rgba(255, 255, 255, .85); }
+/* garantia de legibilidade dos complementos no tema escuro */
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-btn { color: var(--text-primary); }
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-nome { color: var(--text-primary); }
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-preco { color: #a78bfa; }
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-btn.active .acai-comp-preco { color: rgba(255, 255, 255, .9); }
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-btn:hover { border-color: #8b5cf6; background: rgba(139, 92, 246, .18); }
+[data-theme="dark"] body[data-app="pastel"] .acai-comp-btn.active { border-color: transparent; }
 
 body[data-app="pastel"] .acai-footer {
   display: flex;
