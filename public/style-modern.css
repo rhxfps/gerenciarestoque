@@ -1,31 +1,96 @@
 /* ============================================================
    MODERN POLISH LAYER
-   Redefine raios, sombras, espaçamentos e transições usando
-   apenas as cores existentes no sistema (nenhuma cor nova).
-   Estilo: cantos quadrados, bordas limpas, sombras definidas.
+   Raio, sombras, espaçamento e transições modernos.
+   Paleta renovada dentro das mesmas famílias de cor
+   (azul, verde, vermelho, âmbar, roxo) — tons mais vivos.
    Carregado por último para sobrepor os estilos base.
    ============================================================ */
 
-/* ---------- Design tokens ---------- */
+/* ---------- Design tokens (luz) ---------- */
 :root {
+  /* Azul */
+  --blue-50:  #eef4ff;
+  --blue-100: #dbe8ff;
+  --blue-200: #bad9ff;
+  --blue-500: #3375ff;
+  --blue-600: #2c63ff;
+  --blue-700: #214fd6;
+  --blue-800: #1d3fc2;
+  --blue-900: #1b3185;
+
+  --blue:       #2c63ff;
+  --blue-dark:  #214fd6;
+  --blue-light: #edf3ff;
+  --blue-bg:    #dbe8ff;
+
+  /* Famílias semânticas */
+  --green:     #12b76a;
+  --green-bg:  #d6f6e6;
+  --red:       #f04438;
+  --red-bg:    #fde3e0;
+  --amber:     #f79009;
+  --amber-bg:  #fcf0d4;
+  --purple:    #7a5af8;
+  --purple-bg: #f0e9ff;
+
+  /* Neutros (levemente azulados) */
+  --bg-page:      #f4f6fb;
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f7f9fd;
+  --bg-tertiary:  #eef1f8;
+
+  --text-primary:   #0f172a;
+  --text-secondary: #5b6b85;
+  --text-muted:     #8494ab;
+
+  --border:     #e1e8f3;
+  --border-mid: #c9d3e4;
+
+  /* Raios quadrados */
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 6px;
   --radius-xl: 8px;
 
+  /* Sombras em camadas */
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, .04);
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 6px 18px rgba(15, 23, 42, .07);
   --shadow-md: 0 2px 6px rgba(15, 23, 42, .06), 0 14px 30px rgba(15, 23, 42, .13);
   --shadow-lg: 0 4px 10px rgba(15, 23, 42, .07), 0 26px 60px rgba(15, 23, 42, .22);
 
-  --modern-ring-blue: 0 0 0 3px rgba(59, 130, 246, .18);
-  --modern-glow-blue: 0 8px 22px -8px rgba(37, 99, 235, .50);
-  --modern-glow-red:  0 8px 22px -8px rgba(220, 38, 38, .50);
-  --modern-glow-green: 0 8px 22px -8px rgba(22, 163, 74, .50);
+  --modern-ring-blue: 0 0 0 3px rgba(44, 99, 255, .18);
+  --modern-glow-blue:  0 8px 22px -8px rgba(44, 99, 255, .55);
+  --modern-glow-red:   0 8px 22px -8px rgba(240, 68, 56, .55);
+  --modern-glow-green: 0 8px 22px -8px rgba(18, 183, 106, .55);
   --modern-ease: cubic-bezier(.22, 1, .36, 1);
 }
 
+/* ---------- Design tokens (escuro) ---------- */
 [data-theme="dark"] {
+  --blue-500: #3a7bff;
+  --blue-200: #8db4ff;
+  --blue:       #4a7dff;
+  --blue-dark:  #2f62f0;
+  --blue-light: #20222a;
+  --blue-bg:    #1d3f73;
+
+  --green-bg:  #103e28;
+  --red-bg:    #4a2a28;
+  --amber-bg:  #3d3013;
+  --purple-bg: #2a2342;
+
+  --bg-page:      #0a0c12;
+  --bg-primary:   #12151c;
+  --bg-secondary: #191d27;
+  --bg-tertiary:  #0e1118;
+
+  --text-primary:   #f2f5fa;
+  --text-secondary: #aeb6c6;
+  --text-muted:     #7d8798;
+
+  --border:     #232a38;
+  --border-mid: #353e50;
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, .25);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 18px rgba(0, 0, 0, .35);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, .30), 0 14px 30px rgba(0, 0, 0, .45);
@@ -33,7 +98,7 @@
 }
 
 /* ---------- Global ---------- */
-::selection { background: rgba(59, 130, 246, .25); }
+::selection { background: rgba(51, 117, 255, .25); }
 
 * {
   scrollbar-width: thin;
@@ -51,19 +116,19 @@
 
 /* ---------- Fundo da página ---------- */
 body[data-app="pastel"] .main {
-  background: radial-gradient(1100px 320px at 50% -140px, rgba(59, 130, 246, .07), transparent 60%), var(--bg-page);
+  background: radial-gradient(1100px 320px at 50% -140px, rgba(51, 117, 255, .08), transparent 60%), var(--bg-page);
 }
 [data-theme="dark"] body[data-app="pastel"] .main {
-  background: radial-gradient(1100px 320px at 50% -140px, rgba(255, 255, 255, .05), transparent 60%), #0a0a0a;
+  background: radial-gradient(1100px 320px at 50% -140px, rgba(74, 125, 255, .06), transparent 60%), #0a0c12;
 }
 
 /* ---------- Sidebar ---------- */
 body[data-app="pastel"] .sidebar {
   background:
-    radial-gradient(120% 55% at 50% 0%, rgba(59, 130, 246, .22), transparent 60%),
-    linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+    radial-gradient(120% 55% at 50% 0%, rgba(51, 117, 255, .25), transparent 60%),
+    linear-gradient(180deg, #1d3fc2 0%, #1b3185 100%);
   border-right: 1px solid rgba(255, 255, 255, .08);
-  box-shadow: 8px 0 30px rgba(30, 64, 175, .22);
+  box-shadow: 8px 0 30px rgba(29, 63, 194, .25);
 }
 [data-theme="dark"] body[data-app="pastel"] .sidebar {
   background:
@@ -156,7 +221,7 @@ body[data-app="pastel"] .topbar h1::before {
 
 .card, .report-block { transition: box-shadow .2s var(--modern-ease), transform .2s var(--modern-ease), border-color .2s; }
 .card:hover, .report-block:hover {
-  border-color: var(--border-mid);
+  border-color: var(--blue-200);
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, .5);
 }
 [data-theme="dark"] .card:hover,
@@ -178,15 +243,15 @@ body[data-app="pastel"] .topbar h1::before {
   box-shadow: var(--modern-glow-blue);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-700) 100%);
-  box-shadow: 0 12px 26px -10px rgba(37, 99, 235, .60);
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue) 55%, var(--blue-dark) 100%);
+  box-shadow: 0 12px 26px -10px rgba(44, 99, 255, .65);
 }
 
 .btn-danger {
-  border-color: rgba(220, 38, 38, .35);
+  border-color: rgba(240, 68, 56, .35);
   box-shadow: var(--modern-glow-red);
 }
-.btn-danger:hover { box-shadow: 0 12px 26px -10px rgba(220, 38, 38, .55); }
+.btn-danger:hover { box-shadow: 0 12px 26px -10px rgba(240, 68, 56, .55); }
 
 .btn-sm { border-radius: 4px; }
 
@@ -318,15 +383,41 @@ tfoot td { border-top: 1px solid var(--border); }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 4px 12px rgba(0, 0, 0, .10);
 }
 
+.dash-kpi--blue    { background: linear-gradient(135deg, #3375ff, #214fd6); }
+.dash-kpi--green   { background: linear-gradient(135deg, #12b76a, #0d9b58); }
+.dash-kpi--indigo  { background: linear-gradient(135deg, #5865f2, #4348e8); }
+.dash-kpi--violet  { background: linear-gradient(135deg, #7a5af8, #6640ee); }
+.dash-kpi--red     { background: linear-gradient(135deg, #f04438, #d92d20); }
+.dash-kpi--balanco { background: linear-gradient(135deg, #3375ff, #214fd6); }
+
 /* ---------- Login ---------- */
-.login-container::before { filter: blur(50px); }
-.login-container::after  { filter: blur(50px); }
+body[data-app="pastel"] .login-container {
+  background:
+    radial-gradient(600px 320px at 85% 12%, rgba(74, 125, 255, .35), transparent 60%),
+    radial-gradient(500px 300px at 8% 88%, rgba(122, 90, 248, .30), transparent 60%),
+    linear-gradient(135deg, #1b3185 0%, #1d3fc2 50%, #172554 100%);
+}
+[data-theme="dark"] body[data-app="pastel"] .login-container {
+  background:
+    radial-gradient(600px 320px at 85% 12%, rgba(74, 125, 255, .12), transparent 60%),
+    linear-gradient(135deg, #000000 0%, #0d0d0d 60%, #050505 100%);
+}
+.login-container::before {
+  background: #5f9bff;
+  filter: blur(60px);
+}
+.login-container::after {
+  background: #a9c6ff;
+  filter: blur(60px);
+}
 
 .login-box {
-  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255, 255, 255, .35);
   border-radius: 14px;
   box-shadow: 0 30px 90px rgba(0, 0, 0, .4);
 }
+[data-theme="dark"] .login-box { background: var(--bg-primary); border-color: var(--border); }
 
 /* ---------- Mobile menu ---------- */
 .menu-overlay { backdrop-filter: blur(4px); }
@@ -385,9 +476,9 @@ tfoot td { border-top: 1px solid var(--border); }
 }
 
 .nav-alert-badge {
-  box-shadow: 0 0 0 0 rgba(239, 68, 68, .6), 0 0 0 2px var(--sidebar-bg);
+  box-shadow: 0 0 0 0 rgba(240, 68, 56, .6), 0 0 0 2px var(--sidebar-bg);
 }
-[data-theme="dark"] .nav-alert-badge { box-shadow: 0 0 0 0 rgba(239, 68, 68, .6), 0 0 0 2px var(--sidebar-bg); }
+[data-theme="dark"] .nav-alert-badge { box-shadow: 0 0 0 0 rgba(240, 68, 56, .6), 0 0 0 2px var(--sidebar-bg); }
 
 .hamburger-btn { border-radius: 8px; }
 
