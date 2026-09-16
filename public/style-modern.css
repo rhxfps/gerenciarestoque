@@ -114,14 +114,6 @@
 
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
-/* ---------- Fundo da página ---------- */
-body[data-app="pastel"] .main {
-  background: radial-gradient(1100px 320px at 50% -140px, rgba(51, 117, 255, .08), transparent 60%), var(--bg-page);
-}
-[data-theme="dark"] body[data-app="pastel"] .main {
-  background: radial-gradient(1100px 320px at 50% -140px, rgba(74, 125, 255, .06), transparent 60%), #0a0c12;
-}
-
 /* ---------- Sidebar ---------- */
 body[data-app="pastel"] .sidebar {
   background:
@@ -191,14 +183,6 @@ body[data-app="pastel"] .topbar h1 {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-body[data-app="pastel"] .topbar h1::before {
-  content: '';
-  width: 5px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, var(--blue-200), var(--blue));
-  flex-shrink: 0;
 }
 
 .theme-toggle { border-radius: 8px; width: 40px; height: 40px; }
@@ -362,6 +346,141 @@ tfoot td { border-top: 1px solid var(--border); }
 .confirm-icon {
   border-radius: 10px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+/* ---------- Modais de vendas (Pastel / Salgados / Açaí) ---------- */
+body[data-app="pastel"] .modal-content.pastel-modal,
+body[data-app="pastel"] .modal-content.acai-modal { overflow: hidden; }
+body[data-app="pastel"] .modal-content.pastel-modal { max-width: 560px; }
+body[data-app="pastel"] .modal-content.acai-modal { max-width: 520px; }
+
+body[data-app="pastel"] .modal-content.pastel-modal .modal-header,
+body[data-app="pastel"] .modal-content.acai-modal .modal-header {
+  padding: 1.2rem 1.35rem;
+  border-bottom: 0;
+  position: relative;
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-header {
+  background: linear-gradient(135deg, #ffae2b 0%, #f97316 65%, #ea580c 100%);
+}
+body[data-app="pastel"] .modal-content.acai-modal .modal-header {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 65%, #6d28d9 100%);
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-header::after,
+body[data-app="pastel"] .modal-content.acai-modal .modal-header::after {
+  content: '';
+  position: absolute;
+  right: -45px;
+  top: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .18), transparent 65%);
+  pointer-events: none;
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-header h3,
+body[data-app="pastel"] .modal-content.acai-modal .modal-header h3 {
+  color: #fff;
+  font-size: 17px;
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-header h3 span,
+body[data-app="pastel"] .modal-content.acai-modal .modal-header h3 span {
+  font-size: 26px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .20));
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-close,
+body[data-app="pastel"] .modal-content.acai-modal .modal-close {
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff;
+}
+body[data-app="pastel"] .modal-content.pastel-modal .modal-close:hover,
+body[data-app="pastel"] .modal-content.acai-modal .modal-close:hover {
+  background: rgba(255, 255, 255, .32);
+  color: #fff;
+}
+
+body[data-app="pastel"] .pastel-modal-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: .85rem 1.35rem 0;
+  padding: 6px 12px;
+  background: var(--amber-bg);
+  border: 1px solid rgba(217, 119, 6, .25);
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+body[data-app="pastel"] .pastel-modal-preco strong { color: var(--amber); }
+
+body[data-app="pastel"] .pastel-toggle-row { gap: 6px; padding: .85rem 1.35rem .1rem; }
+body[data-app="pastel"] .pastel-toggle-btn {
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  padding: 9px 0;
+  transition: background .16s, color .16s, box-shadow .16s var(--modern-ease);
+}
+body[data-app="pastel"] .pastel-toggle-btn:first-child { border-radius: 8px; }
+body[data-app="pastel"] .pastel-toggle-btn:last-child { border-radius: 8px; }
+body[data-app="pastel"] .pastel-toggle-btn:hover { color: var(--text-primary); }
+body[data-app="pastel"] .pastel-toggle-btn.active {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, .35);
+}
+
+body[data-app="pastel"] .pastel-recheios-grid { padding: 1rem 1.35rem 1.2rem; gap: 10px; }
+body[data-app="pastel"] .pastel-recheio-btn {
+  border-radius: 8px;
+  padding: 15px 12px 13px;
+  transition: border-color .16s, background .16s, color .16s, transform .16s var(--modern-ease), box-shadow .16s;
+}
+body[data-app="pastel"] .pastel-recheio-btn:hover {
+  border-color: var(--amber);
+  background: linear-gradient(135deg, rgba(245, 158, 11, .10), rgba(245, 158, 11, .03));
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+body[data-app="pastel"] .pastel-recheio-btn.selected {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, .38);
+}
+body[data-app="pastel"] .pastel-recheio-preco {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-size: 11.5px;
+}
+body[data-app="pastel"] .pastel-recheio-btn.selected .pastel-recheio-preco {
+  background: rgba(255, 255, 255, .18);
+  color: rgba(255, 255, 255, .95);
+  border: 1px solid rgba(255, 255, 255, .25);
+}
+
+body[data-app="pastel"] .pastel-modal-footer {
+  padding: 1rem 1.35rem 1.35rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+body[data-app="pastel"] .pastel-modal-selecao span { font-size: 10.5px; }
+body[data-app="pastel"] .pastel-modal-selecao strong { font-size: 14px; font-weight: 800; }
+
+body[data-app="pastel"] .acai-section { padding: 1rem 1.35rem; }
+body[data-app="pastel"] .acai-footer {
+  padding: 1rem 1.35rem 1.35rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
 }
 
 /* ---------- Toast ---------- */
