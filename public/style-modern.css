@@ -546,6 +546,73 @@ body[data-app="pastel"] .login-container {
   box-shadow: var(--shadow-sm);
 }
 
+/* ---------- Admin: detalhe da contagem (inline) ---------- */
+#ach-sessao-detalhe {
+  margin-top: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-sm);
+}
+.ach-detalhe-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.ach-detalhe-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ach-detalhe-titulo strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.ach-detalhe-titulo strong i { color: var(--blue); }
+.ach-detalhe-titulo span {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.ach-detalhe-titulo span i { color: var(--blue); }
+.ach-detalhe-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+#ach-sessao-detalhe .contagem-cat { padding: 0 1.25rem; }
+#ach-sessao-detalhe .contagem-items {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+#ach-sessao-detalhe .contagem-row { padding: 8px 12px; }
+.contagem-qtd {
+  min-width: 84px;
+  text-align: right;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blue);
+  background: var(--blue-bg);
+  white-space: nowrap;
+}
+.ach-detalhe-total {
+  padding: .85rem 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ach-detalhe-total i { color: var(--green); }
+#tabela-ach tr.ach-row-active td { background: var(--blue-light); }
+
 /* ---------- Bar chart ---------- */
 .bar-day-bar { border-radius: 2px 2px 0 0; }
 .bar-day-tooltip { border-radius: 4px; }

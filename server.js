@@ -1420,7 +1420,7 @@ app.get('/api/contagem/sessao', autenticar, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('contagem')
-      .select('produto_id, qtd, produtos:produto_id (nome), usuarios:usuario_id (nome)')
+      .select('produto_id, qtd, produtos:produto_id (nome, categoria), usuarios:usuario_id (nome)')
       .eq('data', req.query.data)
       .order('qtd', { ascending: false });
 
@@ -1436,6 +1436,7 @@ app.get('/api/contagem/sessao', autenticar, async (req, res) => {
       items: linhas.map(r => ({
         produto_id: r.produto_id,
         nome: r.produtos?.nome || 'Produto removido',
+        categoria: r.produtos?.categoria || 'Sem categoria',
         qtd: Number(r.qtd || 0)
       }))
     });

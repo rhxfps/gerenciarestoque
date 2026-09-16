@@ -4261,7 +4261,7 @@ async function renderAdminContagem() {
   }
   em.style.display = 'none';
 
-  tb.innerHTML = achData.map((s, i) => `<tr>
+  tb.innerHTML = achData.map((s, i) => `<tr data-index="${i}">
     <td>${fmt(s.data)}</td>
     <td>${s.usuario}</td>
     <td>${s.itens} produto(s)</td>
@@ -4276,32 +4276,78 @@ async function renderAdminContagem() {
 async function achAbrirSessao(index) {
   const s = achData[index];
   if (!s) return;
+  const panel = document.getElementById('ach-sessao-detalhe');
+  const tb = document.getElementById('tabela-ach');
+
+  // Se já está aberta, esconde
+  if (panel.dataset.open === String(index)) {
+    panel.style.display = 'none';
+    panel.dataset.open = '';
+    tb.querySelectorAll('.ach-row-active').forEach(r => r.classList.remove('ach-row-active'));
+    return;
+  }
+
+  let sessao;
   try {
-    const sessao = await apiRequest(`/contagem/sessao?data=${encodeURIComponent(s.data)}`);
-    document.getElementById('ach-sessao-info').innerHTML =
-      `<strong>${fmt(sessao.data)}</strong> - por ${sessao.usuario} - ${sessao.items.length} produto(s) - <strong>${sessao.total} unidade(s)</strong>`;
-    const tb = document.getElementById('ach-sessao-itens');
-    const em = document.getElementById('ach-sessao-empty');
-    if (!sessao.items.length) {
-      tb.innerHTML = '';
-      em.style.display = 'flex';
-    } else {
-      em.style.display = 'none';
-      tb.innerHTML = sessao.items.map(it => `<tr>
-        <td>${esc(it.nome)}</td>
-        <td style="text-align:right;font-weight:700">${it.qtd}</td>
-      </tr>`).join('');
-    }
-    document.getElementById('ach-sessao-modal').classList.add('show');
+    sessao = await apiRequest(`/contagem/sessao?data=${encodeURIComponent(s.data)}`);
   } catch (e) {
     toast('Erro ao carregar os detalhes da contagem.', false);
+    return;
   }
+
+  tb.querySelectorAll('.ach-row-active').forEach(r => r.classList.remove('ach-row-active'));
+  const row = tb.querySelector(`tr[data-index="${index}"]`);
+  if (row) row.classList.add('ach-row-active');
+
+  const grupos = {};
+  sessao.items.forEach(it => {
+    const c = it.categoria || 'Sem categoria';
+    (grupos[c] = grupos[c] || []).push(it);
+  });
+  const cats = Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  let html = `<div class="ach-detalhe-head">
+    <div class="ach-detalhe-titulo">
+      <strong><i class="ti ti-clipboard-check"></i> Contagem: ${fmt(sessao.data)}</strong>
+      <span><i class="ti ti-user"></i> Feita por ${sessao.usuario}</span>
+    </div>
+    <button class="btn" onclick="achFecharSessao()"><i class="ti ti-x"></i> Fechar</button>
+  </div>`;
+
+  if (!cats.length) {
+    html += '<div class="empty" style="margin:1.25rem"><i class="ti ti-box"></i>Sem itens nesta contagem.</div>';
+  } else {
+    html += cats.map(c => `
+      <div class="contagem-cat">
+        <div class="contagem-cat-title"><i class="ti ti-tag"></i> ${c}
+          <span class="ach-detalhe-count">${grupos[c].length} item(ns)</span>
+        </div>
+        <div class="contagem-items">
+          ${grupos[c].map(it => `
+            <div class="contagem-row">
+              <span class="contagem-name">${esc(it.nome)}</span>
+              <span class="contagem-qtd">${it.qtd}</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+    html += `<div class="ach-detalhe-total">
+      <i class="ti ti-stack-2"></i> Total: ${sessao.items.length} produto(s), ${sessao.total} unidade(s)
+    </div>`;
+  }
+
+  panel.innerHTML = html;
+  panel.dataset.open = String(index);
+  panel.style.display = 'block';
 }
 
-function achFecharSessao(e) {
-  if (e && e.target !== e.currentTarget) return;
-  const modal = document.getElementById('ach-sessao-modal');
-  if (modal) modal.classList.remove('show');
+function achFecharSessao() {
+  const panel = document.getElementById('ach-sessao-detalhe');
+  if (!panel) return;
+  panel.style.display = 'none';
+  panel.dataset.open = '';
+  const tb = document.getElementById('tabela-ach');
+  if (tb) tb.querySelectorAll('.ach-row-active').forEach(r => r.classList.remove('ach-row-active'));
 }
 
 // ==================== RECEITAS ====================

@@ -1997,6 +1997,7 @@
             <div id="ach-empty" class="empty" style="display:none">
               <i class="ti ti-clipboard-off"></i>Nenhuma contagem registrada ainda. Faça a primeira contagem em "Contagem" no menu lateral.
             </div>
+            <div id="ach-sessao-detalhe" style="display:none"></div>
           </div>
         </div>
 
@@ -2560,26 +2561,6 @@
 
     </div>
   </main>
-      <!-- Modal detalhes da contagem (admin) -->
-      <div class="modal-overlay" id="ach-sessao-modal" onclick="achFecharSessao(event)">
-        <div class="modal-content" style="max-width:520px" onclick="event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="ti ti-clipboard-check"></i> Detalhes da contagem</h3>
-            <button class="modal-close" onclick="achFecharSessao()"><i class="ti ti-x"></i></button>
-          </div>
-          <div id="ach-sessao-info" style="padding:0 1.25rem .75rem;font-size:13px;color:var(--text-secondary)"></div>
-          <div style="max-height:52vh;overflow-y:auto;padding:0 1.25rem 1.25rem">
-            <table>
-              <thead><tr><th>Produto</th><th style="text-align:right">Qtd</th></tr></thead>
-              <tbody id="ach-sessao-itens"></tbody>
-            </table>
-            <div id="ach-sessao-empty" class="empty" style="display:none">
-              <i class="ti ti-box"></i>Sem itens nesta contagem.
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="modal-overlay" id="confirm-modal" onclick="closeConfirmModal(event)">
         <div class="modal-content confirm-content" onclick="event.stopPropagation()">
           <div class="confirm-icon" id="confirm-icon"><i class="ti ti-alert-triangle"></i></div>
