@@ -65,31 +65,31 @@
   --modern-ease: cubic-bezier(.22, 1, .36, 1);
 }
 
-/* ---------- Design tokens (escuro) ---------- */
+/* ---------- Design tokens (escuro) — preto & branco, sem azul ---------- */
 [data-theme="dark"] {
   --blue-500: #3a7bff;
   --blue-200: #8db4ff;
   --blue:       #4a7dff;
   --blue-dark:  #2f62f0;
-  --blue-light: #20222a;
-  --blue-bg:    #1d3f73;
+  --blue-light: #1d1d1d;
+  --blue-bg:    #272727;
 
-  --green-bg:  #103e28;
-  --red-bg:    #4a2a28;
-  --amber-bg:  #3d3013;
-  --purple-bg: #2a2342;
+  --green-bg:  #10251b;
+  --red-bg:    #331f1e;
+  --amber-bg:  #2c2310;
+  --purple-bg: #221d33;
 
-  --bg-page:      #0a0c12;
-  --bg-primary:   #12151c;
-  --bg-secondary: #191d27;
-  --bg-tertiary:  #0e1118;
+  --bg-page:      #0a0a0a;
+  --bg-primary:   #111111;
+  --bg-secondary: #181818;
+  --bg-tertiary:  #0d0d0d;
 
-  --text-primary:   #f2f5fa;
-  --text-secondary: #aeb6c6;
-  --text-muted:     #7d8798;
+  --text-primary:   #f5f5f5;
+  --text-secondary: #a6a6a6;
+  --text-muted:     #6e6e6e;
 
-  --border:     #232a38;
-  --border-mid: #353e50;
+  --border:     #212121;
+  --border-mid: #333333;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, .25);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .25), 0 6px 18px rgba(0, 0, 0, .35);
