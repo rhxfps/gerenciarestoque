@@ -4242,17 +4242,6 @@ async function renderAdminContagem() {
     toast('Erro ao carregar histórico de contagens.', false);
   }
 
-  const cnt = document.getElementById('ach-count');
-  const cntLabel = document.getElementById('ach-count-label');
-  const ult = document.getElementById('ach-ultima');
-  const ultU = document.getElementById('ach-ultima-usuario');
-  const itensEl = document.getElementById('ach-itens');
-  if (cnt) cnt.textContent = String(achData.length);
-  if (cntLabel) cntLabel.textContent = `${achData.length} contagem(ns) registrada(s)`;
-  if (itensEl) itensEl.textContent = String(achData.reduce((acc, s) => acc + s.itens, 0));
-  if (ult) ult.textContent = achData.length ? fmt(achData[0].data) : '—';
-  if (ultU) ultU.textContent = achData.length ? achData[0].usuario : '';
-
   if (!tb || !em) return;
   if (!achData.length) {
     tb.innerHTML = '';
