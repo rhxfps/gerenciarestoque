@@ -570,7 +570,11 @@ const LIMITE_CONSUMO_MENSAL = 50;
 
 function inicioDoMesLocal(agora = new Date()) {
   // Período mensal: do dia 26 do mês anterior até o dia 25 deste mês
-  return new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
+  let d = new Date(agora.getFullYear(), agora.getMonth(), 26);
+  if (agora.getDate() < 26) {
+    d = new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
+  }
+  return d;
 }
 
 app.get('/api/consumo', autenticar, async (req, res) => {
@@ -1921,12 +1925,15 @@ app.post('/api/receitas', autenticar, async (req, res) => {
   }
 });
 
-app.delete('/api/receitas/:id', autenticar, async (req, res) => {
+app.delete('/api/receitas/:id', autenticar, async (req,res) => {
   if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
   try {
-    const { error } = await supabase.from('receitas').delete().eq('id', req.params.id);
-    if (error) throw error;
-    res.json({ deleted: true });
+    const rid = req.params.id;
+    const { error: e1 } = await supabase.from('receita_itens').delete().eq('receita_id', rid);
+    if (e1) throw e1;
+    const { data, error: e2 } = await supabase.from('receitas').delete().eq('id', rid).select().single();
+    if (e2) throw e2;
+    res.json({ deleted: true, id: data.id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -145,7 +145,10 @@ let confirmCallback = null;
 
 // Período mensal do sistema: começa no dia 26 do mês anterior e termina no dia 25 deste mês
 function inicioPeriodo(agora = new Date()) {
-  const d = new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
+  let d = new Date(agora.getFullYear(), agora.getMonth(), 26);
+  if (agora.getDate() < 26) {
+    d = new Date(agora.getFullYear(), agora.getMonth() - 1, 26);
+  }
   d.setHours(0, 0, 0, 0);
   return d;
 }
