@@ -1,0 +1,1112 @@
+﻿[
+    {
+        "id":  15,
+        "nome":  "Plutonita",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  28,
+        "nome":  "Molecão",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  29,
+        "nome":  "Pé de Moça",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  30,
+        "nome":  "Doce de Abóbora",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  31,
+        "nome":  "Geleia de Frutas",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  43,
+        "nome":  "Água sem gás",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  44,
+        "nome":  "Água com gás",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  46,
+        "nome":  "Todynho",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  47,
+        "nome":  "Gatorade",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  48,
+        "nome":  "Skol",
+        "categoria":  "Bebidas Alcoólicas"
+    },
+    {
+        "id":  49,
+        "nome":  "Original",
+        "categoria":  "Bebidas Alcoólicas"
+    },
+    {
+        "id":  51,
+        "nome":  "Skol Beats",
+        "categoria":  "Bebidas Alcoólicas"
+    },
+    {
+        "id":  52,
+        "nome":  "Heineken",
+        "categoria":  "Bebidas Alcoólicas"
+    },
+    {
+        "id":  53,
+        "nome":  "Pastel",
+        "categoria":  "Pastéis"
+    },
+    {
+        "id":  54,
+        "nome":  "Coxinha de Frango",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  55,
+        "nome":  "Coxinha com Catupiry",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  56,
+        "nome":  "Bolinho de Queijo",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  57,
+        "nome":  "Risole de Presunto e Queijo",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  58,
+        "nome":  "Enroladinho de Salsicha",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  59,
+        "nome":  "Bolinho de Carne",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  60,
+        "nome":  "Bala Bolete",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  61,
+        "nome":  "Pirulito Bolete",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  63,
+        "nome":  "Fini Vermelho",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  64,
+        "nome":  "Fini Roxo",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  65,
+        "nome":  "Fini Verde Azedo",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  66,
+        "nome":  "Paçoca",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  68,
+        "nome":  "Tortuguita",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  69,
+        "nome":  "Freegells Gum Menta",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  70,
+        "nome":  "Freegells Gum Tutti Frutti",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  71,
+        "nome":  "Freegells Gum Morango",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  75,
+        "nome":  "Pooshs",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  78,
+        "nome":  "Pirulito Coca",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  80,
+        "nome":  "Pirulito Coração",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  81,
+        "nome":  "Bala Freegells vermelhinha",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  82,
+        "nome":  "Freegells Menta",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  83,
+        "nome":  "Freegells Choco",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  84,
+        "nome":  "Freegells Preto",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  86,
+        "nome":  "Bala de Hortelã",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  87,
+        "nome":  "Balinha do Coração",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  88,
+        "nome":  "Bola 7",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  90,
+        "nome":  "Chiclete Ball",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  91,
+        "nome":  "Gomets Tubo",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  93,
+        "nome":  "Doces Tony Kelly",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  96,
+        "nome":  "Fount de Leite",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  98,
+        "nome":  "Doce de Banana",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  99,
+        "nome":  "Pacote Bala Bolete Fechado",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  100,
+        "nome":  "Copo Fechado 180 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  101,
+        "nome":  "Copo 500 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  102,
+        "nome":  "Pote 100 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  103,
+        "nome":  "Blulister 50 un",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  104,
+        "nome":  "Garrafa 200 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  105,
+        "nome":  "Garrafa 300 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  106,
+        "nome":  "Copo Térmico 300 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  107,
+        "nome":  "Mini Tampa Descartável",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  108,
+        "nome":  "Rolo de Papel Alumínio 4M",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  109,
+        "nome":  "Rolo de Papel Alumínio 7,5M",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  110,
+        "nome":  "Saquinho Colher Sobremesa 50un",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  111,
+        "nome":  "Tampa Descartável 300 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  112,
+        "nome":  "Tampa Descartável 100 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  113,
+        "nome":  "Copo 180 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  114,
+        "nome":  "Copo 100 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  115,
+        "nome":  "Blister",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  116,
+        "nome":  "Copo 60 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  117,
+        "nome":  "Mini Pote de Isopor",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  118,
+        "nome":  "Mini Tampa de Isopor",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  119,
+        "nome":  "Copo 300 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  120,
+        "nome":  "Copo 700 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  121,
+        "nome":  "Pote 240 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  122,
+        "nome":  "Tampa 300 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  123,
+        "nome":  "Tampa 500 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  124,
+        "nome":  "Tampa 240 ML",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  125,
+        "nome":  "Embalagem Pastel P",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  126,
+        "nome":  "Embalagem Pastel G",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  127,
+        "nome":  "Canudos",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  128,
+        "nome":  "Saco P",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  129,
+        "nome":  "Saco M",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  130,
+        "nome":  "Saco G",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  131,
+        "nome":  "Suporte de Papel",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  132,
+        "nome":  "Suporte Batata Viagem P",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  133,
+        "nome":  "Suporte Batata Viagem M",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  134,
+        "nome":  "Suporte Batata Viagem G",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  135,
+        "nome":  "Colher Pacote P 50 un",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  136,
+        "nome":  "Papel Toalha G",
+        "categoria":  "Descartáveis"
+    },
+    {
+        "id":  137,
+        "nome":  "Guardanapo",
+        "categoria":  "Descartáveis"
+    },
+    {
+        "id":  138,
+        "nome":  "Guardanapo 200 un",
+        "categoria":  "Descartáveis"
+    },
+    {
+        "id":  139,
+        "nome":  "Coca-Cola 600 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  142,
+        "nome":  "Energético Furioso 2L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  143,
+        "nome":  "Fanta Laranja 1,5L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  144,
+        "nome":  "Guaraná 1,5L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  145,
+        "nome":  "Tônica",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  146,
+        "nome":  "Guaraviton",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  149,
+        "nome":  "Suco Del Valle Lata",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  150,
+        "nome":  "Coca-Cola Zero Lata",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  151,
+        "nome":  "Guaraná Zero Lata",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  152,
+        "nome":  "Guaraná Lata",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  153,
+        "nome":  "Sukita Lata",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  154,
+        "nome":  "Água de Coco 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  155,
+        "nome":  "Coca-Cola Zero 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  156,
+        "nome":  "Coca-Cola 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  157,
+        "nome":  "Soda Limonada",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  158,
+        "nome":  "Sprite",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  164,
+        "nome":  "Polpa Manga",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  165,
+        "nome":  "Polpa Abacaxi",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  166,
+        "nome":  "Polpa Maracujá",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  167,
+        "nome":  "Polpa Goiaba",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  168,
+        "nome":  "Polpa Acerola",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  169,
+        "nome":  "Polpa Caju",
+        "categoria":  "Polpas"
+    },
+    {
+        "id":  170,
+        "nome":  "Gelo Saborizado Maçã Verde",
+        "categoria":  "Gelos Saborizados"
+    },
+    {
+        "id":  171,
+        "nome":  "Gelo Saborizado Melancia",
+        "categoria":  "Gelos Saborizados"
+    },
+    {
+        "id":  172,
+        "nome":  "Gelo Saborizado Coco",
+        "categoria":  "Gelos Saborizados"
+    },
+    {
+        "id":  173,
+        "nome":  "Gelo Saborizado Morango",
+        "categoria":  "Gelos Saborizados"
+    },
+    {
+        "id":  174,
+        "nome":  "Geladinho Açaí",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  175,
+        "nome":  "Geladinho Gourmet Limão",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  176,
+        "nome":  "Geladinho Goumert Coco",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  177,
+        "nome":  "Geladinho Maracujá",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  178,
+        "nome":  "Geladinho Morango",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  179,
+        "nome":  "Recheio Queijo",
+        "categoria":  "Recheios Congelados"
+    },
+    {
+        "id":  180,
+        "nome":  "Recheio Calabresa",
+        "categoria":  "Recheios Congelados"
+    },
+    {
+        "id":  181,
+        "nome":  "Recheio Presunto",
+        "categoria":  "Recheios Congelados"
+    },
+    {
+        "id":  182,
+        "nome":  "Recheio Frango",
+        "categoria":  "Recheios Congelados"
+    },
+    {
+        "id":  183,
+        "nome":  "Recheio Palmito",
+        "categoria":  "Recheios Congelados"
+    },
+    {
+        "id":  185,
+        "nome":  "Frango a Passarinho",
+        "categoria":  "Congelados"
+    },
+    {
+        "id":  186,
+        "nome":  "Mini Pastel (sacos)",
+        "categoria":  "Congelados"
+    },
+    {
+        "id":  188,
+        "nome":  "Trufa Coco",
+        "categoria":  "Trufas"
+    },
+    {
+        "id":  189,
+        "nome":  "Trufa Morango",
+        "categoria":  "Trufas"
+    },
+    {
+        "id":  190,
+        "nome":  "Trufa Maracujá",
+        "categoria":  "Trufas"
+    },
+    {
+        "id":  191,
+        "nome":  "Trufa Brigadeiro",
+        "categoria":  "Trufas"
+    },
+    {
+        "id":  192,
+        "nome":  "Ketchup (caixa)",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  193,
+        "nome":  "Molho de Tomate",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  194,
+        "nome":  "Milho (pacote)",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  195,
+        "nome":  "Café Solúvel",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  196,
+        "nome":  "Pimenta",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  197,
+        "nome":  "Molho de Salsa",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  198,
+        "nome":  "Massa de Pastel",
+        "categoria":  "Insumos"
+    },
+    {
+        "id":  199,
+        "nome":  "Amstel",
+        "categoria":  "Bebidas Alcoólicas"
+    },
+    {
+        "id":  200,
+        "nome":  "Açaí 300ml",
+        "categoria":  "Açaí"
+    },
+    {
+        "id":  201,
+        "nome":  "Açaí 500ml",
+        "categoria":  "Açaí"
+    },
+    {
+        "id":  206,
+        "nome":  "Sprite 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  207,
+        "nome":  "Sukita 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  208,
+        "nome":  "Soda 200 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  209,
+        "nome":  "Guaraná 1 Litro",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  211,
+        "nome":  "Del Valle Uva 290 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  212,
+        "nome":  "Del Valle Goiaba 290 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  213,
+        "nome":  "Del Valle Pêssego 290 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  214,
+        "nome":  "Del Valle Manga 290 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  215,
+        "nome":  "Guaraviton Açaí 500 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  216,
+        "nome":  "TNT Tangerina 500 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  217,
+        "nome":  "TNT Uva 500 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  218,
+        "nome":  "Bala Azedinha Roxa",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  220,
+        "nome":  "Bala Caramelo",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  221,
+        "nome":  "Bala Iceriss",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  222,
+        "nome":  "Outro Doce",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  223,
+        "nome":  "Fini Azedinho",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  225,
+        "nome":  "Pirulito Boca Cereja",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  226,
+        "nome":  "Pirulito Coração Morango",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  227,
+        "nome":  "Mini Pizza",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  228,
+        "nome":  "Morango Congelado",
+        "categoria":  "Congelados"
+    },
+    {
+        "id":  229,
+        "nome":  "Geladinho Açaí com Nutella",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  230,
+        "nome":  "Geladinho Açaí com Leite Condensado",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  232,
+        "nome":  "Azeitona",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  233,
+        "nome":  "Leite",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  234,
+        "nome":  "Creme de Leite 200g",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  235,
+        "nome":  "Creme de Leite 1kg",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  236,
+        "nome":  "Maionese",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  237,
+        "nome":  "Ketchup",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  238,
+        "nome":  "Mostarda",
+        "categoria":  "Condimentos"
+    },
+    {
+        "id":  239,
+        "nome":  "Colher G",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  240,
+        "nome":  "Colher P",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  241,
+        "nome":  "Energetico TNT original",
+        "categoria":  "Energéticos"
+    },
+    {
+        "id":  242,
+        "nome":  "BOLO DE POTE CHOCOLATE",
+        "categoria":  "bolo de pote"
+    },
+    {
+        "id":  243,
+        "nome":  "BOLO DE POTE NINHO",
+        "categoria":  "bolo de pote"
+    },
+    {
+        "id":  244,
+        "nome":  "Energetico Bally",
+        "categoria":  "Energéticos"
+    },
+    {
+        "id":  245,
+        "nome":  "Coca Cola lata 350ml",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  246,
+        "nome":  "Chup-chup",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  247,
+        "nome":  "Chocolate quente",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  248,
+        "nome":  "Mini Pastel",
+        "categoria":  "Pastéis"
+    },
+    {
+        "id":  249,
+        "nome":  "Cafe",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  250,
+        "nome":  "Paçoca de Chocolate",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  251,
+        "nome":  "Del Valle Maracujá 290 ML",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  252,
+        "nome":  "Cafecomleite",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  255,
+        "nome":  "ouro branco",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  256,
+        "nome":  "Freegels cereja",
+        "categoria":  "Doces é guloseimas"
+    },
+    {
+        "id":  257,
+        "nome":  "ENERG TNT MAÇA VERDE 473ml",
+        "categoria":  "Energéticos"
+    },
+    {
+        "id":  258,
+        "nome":  "ENERG TNT MANGO 473ml",
+        "categoria":  "Energéticos"
+    },
+    {
+        "id":  259,
+        "nome":  "Guaranazinho 200ml",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  262,
+        "nome":  "Fanta Laranja Lata 350ml",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  263,
+        "nome":  "Energético Furioso Melancia 2L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  264,
+        "nome":  "Energético Furioso Tradicional 2L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  265,
+        "nome":  "Energético Furioso Tropical 2L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  267,
+        "nome":  "Pé de Moleque",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  268,
+        "nome":  "Doce de batata-doce",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  269,
+        "nome":  "Suco maracuja",
+        "categoria":  "Sucos"
+    },
+    {
+        "id":  271,
+        "nome":  "Chiclete freegels melancia",
+        "categoria":  "Doces é guloseimas"
+    },
+    {
+        "id":  276,
+        "nome":  "Sacola",
+        "categoria":  "Embalagens"
+    },
+    {
+        "id":  277,
+        "nome":  "Geladinho  coco",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  278,
+        "nome":  "Pave",
+        "categoria":  "bolo de pote"
+    },
+    {
+        "id":  279,
+        "nome":  "Geladinho limao",
+        "categoria":  "Geladinhos"
+    },
+    {
+        "id":  280,
+        "nome":  "Mini pizza frango catupiry",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  281,
+        "nome":  "Mini pizza presunto e queijo",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  282,
+        "nome":  "Mini pizza queijo",
+        "categoria":  "Salgados"
+    },
+    {
+        "id":  283,
+        "nome":  "Freegels melancia",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  284,
+        "nome":  "Óleo",
+        "categoria":  "Insumos"
+    },
+    {
+        "id":  285,
+        "nome":  "Pepsi 1L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  286,
+        "nome":  "Mentos Mint",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  287,
+        "nome":  "Mentos Fruit Mix",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  288,
+        "nome":  "Mentos Tutti Frutti",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  289,
+        "nome":  "Carne com Ovo",
+        "categoria":  "Confeitarias"
+    },
+    {
+        "id":  290,
+        "nome":  "baton",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  291,
+        "nome":  "Sukita 1,5L",
+        "categoria":  "Bebidas"
+    },
+    {
+        "id":  292,
+        "nome":  "Pirulito pop cereja",
+        "categoria":  "Doces e Guloseimas"
+    },
+    {
+        "id":  293,
+        "nome":  "CALABRESA",
+        "categoria":  "Carnes"
+    },
+    {
+        "id":  294,
+        "nome":  "CATUPIRY",
+        "categoria":  "Laticinios"
+    },
+    {
+        "id":  295,
+        "nome":  "BACON",
+        "categoria":  "Carnes"
+    },
+    {
+        "id":  296,
+        "nome":  "MOLHO DE BACON",
+        "categoria":  "Laticinios"
+    },
+    {
+        "id":  297,
+        "nome":  "CARNE MOÍDA",
+        "categoria":  "Carnes"
+    },
+    {
+        "id":  298,
+        "nome":  "FRANGO",
+        "categoria":  "Carnes"
+    },
+    {
+        "id":  299,
+        "nome":  "PRESUNTO",
+        "categoria":  "Carnes"
+    },
+    {
+        "id":  300,
+        "nome":  "QUEIJO",
+        "categoria":  "Laticinios"
+    },
+    {
+        "id":  301,
+        "nome":  "TOMATE",
+        "categoria":  "Hortifruti"
+    },
+    {
+        "id":  302,
+        "nome":  "OREGANO",
+        "categoria":  "Hortifruti"
+    },
+    {
+        "id":  303,
+        "nome":  "CREME DE AVELA",
+        "categoria":  "Laticinios"
+    },
+    {
+        "id":  304,
+        "nome":  "COXINHA",
+        "categoria":  "Salgados"
+    }
+]

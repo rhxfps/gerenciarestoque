@@ -1,0 +1,455 @@
+﻿[
+    {
+        "id":  1,
+        "nome":  "Pastel de carne",
+        "descricao":  "",
+        "categoria":  null,
+        "itens":  {
+
+                  }
+    },
+    {
+        "id":  2,
+        "nome":  "PASTEL CARNE",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  16,
+                          "produto_id":  297,
+                          "produto_nome":  "CARNE MOÍDA",
+                          "qtd":  120,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  17,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  0.01,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  18,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      }
+                  ]
+    },
+    {
+        "id":  4,
+        "nome":  "COXINHA",
+        "descricao":  "Salgado",
+        "categoria":  null,
+        "itens":  {
+                      "item_id":  46,
+                      "produto_id":  304,
+                      "produto_nome":  "COXINHA",
+                      "qtd":  1,
+                      "medida":  "un"
+                  }
+    },
+    {
+        "id":  5,
+        "nome":  "PASTEL AVELA",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  43,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  44,
+                          "produto_id":  303,
+                          "produto_nome":  "CREME DE AVELA",
+                          "qtd":  120,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  45,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  1,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  6,
+        "nome":  "PASTEL PIZZA",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  2,
+                          "produto_id":  299,
+                          "produto_nome":  "PRESUNTO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  3,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  4,
+                          "produto_id":  302,
+                          "produto_nome":  "OREGANO",
+                          "qtd":  0.1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  5,
+                          "produto_id":  301,
+                          "produto_nome":  "TOMATE",
+                          "qtd":  0.1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  6,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      }
+                  ]
+    },
+    {
+        "id":  7,
+        "nome":  "PASTEL CARNE COM QUEIJO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  47,
+                          "produto_id":  297,
+                          "produto_nome":  "CARNE MOÍDA",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  48,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  0.01,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  49,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  50,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  8,
+        "nome":  "PASTEL DE QUEIJO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  21,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  120,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  22,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  23,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  0.1,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  9,
+        "nome":  "PASTEL DE CALABRESA",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  40,
+                          "produto_id":  293,
+                          "produto_nome":  "CALABRESA",
+                          "qtd":  120,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  41,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  42,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  0.1,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  10,
+        "nome":  "PASTEL CALABRESA COM BACON",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  28,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  29,
+                          "produto_id":  293,
+                          "produto_nome":  "CALABRESA",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  30,
+                          "produto_id":  295,
+                          "produto_nome":  "BACON",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  31,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  1,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  11,
+        "nome":  "PASTEL DE FRANGO COM CATUPIRY",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  12,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  13,
+                          "produto_id":  298,
+                          "produto_nome":  "FRANGO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  14,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  15,
+                          "produto_id":  294,
+                          "produto_nome":  "CATUPIRY",
+                          "qtd":  60,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  12,
+        "nome":  "PASTEL CALABRESA COM BACON E QUEIJO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  7,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  8,
+                          "produto_id":  293,
+                          "produto_nome":  "CALABRESA",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  9,
+                          "produto_id":  295,
+                          "produto_nome":  "BACON",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  10,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  11,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  30,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  13,
+        "nome":  "PASTEL QUEIJO COM BACON",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  36,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  37,
+                          "produto_id":  295,
+                          "produto_nome":  "BACON",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  38,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  39,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  14,
+        "nome":  "PASTEL DE CALABRESA COM QUEIJO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  [
+                      {
+                          "item_id":  32,
+                          "produto_id":  293,
+                          "produto_nome":  "CALABRESA",
+                          "qtd":  60,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  33,
+                          "produto_id":  198,
+                          "produto_nome":  "Massa de Pastel",
+                          "qtd":  1,
+                          "medida":  "un"
+                      },
+                      {
+                          "item_id":  34,
+                          "produto_id":  284,
+                          "produto_nome":  "Óleo",
+                          "qtd":  0.1,
+                          "medida":  "g"
+                      },
+                      {
+                          "item_id":  35,
+                          "produto_id":  300,
+                          "produto_nome":  "QUEIJO",
+                          "qtd":  60,
+                          "medida":  "g"
+                      }
+                  ]
+    },
+    {
+        "id":  15,
+        "nome":  "MOLHO DE BACON DA CASA",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  {
+                      "item_id":  27,
+                      "produto_id":  296,
+                      "produto_nome":  "MOLHO DE BACON",
+                      "qtd":  30,
+                      "medida":  "g"
+                  }
+    },
+    {
+        "id":  21,
+        "nome":  "PASTEL DE FRANGO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  {
+
+                  }
+    },
+    {
+        "id":  22,
+        "nome":  "PASTEL CARNE COM BACON",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  {
+
+                  }
+    },
+    {
+        "id":  23,
+        "nome":  "PASTEL DE FRANGO",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  {
+
+                  }
+    },
+    {
+        "id":  24,
+        "nome":  "PASTEL CARNE COM BACON",
+        "descricao":  "Pastel",
+        "categoria":  null,
+        "itens":  {
+
+                  }
+    }
+]
