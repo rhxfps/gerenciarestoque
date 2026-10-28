@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e40af">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Controle de Estoque v2</title>
+<link rel="icon" type="image/x-icon" href="/images/logosistema.ico">
+<!-- anti-flash: apply saved theme before render -->
+<script>
+  (function(){
+    var t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<script>
+  (function(){
+    var m = localStorage.getItem('appMode') || 'pastel';
+    document.body.setAttribute('data-app', m);
+  })();
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style-hamburguer.css">
+<link rel="stylesheet" href="style-modern.css">
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div class="login-container" id="login-container" style="display:flex">
+  <div class="login-box">
+    <h1>Controle de Estoque</h1>
+    <p>Entre com suas credenciais</p>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input type="text" id="login-email" placeholder="seu_usuario">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="password" id="login-senha" placeholder="********" style="flex: 1;">
+        <button class="btn" id="btn-toggle-senha" style="padding: 8px 12px;" onclick="toggleLoginSenha()">
+          <i class="ti ti-eye" id="login-icone-senha"></i>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="login()" id="btn-login">
+      <i class="ti ti-login"></i> Entrar
+    </button>
+  </div>
+</div>
+
+<!-- APLICATIVO PRINCIPAL (oculto por padrão) -->
+<div class="app" id="app-container" style="display:none">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title" id="sidebar-logo-title"><i class="ti ti-box"></i> Pastel de Rei</div>
+      <div class="logo-sub" id="sidebar-logo-sub">Sistema de estoque</div>
+    </div>
+    <nav id="nav">
+      <div class="nav-section nav-section-link" id="nav-admin-section" onclick="nav('admin')"><i class="ti ti-shield-cog"></i> <span>Admin</span></div>
+      <div class="nav-section hamburguer-only nav-section-link" id="nav-h-section" onclick="goHamburguer()"><i class="ti ti-burger"></i> <span>Hambúrguer</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-dashboard" id="nav-h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-pdv" id="nav-h-pdv" style="display:none"><i class="ti ti-cash-register"></i> <span>Comanda</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-criar" id="nav-h-criar" style="display:none"><i class="ti ti-chef-hat"></i> <span>Criar Hamburguer</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-estoque" id="nav-h-estoque" style="display:none"><i class="ti ti-package"></i> <span>Estoque</span></div>
+      <div class="nav-item hamburguer-only" data-screen="h-vendas" id="nav-h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> <span>Vendas</span></div>
+      <div class="nav-item active" data-screen="dashboard" id="nav-dashboard"><i class="ti ti-chart-pie"></i> <span>Dashboard</span></div>
+      <div class="nav-item" data-screen="estoque" id="nav-estoque"><i class="ti ti-package"></i> <span>Estoque</span></div>
+      <div class="nav-item" data-screen="registrar" id="nav-registrar"><i class="ti ti-transfer"></i> <span>Registrar</span></div>
+      <div class="nav-item" data-screen="lista-vendas" id="nav-lista-vendas"><i class="ti ti-receipt"></i> <span>Vendas</span></div>
+      <div class="nav-item" data-screen="relatorio" id="nav-relatorio"><i class="ti ti-report"></i> <span>Relatório</span></div>
+      <div class="nav-item" data-screen="gastos" id="nav-gastos"><i class="ti ti-receipt-off"></i> <span>Gastos</span></div>
+      <div class="nav-section" id="nav-func-section"><i class="ti ti-users"></i> <span>Funcionários</span></div>
+      <div class="nav-item" data-screen="minhas-vendas" id="nav-minhas-vendas"><i class="ti ti-clipboard-list"></i> <span>Registrados</span></div>
+      <div class="nav-item" data-screen="contagem" id="nav-contagem"><i class="ti ti-clipboard-check"></i> <span>Contagem</span><span class="nav-alert-badge" id="nav-contagem-badge" style="display:none" title="Contagem não feita hoje!"></span></div>
+      <div class="nav-item" data-screen="vendas" id="nav-vendas"><i class="ti ti-cash-register"></i> <span>Comandas/Vendas</span></div>
+      <div class="nav-item" data-screen="caixa" id="nav-caixa"><i class="ti ti-cash"></i> <span>Caixa</span></div>
+      <div class="nav-item" data-screen="consumo" id="nav-consumo"><i class="ti ti-wallet"></i> <span>Consumo</span></div>
+      <div class="nav-item" data-screen="receitas" id="nav-receitas"><i class="ti ti-book-2"></i> <span>Receitas</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" id="user-info">
+        <div class="user-avatar">
+          <i class="ti ti-user-circle"></i>
+        </div>
+        <div class="user-details">
+          <span id="user-name" class="user-name">Usuário</span>
+          <span id="user-role" class="user-role">Funcionário</span>
+        </div>
+      </div>
+      <div class="consumo-bar-wrapper" id="consumo-bar-wrapper" style="display:none">
+        <div class="consumo-bar-top">
+          <span><i class="ti ti-wallet"></i> Consumo do mês</span>
+          <strong id="consumo-bar-valor">R$ 0,00</strong>
+        </div>
+        <div class="progress-bar consumo-progress">
+          <div class="progress-fill" id="consumo-bar-fill" style="width:0%;background:var(--blue-200)"></div>
+        </div>
+        <div class="consumo-bar-foot">
+          <span id="consumo-bar-restante">R$ 50,00 restantes</span>
+          <span>R$ 50,00</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">
+        <i class="ti ti-logout"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Menu hambúrguer para celular -->
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+    <i class="ti ti-menu-2"></i>
+  </button>
+
+  <!-- Overlay para fechar o menu ao clicar fora -->
+  <div class="menu-overlay" id="menuOverlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- Menu dropdown para celular -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+      <h3>Menu</h3>
+      <button onclick="toggleMobileMenu()" class="close-menu-btn">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav" id="mobileNav">
+      <div class="mobile-nav-section mobile-nav-section-link" id="mobile-admin-section" onclick="toggleMobileMenu(); nav('admin')"><i class="ti ti-shield-cog"></i> Admin</div>
+      <div class="mobile-nav-section hamburguer-only mobile-nav-section-link" id="mobile-h-section" onclick="toggleMobileMenu(); goHamburguer()"><i class="ti ti-burger"></i> Hambúrguer</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-dashboard" style="display:none"><i class="ti ti-chart-pie"></i> Dashboard</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-pdv" style="display:none"><i class="ti ti-cash-register"></i> Comanda</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-criar" style="display:none"><i class="ti ti-chef-hat"></i> Criar Hamburguer</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-estoque" style="display:none"><i class="ti ti-package"></i> Estoque</div>
+      <div class="mobile-nav-item hamburguer-only" data-screen="h-vendas" style="display:none"><i class="ti ti-chart-bar"></i> Vendas</div>
+      <div class="mobile-nav-item active" data-screen="dashboard"><i class="ti ti-chart-pie"></i> Dashboard</div>
+      <div class="mobile-nav-item" data-screen="estoque"><i class="ti ti-package"></i> Estoque</div>
+      <div class="mobile-nav-item" data-screen="registrar"><i class="ti ti-transfer"></i> Registrar</div>
+      <div class="mobile-nav-item" data-screen="lista-vendas"><i class="ti ti-receipt"></i> Vendas</div>
+      <div class="mobile-nav-item" data-screen="relatorio"><i class="ti ti-report"></i> Relatório</div>
+      <div class="mobile-nav-item" data-screen="gastos"><i class="ti ti-receipt-off"></i> Gastos</div>
+      <div class="mobile-nav-section" id="mobile-func-section"><i class="ti ti-users"></i> Funcionários</div>
+      <div class="mobile-nav-item" data-screen="minhas-vendas"><i class="ti ti-clipboard-list"></i> Registrados</div>
+      <div class="mobile-nav-item" data-screen="contagem"><i class="ti ti-clipboard-check"></i> Contagem<span class="nav-alert-badge nav-alert-badge--mobile" id="mobile-contagem-badge" style="display:none"></span></div>
+      <div class="mobile-nav-item" data-screen="vendas"><i class="ti ti-cash-register"></i> Comandas/Vendas</div>
+      <div class="mobile-nav-item" data-screen="caixa"><i class="ti ti-cash"></i> Caixa</div>
+      <div class="mobile-nav-item" data-screen="consumo"><i class="ti ti-wallet"></i> Consumo</div>
+      <div class="mobile-nav-item" data-screen="receitas"><i class="ti ti-book-2"></i> Receitas</div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+      <button class="btn btn-danger" onclick="logout(); toggleMobileMenu();" style="width:100%;">
+        <i class="ti ti-logout"></i> Sair
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+    <div class="topbar">
+      <h1 id="topbar-title">Dashboard</h1>
+      <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="toggleAppMode()" title="Alternar modo">
+        <i class="ti ti-burger" id="mode-toggle-icon"></i>
+        <span id="mode-toggle-label">Hamburguer</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema">
+        <i class="ti ti-moon" id="theme-icon"></i>
+      </button>
+    </div>
+
+    <!-- Banner alerta contagem: fixo abaixo da topbar, aparece em todas as telas -->
+    <div id="contagem-alerta-banner" class="contagem-alerta-banner" style="display:none">
+      <i class="ti ti-alert-triangle"></i>
+      <span id="contagem-alerta-msg">Contagem não realizada hoje!</span>
+      <button class="contagem-alerta-btn" onclick="nav('contagem')">
+        Fazer agora <i class="ti ti-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="screen active" id="screen-dashboard">
+
+        <!-- KPI cards -->
+        <div class="dash-kpi-grid">
+
+          <div class="dash-kpi dash-kpi--blue">
+            <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Vendas Hoje</span>
+              <span class="dash-kpi-value" id="dash-vendas-hoje">0</span>
+              <span class="dash-kpi-sub"><i class="ti ti-clock"></i> Hoje</span>
+            </div>
+          </div>
+
+          <div class="dash-kpi dash-kpi--green">
+            <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Faturamento Hoje</span>
+              <span class="dash-kpi-value" id="dash-valor-hoje">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Receita do dia</span>
+            </div>
+          </div>
+
+          <div class="dash-kpi dash-kpi--indigo">
+            <div class="dash-kpi-icon"><i class="ti ti-calendar-stats"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Vendas do Mês</span>
+              <span class="dash-kpi-value" id="dash-vendas-mes">0</span>
+              <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Em <span id="dash-mes-atual"></span></span>
+            </div>
+          </div>
+
+          <div class="dash-kpi dash-kpi--violet">
+            <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Faturamento do Mês</span>
+              <span class="dash-kpi-value" id="dash-valor-mes">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Total acumulado</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Charts row -->
+        <div class="dash-charts-grid">
+
+          <div class="card dash-chart-card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="dash-top-produtos" class="dash-ranking"></div>
+          </div>
+
+          <div class="card dash-chart-card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="dash-pagamentos" class="dash-ranking"></div>
+          </div>
+
+        </div>
+
+        <!-- Gráficos sparkline -->
+        <div class="dash-charts-grid" style="margin-bottom:1.5rem">
+          <div class="card dash-spark-card">
+            <div class="dash-spark-header">
+              <div>
+                <div class="dash-spark-title">Vendas na semana (<span id="dash-spark-semana-qtd">0</span>)</div>
+                <div class="dash-spark-valor" id="dash-spark-semana-total">R$ 0,00</div>
+              </div>
+              <span class="dash-spark-pct" id="dash-spark-semana-pct"></span>
+            </div>
+            <div class="dash-spark-wrap" id="dash-spark-semana"></div>
+          </div>
+          <div class="card dash-spark-card">
+            <div class="dash-spark-header">
+              <div>
+                <div class="dash-spark-title">Vendas em <span id="dash-chart-mes-nome"></span> (<span id="dash-spark-mes-qtd">0</span>)</div>
+                <div class="dash-spark-valor" id="dash-spark-mes-total">R$ 0,00</div>
+              </div>
+              <span class="dash-spark-pct" id="dash-spark-mes-pct"></span>
+            </div>
+            <div class="dash-spark-wrap" id="dash-spark-mes"></div>
+          </div>
+        </div>
+
+        <!-- Recent sales -->
+        <div class="card">
+          <div class="dash-table-header">
+            <div class="card-title" style="margin:0"><i class="ti ti-history"></i> Últimas Vendas</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Delivery</th>
+                </tr>
+              </thead>
+              <tbody id="dash-ultimas-vendas"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- HAMBURGUER DASHBOARD -->
+      <div class="screen hamburguer-only" id="screen-h-dashboard" style="display:none">
+        <div class="h-dash-kpi-grid">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Vendas Hoje</span>
+              <span class="h-dash-kpi-value" id="h-dash-vendas-hoje">0</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-clock"></i> Hoje</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Faturamento Hoje</span>
+              <span class="h-dash-kpi-value" id="h-dash-faturamento-hoje">R$ 0,00</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-trending-up"></i> Receita do dia</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-receipt"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Ticket Médio</span>
+              <span class="h-dash-kpi-value" id="h-dash-ticket-medio">R$ 0,00</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-calculator"></i> Média por venda</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-calendar-stats"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Vendas do Mês</span>
+              <span class="h-dash-kpi-value" id="h-dash-vendas-mes">0</span>
+              <span class="h-dash-kpi-sub"><i class="ti ti-calendar-month"></i> Em <span id="h-dash-mes-atual"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-dash-charts-grid">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="h-dash-top-produtos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="h-dash-pagamentos"></div>
+          </div>
+        </div>
+
+        <div class="h-dash-sparks-grid">
+          <div class="card">
+            <div class="h-dash-spark-header">
+              <div>
+                <div class="h-dash-spark-title">Vendas na semana (<span id="h-dash-spark-semana-qtd">0</span>)</div>
+                <div class="h-dash-spark-valor" id="h-dash-spark-semana-total">R$ 0,00</div>
+              </div>
+              <span class="h-dash-spark-pct" id="h-dash-spark-semana-pct"></span>
+            </div>
+            <div class="h-dash-spark-wrap" id="h-dash-spark-semana"></div>
+          </div>
+          <div class="card">
+            <div class="h-dash-spark-header">
+              <div>
+                <div class="h-dash-spark-title">Vendas em <span id="h-dash-chart-mes-nome"></span> (<span id="h-dash-spark-mes-qtd">0</span>)</div>
+                <div class="h-dash-spark-valor" id="h-dash-spark-mes-total">R$ 0,00</div>
+              </div>
+              <span class="h-dash-spark-pct" id="h-dash-spark-mes-pct"></span>
+            </div>
+            <div class="h-dash-spark-wrap" id="h-dash-spark-mes"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin:0 0 1rem"><i class="ti ti-history"></i> Últimas Vendas</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Delivery</th>
+                </tr>
+              </thead>
+              <tbody id="h-dash-ultimas-vendas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER COMANDA (PDV) -->
+      <div class="screen hamburguer-only" id="screen-h-pdv" style="display:none">
+        <div class="hpdv">
+          <div class="hpdv-cardapio">
+            <div class="hpdv-cardapio-topo">
+              <div class="hpdv-cardapio-busca">
+                <i class="ti ti-search"></i>
+                <input type="text" id="hpdv-busca" placeholder="Buscar lanche..." oninput="hpdvRenderCardapio()">
+              </div>
+              <div class="hpdv-cardapio-categorias" id="hpdv-categorias"></div>
+            </div>
+            <div class="hpdv-cardapio-grid" id="hpdv-cardapio-grid"></div>
+          </div>
+          <div class="hpdv-comanda">
+            <div class="hpdv-comanda-topo">
+              <div class="hpdv-comanda-titulo"><i class="ti ti-receipt"></i> <span>Comanda</span></div>
+              <div class="hpdv-comanda-numero"><label>Nº</label> <input type="number" id="hpdv-comanda-num" placeholder="#" min="1"></div>
+            </div>
+            <div class="hpdv-comanda-cliente">
+              <i class="ti ti-user"></i>
+              <input type="text" id="hpdv-cliente-nome" placeholder="Nome do cliente...">
+            </div>
+            <div class="hpdv-comanda-itens" id="hpdv-comanda-itens">
+              <div class="hpdv-comanda-vazio" id="hpdv-comanda-vazio">
+                <i class="ti ti-shopping-cart"></i>
+                <span>Selecione um lanche no cardápio</span>
+              </div>
+            </div>
+            <div class="hpdv-comanda-footer">
+              <div class="hpdv-comanda-total"><span>Total</span> <strong id="hpdv-comanda-total">R$ 0,00</strong></div>
+              <div class="hpdv-comanda-obs"><input type="text" id="hpdv-comanda-obs" placeholder="Observação geral"></div>
+              <div class="hpdv-comanda-botoes">
+                <button class="hpdv-btn-limpar" onclick="hpdvLimparComanda()"><i class="ti ti-trash"></i> Limpar</button>
+                <button class="hpdv-btn-finalizar" onclick="hpdvFinalizarComanda()"><i class="ti ti-check"></i> Finalizar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL PERSONALIZAÇÃO -->
+        <div class="hpdv-modal-overlay" id="hpdv-modal-overlay" onclick="hpdvFecharModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji" id="hpdv-modal-emoji"></span>
+                <div><h2 id="hpdv-modal-nome"></h2><p id="hpdv-modal-desc"></p></div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hpdvFecharModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo"><i class="ti ti-list"></i> Ingredientes <span class="hpdv-modal-secao-sub">Remova o que não quiser</span></div>
+                <div class="hpdv-modal-ingredientes" id="hpdv-modal-ingredientes"></div>
+              </div>
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo"><i class="ti ti-plus"></i> Extras <span class="hpdv-modal-secao-sub">Adicione complementos</span></div>
+                <div class="hpdv-modal-extras" id="hpdv-modal-extras"></div>
+              </div>
+              <div class="hpdv-modal-secao">
+                <div class="hpdv-modal-secao-titulo"><i class="ti ti-note"></i> Observação</div>
+                <input type="text" id="hpdv-modal-obs" class="hpdv-modal-obs-input" placeholder="Ex: Sem cebola, bem passado...">
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div class="hpdv-modal-qtd">
+                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(-1)"><i class="ti ti-minus"></i></button>
+                <span id="hpdv-modal-qtd">1</span>
+                <button class="hpdv-qtd-btn" onclick="hpdvMudarQtd(1)"><i class="ti ti-plus"></i></button>
+              </div>
+              <div class="hpdv-modal-valor"><span>Total</span> <strong id="hpdv-modal-total">R$ 0,00</strong></div>
+              <button class="hpdv-btn-adicionar" onclick="hpdvAdicionarAoPedido()"><i class="ti ti-check"></i> Adicionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER CRIAR -->
+      <div class="screen hamburguer-only" id="screen-h-criar" style="display:none">
+        <div class="h-criar-layout">
+          <div class="h-criar-form">
+            <div class="h-criar-form-header">
+              <i class="ti ti-chef-hat"></i>
+              <h2>Criar Hambúrguer</h2>
+            </div>
+            <div class="h-criar-field">
+              <label>Emoji</label>
+              <div class="h-criar-emoji-row">
+                <span class="h-criar-emoji-preview" id="h-criar-emoji-preview">🍔</span>
+                <input type="text" id="h-criar-emoji" value="🍔" maxlength="4" oninput="hCriarUpdateEmoji()">
+              </div>
+            </div>
+            <div class="h-criar-field">
+              <label>Nome</label>
+              <input type="text" id="h-criar-nome" placeholder="Ex: Smash Burger Artesanal">
+            </div>
+            <div class="h-criar-field">
+              <label>Descrição</label>
+              <input type="text" id="h-criar-desc" placeholder="Ex: 2 smash 80g, queijo duplo, molho especial...">
+            </div>
+            <div class="h-criar-field">
+              <label>Categoria</label>
+              <select id="h-criar-categoria">
+                <option value="Classicos">Clássicos</option>
+                <option value="Especiais">Especiais</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            <div class="h-criar-field">
+              <label>Preço (R$)</label>
+              <input type="number" id="h-criar-preco" placeholder="0.00" step="0.10" min="0">
+            </div>
+            <div class="h-criar-field">
+              <label>Tags</label>
+              <div class="h-criar-tags-row">
+                <button class="h-criar-tag-btn" id="h-criar-tag-popular" onclick="hCriarToggleTag('popular')"><i class="ti ti-star"></i> Popular</button>
+                <button class="h-criar-tag-btn" id="h-criar-tag-novo" onclick="hCriarToggleTag('novo')"><i class="ti ti-sparkles"></i> Novo</button>
+              </div>
+            </div>
+
+            <div class="h-criar-secao">
+              <div class="h-criar-secao-titulo"><i class="ti ti-list"></i> Ingredientes</div>
+              <div id="h-criar-ingredientes"></div>
+              <div class="h-criar-add-row">
+                <input type="text" id="h-criar-ing-nome" placeholder="Nome (ex: Queijo cheddar)">
+                <input type="text" id="h-criar-ing-icone" placeholder="Emoji" maxlength="4" style="width:60px">
+                <label class="h-criar-switch-label"><input type="checkbox" id="h-criar-ing-removivel"> Removível</label>
+                <button class="h-criar-add-btn" onclick="hCriarAddIngrediente()"><i class="ti ti-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="h-criar-secao">
+              <div class="h-criar-secao-titulo"><i class="ti ti-plus"></i> Extras</div>
+              <div id="h-criar-extras"></div>
+              <div class="h-criar-add-row">
+                <input type="text" id="h-criar-ex-nome" placeholder="Nome (ex: Bacon)">
+                <input type="text" id="h-criar-ex-icone" placeholder="Emoji" maxlength="4" style="width:60px">
+                <input type="number" id="h-criar-ex-preco" placeholder="R$" step="0.50" min="0" style="width:80px">
+                <button class="h-criar-add-btn" onclick="hCriarAddExtra()"><i class="ti ti-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="h-criar-acoes">
+              <button class="h-criar-btn-salvar" onclick="hCriarSalvar()"><i class="ti ti-device-floppy"></i> Salvar Hamburguer</button>
+              <button class="h-criar-btn-limpar" onclick="hCriarLimpar()"><i class="ti ti-eraser"></i> Limpar</button>
+            </div>
+          </div>
+
+          <div class="h-criar-preview">
+            <div class="h-criar-preview-header"><i class="ti ti-eye"></i> Pré-visualização</div>
+            <div class="h-criar-preview-card" id="h-criar-preview-card">
+              <span class="h-criar-preview-emoji" id="h-criar-preview-emoji">🍔</span>
+              <div class="h-criar-preview-nome" id="h-criar-preview-nome">Nome do Hamburguer</div>
+              <div class="h-criar-preview-desc" id="h-criar-preview-desc">Descrição do lanche...</div>
+              <div class="h-criar-preview-tags" id="h-criar-preview-tags"></div>
+              <div class="h-criar-preview-preco" id="h-criar-preview-preco">R$ 0,00</div>
+              <div class="h-criar-preview-secao">
+                <div class="h-criar-preview-secao-titulo">Ingredientes</div>
+                <div id="h-criar-preview-ings"></div>
+              </div>
+              <div class="h-criar-preview-secao">
+                <div class="h-criar-preview-secao-titulo">Extras</div>
+                <div id="h-criar-preview-extras"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER ESTOQUE -->
+      <div class="screen hamburguer-only" id="screen-h-estoque" style="display:none; padding: 1.25rem">
+        <div class="h-estoque-header">
+          <div class="h-estoque-busca">
+            <i class="ti ti-search"></i>
+            <input type="text" id="h-estoque-busca" placeholder="Buscar ingrediente..." oninput="hEstoqueFiltrar()">
+          </div>
+          <button class="h-btn-primary" onclick="hEstoqueAbrirModal()"><i class="ti ti-plus"></i> Novo Ingrediente</button>
+        </div>
+
+        <div class="h-estoque-cats" id="h-estoque-cats"></div>
+
+        <div class="h-dash-kpi-grid">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-package"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Total Itens</span>
+              <span class="h-dash-kpi-value" id="h-estoque-total">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-circle-check"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Estoque OK</span>
+              <span class="h-dash-kpi-value" id="h-estoque-ok">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Estoque Baixo</span>
+              <span class="h-dash-kpi-value" id="h-estoque-baixo">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-alert-circle"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Em Crítico</span>
+              <span class="h-dash-kpi-value" id="h-estoque-critico">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-estoque-tabela-wrap">
+          <table class="h-estoque-tabela">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ingrediente</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Mínimo</th>
+                <th>Unidade</th>
+                <th>Preço Unit.</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="h-estoque-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- MODAL ESTOQUE -->
+        <div class="hpdv-modal-overlay" id="h-estoque-modal-overlay" onclick="hEstoqueFecharModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()" style="max-width:440px">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji">📦</span>
+                <div><h2 id="h-estoque-modal-titulo">Novo Ingrediente</h2><p>Preencha os dados do ingrediente</p></div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hEstoqueFecharModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <input type="hidden" id="h-estoque-edit-id">
+              <div class="h-criar-field">
+                <label>Nome</label>
+                <input type="text" id="h-estoque-modal-nome" placeholder="Ex: Queijo Cheddar">
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Emoji</label>
+                  <input type="text" id="h-estoque-modal-icone" value="🍔" maxlength="4">
+                </div>
+                <div style="flex:2">
+                  <label>Categoria</label>
+                  <input type="text" id="h-estoque-modal-categoria" placeholder="Ex: Queijos" list="h-estoque-cat-list">
+                  <datalist id="h-estoque-cat-list"></datalist>
+                </div>
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Quantidade</label>
+                  <input type="number" id="h-estoque-modal-qtd" step="0.1" min="0" value="0">
+                </div>
+                <div style="flex:1">
+                  <label>Mínimo</label>
+                  <input type="number" id="h-estoque-modal-qtd-min" step="0.1" min="0" value="0">
+                </div>
+              </div>
+              <div class="h-criar-field" style="display:flex;gap:10px">
+                <div style="flex:1">
+                  <label>Unidade</label>
+                  <select id="h-estoque-modal-unidade">
+                    <option value="un">Unidade (un)</option>
+                    <option value="kg">Quilograma (kg)</option>
+                    <option value="g">Grama (g)</option>
+                    <option value="l">Litro (L)</option>
+                    <option value="ml">Mililitro (ml)</option>
+                    <option value="cx">Caixa (cx)</option>
+                  </select>
+                </div>
+                <div style="flex:1">
+                  <label>Preço Unitário (R$)</label>
+                  <input type="number" id="h-estoque-modal-preco" step="0.01" min="0" value="0">
+                </div>
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div style="flex:1"></div>
+              <button class="hpdv-btn-adicionar" onclick="hEstoqueSalvarModal()"><i class="ti ti-device-floppy"></i> Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL MOVIMENTAÇÃO -->
+        <div class="hpdv-modal-overlay" id="h-estoque-mov-overlay" onclick="hEstoqueFecharMovModal(event)">
+          <div class="hpdv-modal" onclick="event.stopPropagation()" style="max-width:400px">
+            <div class="hpdv-modal-topo">
+              <div class="hpdv-modal-topo-info">
+                <span class="hpdv-modal-emoji">🔄</span>
+                <div><h2>Movimentação de Estoque</h2><p id="h-estoque-mov-nome"></p></div>
+              </div>
+              <button class="hpdv-modal-fechar" onclick="hEstoqueFecharMovModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="hpdv-modal-body">
+              <input type="hidden" id="h-estoque-mov-estoque-id">
+              <div class="h-criar-field">
+                <label>Tipo</label>
+                <div style="display:flex;gap:8px">
+                  <button class="h-criar-tag-btn active" id="h-estoque-mov-entrada-btn" onclick="hEstoqueMovTipo('entrada')" style="flex:1"><i class="ti ti-arrow-bar-down"></i> Entrada</button>
+                  <button class="h-criar-tag-btn" id="h-estoque-mov-saida-btn" onclick="hEstoqueMovTipo('saida')" style="flex:1"><i class="ti ti-arrow-bar-up"></i> Saída</button>
+                  <button class="h-criar-tag-btn" id="h-estoque-mov-ajuste-btn" onclick="hEstoqueMovTipo('ajuste')" style="flex:1"><i class="ti ti-adjust"></i> Ajuste</button>
+                </div>
+              </div>
+              <div class="h-criar-field">
+                <label>Quantidade</label>
+                <input type="number" id="h-estoque-mov-qtd" step="0.1" min="0" value="1">
+              </div>
+              <div class="h-criar-field">
+                <label>Observação</label>
+                <input type="text" id="h-estoque-mov-obs" placeholder="Ex: Compra no atacado...">
+              </div>
+            </div>
+            <div class="hpdv-modal-footer">
+              <div style="flex:1;text-align:left">
+                <span style="font-size:12px;color:var(--text-dim)">Estoque atual: <strong id="h-estoque-mov-atual">0</strong></span>
+              </div>
+              <button class="hpdv-btn-adicionar" onclick="hEstoqueSalvarMov()"><i class="ti ti-check"></i> Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAMBURGUER VENDAS -->
+      <div class="screen hamburguer-only" id="screen-h-vendas" style="display:none">
+        <div class="h-vendas-filtros">
+          <div class="h-vendas-filtro-group">
+            <label>Período</label>
+            <select id="h-vendas-periodo" onchange="hVendasCarregar()">
+              <option value="hoje">Hoje</option>
+              <option value="semana">Esta Semana</option>
+              <option value="mes" selected>Este Mês</option>
+              <option value="ano">Este Ano</option>
+              <option value="tudo">Tudo</option>
+            </select>
+          </div>
+          <div class="h-vendas-filtro-group">
+            <label>Data Início</label>
+            <input type="date" id="h-vendas-data-inicio">
+          </div>
+          <div class="h-vendas-filtro-group">
+            <label>Data Fim</label>
+            <input type="date" id="h-vendas-data-fim">
+          </div>
+          <button class="h-vendas-btn-filtrar" onclick="hVendasCarregar()"><i class="ti ti-filter"></i> Filtrar</button>
+        </div>
+
+        <div class="h-dash-kpi-grid" id="h-vendas-kpis">
+          <div class="h-dash-kpi h-dash-kpi--orange">
+            <div class="h-dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Total Vendas</span>
+              <span class="h-dash-kpi-value" id="h-vendas-total-vendas">0</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--green">
+            <div class="h-dash-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Faturamento</span>
+              <span class="h-dash-kpi-value" id="h-vendas-faturamento">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--purple">
+            <div class="h-dash-kpi-icon"><i class="ti ti-receipt"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Ticket Médio</span>
+              <span class="h-dash-kpi-value" id="h-vendas-ticket-medio">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="h-dash-kpi h-dash-kpi--rose">
+            <div class="h-dash-kpi-icon"><i class="ti ti-burger"></i></div>
+            <div class="h-dash-kpi-body">
+              <span class="h-dash-kpi-label">Itens Vendidos</span>
+              <span class="h-dash-kpi-value" id="h-vendas-itens-qtd">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-vendas-charts">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-trophy"></i> Mais Vendidos</div>
+            <div id="h-vendas-top-produtos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-credit-card"></i> Formas de Pagamento</div>
+            <div id="h-vendas-pagamentos"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin:0 0 1rem"><i class="ti ti-history"></i> Histórico de Vendas</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto(s)</th>
+                  <th>Qtd</th>
+                  <th>Total</th>
+                  <th>Pagamento</th>
+                  <th>Obs</th>
+                </tr>
+              </thead>
+              <tbody id="h-vendas-historico"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESTOQUE -->
+      <div class="screen" id="screen-estoque">
+
+        <!-- Toggle de visão -->
+        <div class="estoque-view-toggle">
+          <button class="estoque-view-btn active" id="estoque-btn-dashboard" onclick="setEstoqueView('dashboard')">
+            <i class="ti ti-layout-dashboard"></i> Dashboard
+          </button>
+          <button class="estoque-view-btn" id="estoque-btn-estoque" onclick="setEstoqueView('estoque')">
+            <i class="ti ti-table"></i> Estoque Atual
+          </button>
+          <button class="estoque-view-btn" id="estoque-btn-produtos" onclick="setEstoqueView('produtos')">
+            <i class="ti ti-box"></i> Produtos
+          </button>
+        </div>
+
+        <!-- ── VISÃO DASHBOARD ── -->
+        <div id="estoque-view-dashboard">
+          <div class="grid4" style="margin-bottom: 1.5rem">
+            <div class="metric-card" style="border-left: 4px solid var(--blue);">
+              <div class="metric-label"><i class="ti ti-box"></i> Total de Produtos</div>
+              <div class="metric-value text-blue" id="estoque-total-produtos">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--green);">
+              <div class="metric-label"><i class="ti ti-arrow-bar-to-down"></i> Entradas (Semana)</div>
+              <div class="metric-value text-green" id="estoque-entradas">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--red);">
+              <div class="metric-label"><i class="ti ti-arrow-bar-up"></i> Saídas (Semana)</div>
+              <div class="metric-value text-red" id="estoque-saidas">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid var(--amber);">
+              <div class="metric-label"><i class="ti ti-alert-triangle"></i> Produtos Baixos</div>
+              <div class="metric-value text-amber" id="estoque-baixo">0</div>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-bottom: 1.5rem">
+            <div class="card">
+              <div class="card-title"><i class="ti ti-alert-triangle"></i> Produtos com Estoque Baixo</div>
+              <div id="estoque-alertas"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-history"></i> Últimas Movimentações</div>
+              <table>
+                <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Data</th></tr></thead>
+                <tbody id="estoque-movimentos"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ABA ESTOQUE ATUAL ── -->
+        <div id="estoque-view-estoque" style="display:none">
+          <div class="card">
+            <div class="estoque-tabela-header">
+              <div class="card-title" style="margin:0"><i class="ti ti-package"></i> Estoque Atual</div>
+              <div class="estoque-busca-wrap">
+                <i class="ti ti-search estoque-busca-icon"></i>
+                <input
+                  type="text"
+                  id="estoque-busca"
+                  class="estoque-busca-input"
+                  placeholder="Buscar produto..."
+                  oninput="filtrarEstoque()"
+                >
+                <span id="estoque-busca-count" class="estoque-busca-count"></span>
+              </div>
+            </div>
+
+            <!-- Filtro por categoria -->
+            <div class="estoque-cats" id="estoque-cats"></div>
+
+            <table>
+              <thead><tr><th>Produto</th><th>Categoria</th><th>Quantidade</th><th>Status</th></tr></thead>
+              <tbody id="estoque-produtos-quantidades"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ── ABA PRODUTOS (cadastro) ── -->
+        <div id="estoque-view-produtos" style="display:none">
+          <div class="card">
+            <div class="section-header">
+              <h2>Produtos cadastrados</h2>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span id="p-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <!-- busca -->
+                <div class="estoque-busca-wrap">
+                  <i class="ti ti-search estoque-busca-icon"></i>
+                  <input type="text" id="p-busca" class="estoque-busca-input"
+                    placeholder="Buscar produto..."
+                    oninput="filtrarProdutos()">
+                  <span id="p-busca-count" class="estoque-busca-count"></span>
+                </div>
+                <button class="btn btn-primary" onclick="toggleFormProduto()" id="btn-toggle-form">
+                  <i class="ti ti-plus"></i> Novo produto
+                </button>
+              </div>
+            </div>
+            <!-- filtro por categoria -->
+            <div class="estoque-cats" id="p-cats"></div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Nome</th><th>Categoria</th><th>Qtd atual</th><th>Qtd mínima</th><th>Valor de venda</th><th>Status</th><th></th></tr></thead>
+              <tbody id="tabela-produtos"></tbody>
+            </table>
+            </div>
+            <div id="produtos-empty" class="empty" style="display:none"><i class="ti ti-box"></i>Nenhum produto cadastrado ainda.<br>Clique no botão "Novo produto" acima para começar.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal novo produto -->
+      <div class="modal-overlay" id="novo-produto-modal" onclick="toggleFormProduto(event)">
+        <div class="modal-content" style="max-width:500px" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-plus"></i> Novo produto</h3>
+            <button type="button" class="modal-close" onclick="toggleFormProduto()"><i class="ti ti-x"></i></button>
+          </div>
+          <div style="padding:1.25rem">
+            <div class="form-group"><label>Nome do produto</label><input type="text" id="p-nome" placeholder="Ex: Papel A4"></div>
+            <div class="form-group"><label>Categoria</label><input type="text" id="p-cat" list="p-cat-list" placeholder="Ex: Papelaria" autocomplete="off"><datalist id="p-cat-list"></datalist></div>
+            <div class="form-row">
+              <div class="form-group"><label>Quantidade atual</label><input type="number" id="p-qty" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Quantidade mínima</label><input type="number" id="p-min" placeholder="0" min="0"></div>
+              <div class="form-group"><label>Valor de venda</label><input type="number" id="p-preco" placeholder="0.00" step="0.01" min="0"></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem">
+              <button class="btn" onclick="toggleFormProduto()"><i class="ti ti-x"></i> Cancelar</button>
+              <button class="btn btn-primary" onclick="addProduto()"><i class="ti ti-check"></i> Cadastrar produto</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTRAR (Entrada / Saída unificado) -->
+      <div class="screen" id="screen-registrar">
+
+        <!-- Toggle entrada/saída/perda/histórico -->
+        <div class="reg-toggle">
+          <button class="reg-toggle-btn active" id="reg-btn-entrada" onclick="selectRegTipo('entrada')">
+            <i class="ti ti-arrow-bar-to-down"></i> Entrada
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-saida" onclick="selectRegTipo('saida')">
+            <i class="ti ti-arrow-bar-up"></i> Saída
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-perda" onclick="selectRegTipo('perda')">
+            <i class="ti ti-alert-triangle"></i> Perda
+          </button>
+          <button class="reg-toggle-btn" id="reg-btn-historico" onclick="selectRegTipo('historico')">
+            <i class="ti ti-history"></i> Histórico
+          </button>
+        </div>
+
+        <!-- Formulário entrada -->
+        <div class="card" id="reg-form-entrada">
+          <div class="card-title"><i class="ti ti-arrow-bar-to-down" style="color:var(--green)"></i> Registrar entrada</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><input type="text" id="e-produto" list="e-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="e-produto-list"></datalist></div>
+            <div class="form-group">
+              <label>Quantidade</label>
+              <div class="qty-unit-wrap">
+                <input type="number" id="e-qty" placeholder="0" min="0" step="0.001">
+                <select id="e-unidade" class="qty-unit-select">
+                  <option value="un">un</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="l">L</option>
+                  <option value="ml">ml</option>
+                  <option value="cx">cx</option>
+                  <option value="pct">pct</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"><label>Observação (opcional)</label><input type="text" id="e-obs" placeholder="Ex: Reposição mensal"></div>
+          <button class="btn btn-entrada" onclick="addEntrada()"><i class="ti ti-check"></i> Confirmar entrada</button>
+        </div>
+
+        <!-- Formulário saída -->
+        <div class="card" id="reg-form-saida" style="display:none">
+          <div class="card-title"><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Registrar saída</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><input type="text" id="s-produto" list="s-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="s-produto-list"></datalist></div>
+            <div class="form-group">
+              <label>Quantidade</label>
+              <div class="qty-unit-wrap">
+                <input type="number" id="s-qty" placeholder="0" min="0" step="0.001">
+                <select id="s-unidade" class="qty-unit-select">
+                  <option value="un">un</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="l">L</option>
+                  <option value="ml">ml</option>
+                  <option value="cx">cx</option>
+                  <option value="pct">pct</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"><label>Observação (opcional)</label><input type="text" id="s-obs" placeholder="Ex: Requisição do setor X"></div>
+          <button class="btn btn-saida" onclick="addSaida()"><i class="ti ti-check"></i> Confirmar saída</button>
+        </div>
+
+        <!-- Formulário perda -->
+        <div class="card" id="reg-form-perda" style="display:none">
+          <div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--amber)"></i> Registrar perda</div>
+          <div class="form-row">
+            <div class="form-group"><label>Produto</label><input type="text" id="p-perda-produto" list="p-perda-produto-list" placeholder="Pesquisar produto..." autocomplete="off"><datalist id="p-perda-produto-list"></datalist></div>
+            <div class="form-group">
+              <label>Quantidade perdida</label>
+              <div class="qty-unit-wrap">
+                <input type="number" id="p-perda-qty" placeholder="0" min="0" step="0.001">
+                <select id="p-perda-unidade" class="qty-unit-select">
+                  <option value="un">un</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="l">L</option>
+                  <option value="ml">ml</option>
+                  <option value="cx">cx</option>
+                  <option value="pct">pct</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"><label>Motivo da perda *</label><input type="text" id="p-perda-motivo" placeholder="Ex: Vencido, quebrado, deteriorado..."></div>
+          <button class="btn btn-perda" onclick="addPerda()"><i class="ti ti-check"></i> Confirmar perda</button>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card" id="reg-form-historico" style="display:none">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <span><i class="ti ti-history"></i> Histórico de movimentações</span>
+            <button class="btn btn-sm" onclick="exportHistoricoCSV()" style="font-size:12px;padding:6px 12px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary)">
+              <i class="ti ti-download"></i> Exportar CSV
+            </button>
+          </div>
+
+          <!-- KPIs resumo -->
+          <div id="h-kpis" class="h-kpis-row" style="display:none;margin-bottom:1rem"></div>
+
+          <!-- Filtros linha 1: tipo + produto + busca -->
+          <div class="h-filtros-row">
+            <select id="h-filtro-tipo" onchange="renderHistorico()" class="h-filtro-select">
+              <option value="">Todos os tipos</option>
+              <option value="entrada">Entradas</option>
+              <option value="saida">Saídas</option>
+              <option value="perda">Perdas</option>
+            </select>
+            <select id="h-filtro-prod" onchange="renderHistorico()" class="h-filtro-select" style="min-width:180px">
+              <option value="">Todos os produtos</option>
+            </select>
+            <input type="text" id="h-filtro-busca" oninput="renderHistorico()" placeholder="Buscar produto ou observação..." class="h-filtro-busca">
+          </div>
+
+          <!-- Filtros linha 2: período -->
+          <div class="h-filtros-row" style="margin-top:8px;align-items:center">
+            <div class="h-chips">
+              <button class="h-chip active" data-periodo="tudo" onclick="setHPeriodo('tudo')">Tudo</button>
+              <button class="h-chip" data-periodo="hoje" onclick="setHPeriodo('hoje')">Hoje</button>
+              <button class="h-chip" data-periodo="semana" onclick="setHPeriodo('semana')">Semana</button>
+              <button class="h-chip" data-periodo="mes" onclick="setHPeriodo('mes')">Mês</button>
+              <button class="h-chip" data-periodo="custom" onclick="setHPeriodo('custom')">Período</button>
+            </div>
+            <div id="h-custom-range" style="display:none;gap:8px;align-items:center" class="h-custom-range">
+              <input type="date" id="h-filtro-de" onchange="renderHistorico()" class="h-filtro-date">
+              <span style="color:var(--text-muted);font-size:13px">até</span>
+              <input type="date" id="h-filtro-ate" onchange="renderHistorico()" class="h-filtro-date">
+            </div>
+            <span id="h-count" class="h-count-badge"></span>
+          </div>
+
+          <!-- Tabela -->
+          <div style="overflow-x:auto;margin-top:1rem">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data/hora</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Qtd</th>
+                  <th>Observação</th>
+                  <th>Usuário</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-historico"></tbody>
+            </table>
+          </div>
+          <div id="historico-empty" class="empty" style="display:none"><i class="ti ti-history"></i>Nenhuma movimentação encontrada.</div>
+
+          <!-- Paginação -->
+          <div id="h-paginacao" class="h-paginacao" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Manter telas legadas ocultas para compatibilidade com IDs existentes -->
+      <div class="screen" id="screen-entradas" style="display:none!important"></div>
+      <div class="screen" id="screen-saidas" style="display:none!important"></div>
+
+      <!-- RELATÓRIO -->
+      <div class="screen" id="screen-relatorio">
+
+        <!-- Tab nav -->
+        <div class="rel-tabs">
+          <button class="rel-tab active" data-tab="vendas" onclick="selectRelTab('vendas')">
+            <i class="ti ti-shopping-cart"></i> <span>Vendas</span>
+          </button>
+          <button class="rel-tab" data-tab="produtos" onclick="selectRelTab('produtos')">
+            <i class="ti ti-chart-pie"></i> <span>Produtos</span>
+          </button>
+          <button class="rel-tab" data-tab="estoque" onclick="selectRelTab('estoque')">
+            <i class="ti ti-package"></i> <span>Estoque</span>
+          </button>
+          <button class="rel-tab" data-tab="movimentacoes" onclick="selectRelTab('movimentacoes')">
+            <i class="ti ti-arrows-transfer-up"></i> <span>Movimentações</span>
+          </button>
+          <button class="rel-tab" data-tab="caixa" onclick="selectRelTab('caixa')">
+            <i class="ti ti-cash"></i> <span>Caixa</span>
+          </button>
+        </div>
+
+        <!-- ===== ABA VENDAS ===== -->
+        <div class="rel-panel active" id="rel-vendas">
+          <div class="dash-kpi-grid" style="margin-bottom:1.5rem">
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Vendas semana</span>
+                <span class="dash-kpi-value" id="r-vendas-qtd">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total dinheiro</span>
+                <span class="dash-kpi-value" id="r-total-dinheiro">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-credit-card"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total cartão</span>
+                <span class="dash-kpi-value" id="r-total-cartao">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-qrcode"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total pix</span>
+                <span class="dash-kpi-value" id="r-total-pix">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Semana</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total geral</span>
+                <span class="dash-kpi-value" id="r-total-geral">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Semana</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-charts-grid" style="margin-bottom:1.5rem">
+            <div class="card rel-chart-card">
+              <div class="card-title"><i class="ti ti-chart-bar"></i> Faturamento por dia</div>
+              <div id="r-chart-dias" class="bar-chart-wrap"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos</div>
+              <div id="r-ranking-vendas" class="dash-ranking"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-title"><i class="ti ti-delivery"></i> Delivery vs Balcão</div>
+            <div class="dash-ranking" style="max-width:480px">
+              <div class="dash-rank-item">
+                <div class="dash-rank-header">
+                  <span class="dash-rank-name"><i class="ti ti-delivery" style="color:var(--amber)"></i> Delivery</span>
+                  <span class="dash-rank-val" id="r-delivery">0</span>
+                </div>
+                <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-delivery" style="background:var(--amber);width:0%"></div></div>
+              </div>
+              <div class="dash-rank-item">
+                <div class="dash-rank-header">
+                  <span class="dash-rank-name"><i class="ti ti-shopping-bag" style="color:var(--blue)"></i> Balcão</span>
+                  <span class="dash-rank-val" id="r-balcao">0</span>
+                </div>
+                <div class="dash-rank-bar"><div class="dash-rank-fill" id="r-bar-balcao" style="background:var(--blue);width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ABA PRODUTOS ===== -->
+        <div class="rel-panel" id="rel-produtos">
+
+          <div class="card vl-filtros" style="margin-bottom:1.5rem">
+            <div class="vl-filtros-row">
+              <div class="vl-filtro-group">
+                <label>Período</label>
+                <div class="vl-chips">
+                  <button type="button" class="rel-prod-chip" data-per="hoje" onclick="setRelProdPeriodo('hoje')">Hoje</button>
+                  <button type="button" class="rel-prod-chip active" data-per="semana" onclick="setRelProdPeriodo('semana')">7 dias</button>
+                  <button type="button" class="rel-prod-chip" data-per="mes" onclick="setRelProdPeriodo('mes')">1 mês</button>
+                  <button type="button" class="rel-prod-chip" data-per="tudo" onclick="setRelProdPeriodo('tudo')">Tudo</button>
+                </div>
+              </div>
+              <div class="vl-filtro-group vl-filtro-produto-group">
+                <label>Produto</label>
+                <input type="text" id="rel-prod-busca" placeholder="Buscar produto..." oninput="renderRelProdutos()">
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-kpi-grid" style="margin-bottom:1.5rem">
+            <div class="dash-kpi dash-kpi--blue">
+              <div class="dash-kpi-icon"><i class="ti ti-box"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Unidades vendidas</span>
+                <span class="dash-kpi-value" id="rp-unidades">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> No período</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-tags"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Produtos distintos</span>
+                <span class="dash-kpi-value" id="rp-distintos">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-package"></i> Itens diferentes</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--indigo">
+              <div class="dash-kpi-icon"><i class="ti ti-cash"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Faturamento</span>
+                <span class="dash-kpi-value" id="rp-faturamento">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Total no período</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--violet">
+              <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Vendas no período</span>
+                <span class="dash-kpi-value" id="rp-vendas">0</span>
+                <span class="dash-kpi-sub"><i class="ti ti-clock"></i> Comandas/vendas</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Ranking de produtos vendidos</div>
+            <div id="rp-ranking" class="dash-ranking"></div>
+
+            <div style="overflow-x:auto;margin-top:1.25rem">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Produto</th><th>Categoria</th><th>Unid.</th><th>% vendas</th><th>Faturamento</th><th>Preço médio</th></tr>
+                </thead>
+                <tbody id="rp-tabela"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ABA ESTOQUE ===== -->
+        <div class="rel-panel" id="rel-estoque">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-package"></i> Estoque atual completo</div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr><th>Produto</th><th>Categoria</th><th>Qtd</th><th>Mínimo</th><th>Preço</th><th>Status</th></tr></thead>
+                <tbody id="r-tabela"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ABA MOVIMENTAÇÕES ===== -->
+        <div class="rel-panel" id="rel-movimentacoes">
+
+          <!-- KPI row -->
+          <div class="mov-kpi-row">
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-arrow-bar-to-down"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Entradas da semana</span>
+                <span class="dash-kpi-value" id="r-ent">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
+            </div>
+
+            <div class="dash-kpi dash-kpi--red">
+              <div class="dash-kpi-icon"><i class="ti ti-arrow-bar-up"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Saídas da semana</span>
+                <span class="dash-kpi-value" id="r-sai">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-calendar-week"></i> Esta semana</span>
+              </div>
+            </div>
+
+            <div class="dash-kpi dash-kpi--balanco" id="r-kpi-balanco">
+              <div class="dash-kpi-icon"><i class="ti ti-chart-line"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Balanço semanal</span>
+                <span class="dash-kpi-value" id="r-saldo">0 un.</span>
+                <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Entradas − Saídas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- progress bars -->
+          <div class="card mov-bars-card">
+            <div class="mov-bar-row">
+              <div class="mov-bar-label">
+                <span><i class="ti ti-arrow-bar-to-down" style="color:var(--green)"></i> Entradas</span>
+                <strong id="r-ent-pct">0%</strong>
+              </div>
+              <div class="progress-bar mov-progress">
+                <div class="progress-fill" id="r-bar-ent" style="background:var(--green)"></div>
+              </div>
+            </div>
+            <div class="mov-bar-row">
+              <div class="mov-bar-label">
+                <span><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Saídas</span>
+                <strong id="r-sai-pct">0%</strong>
+              </div>
+              <div class="progress-bar mov-progress">
+                <div class="progress-fill" id="r-bar-sai" style="background:var(--red)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ranking -->
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar"></i> Produtos com mais movimentações</div>
+            <div id="r-ranking" class="dash-ranking"></div>
+          </div>
+        </div>
+
+        <!-- ===== ABA CAIXA ===== -->
+        <div class="rel-panel" id="rel-caixa">
+          <div id="r-caixas"></div>
+        </div>
+
+      </div>
+
+      <!-- LISTA DE VENDAS -->
+      <div class="screen" id="screen-lista-vendas">
+
+        <!-- Filtros -->
+        <div class="card vl-filtros">
+          <div class="vl-filtros-row">
+            <div class="vl-filtro-group">
+              <label>Período</label>
+              <select id="vl-filtro-periodo" style="display:none">
+                <option value="hoje">Hoje</option>
+                <option value="semana" selected>Esta semana</option>
+                <option value="mes">Este mês</option>
+                <option value="tudo">Tudo</option>
+              </select>
+              <div class="vl-chips">
+                <button type="button" class="vl-chip" data-periodo="hoje" onclick="setListaPeriodo('hoje')">Hoje</button>
+                <button type="button" class="vl-chip" data-periodo="semana" onclick="setListaPeriodo('semana')">7 dias</button>
+                <button type="button" class="vl-chip" data-periodo="mes" onclick="setListaPeriodo('mes')">1 mês</button>
+                <button type="button" class="vl-chip" data-periodo="tudo" onclick="setListaPeriodo('tudo')">Tudo</button>
+              </div>
+            </div>
+            <div class="vl-filtro-group">
+              <label>Pagamento</label>
+              <select id="vl-filtro-pag" onchange="renderListaVendas()">
+                <option value="">Todos</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="pix">Pix</option>
+              </select>
+            </div>
+            <div class="vl-filtro-group">
+              <label>Tipo</label>
+              <select id="vl-filtro-tipo" onchange="renderListaVendas()">
+                <option value="">Todos</option>
+                <option value="balcao">Balcão</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            </div>
+            <div class="vl-filtro-group vl-filtro-produto-group">
+              <label>Produto</label>
+              <input type="text" id="vl-filtro-produto" placeholder="Buscar produto..." oninput="renderListaVendas()" list="vl-filtro-produto-list">
+              <datalist id="vl-filtro-produto-list"></datalist>
+            </div>
+            <div class="vl-filtro-group">
+              <label>De</label>
+              <input type="date" id="vl-filtro-de" onchange="renderListaVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Até</label>
+              <input type="date" id="vl-filtro-ate" onchange="renderListaVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Horário de</label>
+              <input type="time" id="vl-filtro-hora-de" onchange="renderListaVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Horário até</label>
+              <input type="time" id="vl-filtro-hora-ate" onchange="renderListaVendas()">
+            </div>
+            <label class="vl-switch" title="Ativar/desativar produtos mais vendidos">
+              <input type="checkbox" id="vl-mostrar-ranking" checked onchange="toggleListaRanking()">
+              <span class="vl-switch-slider"></span>
+              <span class="vl-switch-label"><i class="ti ti-trophy"></i> Mais vendidos</span>
+            </label>
+            <button class="btn btn-sm" onclick="exportarVendasSQL()" title="Exportar vendas filtradas como SQL" style="padding:5px 10px;font-size:12px">
+              <i class="ti ti-download"></i> SQL
+            </button>
+            <span id="vl-count" class="vl-count"></span>
+          </div>
+        </div>
+
+        <!-- KPIs rápidos -->
+        <div class="vl-kpi-row">
+          <div class="vl-kpi">
+            <div class="vl-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="vl-kpi-body">
+              <span class="vl-kpi-label">Vendas</span>
+              <span class="vl-kpi-value" id="vl-kpi-qtd">0</span>
+              <span class="vl-kpi-sub">no período</span>
+            </div>
+          </div>
+          <div class="vl-kpi">
+            <div class="vl-kpi-icon"><i class="ti ti-cash"></i></div>
+            <div class="vl-kpi-body">
+              <span class="vl-kpi-label">Faturamento</span>
+              <span class="vl-kpi-value" id="vl-kpi-total">R$ 0,00</span>
+              <span class="vl-kpi-sub">total recebido</span>
+            </div>
+          </div>
+          <div class="vl-kpi">
+            <div class="vl-kpi-icon"><i class="ti ti-credit-card"></i></div>
+            <div class="vl-kpi-body">
+              <span class="vl-kpi-label">Ticket médio</span>
+              <span class="vl-kpi-value" id="vl-kpi-ticket">R$ 0,00</span>
+              <span class="vl-kpi-sub">por venda</span>
+            </div>
+          </div>
+          <div class="vl-kpi">
+            <div class="vl-kpi-icon"><i class="ti ti-box"></i></div>
+            <div class="vl-kpi-body">
+              <span class="vl-kpi-label">Unidades</span>
+              <span class="vl-kpi-value" id="vl-kpi-unid">0</span>
+              <span class="vl-kpi-sub">itens vendidos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de vendas -->
+        <div id="vl-lista"></div>
+
+        <!-- Mais vendidos no período -->
+        <div class="card vl-ranking-card" id="vl-ranking-card">
+          <div class="card-title"><i class="ti ti-trophy"></i> Produtos mais vendidos no período <span id="vl-ranking-sub" class="card-title-sub"></span></div>
+          <div id="vl-ranking" class="dash-ranking"></div>
+        </div>
+
+      </div>
+
+      <!-- Modal detalhes da venda -->
+      <div class="modal-overlay" id="venda-detalhe-modal" onclick="closeVendaDetalhe(event)">
+        <div class="modal-content venda-detalhe-content" onclick="event.stopPropagation()">
+          <div id="venda-detalhe-body"></div>
+        </div>
+      </div>
+
+      <!-- MINHAS VENDAS (funcionários) -->
+      <div class="screen" id="screen-minhas-vendas">
+        <!-- Filtros -->
+        <div class="card vl-filtros">
+          <div class="vl-filtros-row">
+            <div class="vl-filtro-group">
+              <label>Buscar</label>
+              <input type="text" id="mv-filtro-busca" placeholder="Produto..." oninput="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Período</label>
+              <div class="vl-chips">
+                <button type="button" class="vl-chip active" data-mv-periodo="hoje" onclick="setMinhasVendasPeriodo('hoje')">Hoje</button>
+                <button type="button" class="vl-chip" data-mv-periodo="semana" onclick="setMinhasVendasPeriodo('semana')">7 dias</button>
+                <button type="button" class="vl-chip" data-mv-periodo="mes" onclick="setMinhasVendasPeriodo('mes')">1 mês</button>
+                <button type="button" class="vl-chip" data-mv-periodo="tudo" onclick="setMinhasVendasPeriodo('tudo')">Tudo</button>
+              </div>
+            </div>
+            <div class="vl-filtro-group">
+              <label>De</label>
+              <input type="date" id="mv-filtro-de" onchange="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Até</label>
+              <input type="date" id="mv-filtro-ate" onchange="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Horário de</label>
+              <input type="time" id="mv-filtro-hora-de" onchange="renderMinhasVendas()">
+            </div>
+            <div class="vl-filtro-group">
+              <label>Horário até</label>
+              <input type="time" id="mv-filtro-hora-ate" onchange="renderMinhasVendas()">
+            </div>
+            <span id="mv-count" class="vl-count"></span>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="card" style="margin-top:10px">
+          <div class="vl-lista-wrap">
+            <table class="vl-table">
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Itens</th>
+                  <th>Pagamento</th>
+                  <th>Entrega</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="mv-tbody"></tbody>
+            </table>
+            <div id="mv-empty" class="vl-empty" style="display:none">
+              <i class="ti ti-receipt-off"></i>
+              <p>Nenhuma venda encontrada</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENDAS (PDV rápido) -->
+      <div class="screen" id="screen-vendas">
+        <div class="vendas-layout">
+
+          <!-- Coluna: produtos -->
+          <div class="card vendas-picker">
+            <div class="vendas-picker-header">
+              <div class="search-wrapper vendas-search">
+                <i class="ti ti-search vendas-search-icon"></i>
+                <input type="text" id="v-busca" placeholder="Buscar produto..." oninput="renderVendasGrid()">
+              </div>
+              <div class="vendas-categorias" id="v-categorias"></div>
+            </div>
+
+            <!-- Botões de atalho: Pastel e Salgados -->
+            <div class="vendas-atalhos">
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal()">
+                <span class="vendas-atalho-emoji">🥟</span>
+                <span class="vendas-atalho-info">
+                  <strong>Pastel</strong>
+                  <small>Escolher recheio · R$ 14,00</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal('vendas', 'mini')">
+                <span class="vendas-atalho-emoji">🥟</span>
+                <span class="vendas-atalho-info">
+                  <strong>Mini Pastéis</strong>
+                  <small>Escolher recheio · R$ 5,00</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-salgados" onclick="openSalgadosModal()">
+                <span class="vendas-atalho-emoji">🍡</span>
+                <span class="vendas-atalho-info">
+                  <strong>Salgados</strong>
+                  <small id="v-salgados-sub">Ver opções</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+              <button type="button" class="vendas-atalho-btn vendas-atalho-acai" onclick="openAcaiModal()">
+                <span class="vendas-atalho-emoji">🍧</span>
+                <span class="vendas-atalho-info">
+                  <strong>Açaí</strong>
+                  <small>Tamanho + complementos</small>
+                </span>
+                <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+              </button>
+
+            </div>
+
+            <div class="vendas-produtos-grid" id="v-produtos-grid"></div>
+          </div>
+
+          <!-- Coluna: comanda -->
+          <div class="card vendas-carrinho">
+            <div class="vendas-carrinho-header">
+              <h3><i class="ti ti-receipt"></i> Comanda</h3>
+              <span class="vendas-carrinho-count" id="v-carrinho-count">0 itens</span>
+            </div>
+
+            <div class="vendas-carrinho-body">
+              <div id="v-itens-empty" class="empty vendas-empty">Toque nos produtos para adicionar</div>
+              <div id="v-itens-container" class="vendas-itens-list"></div>
+            </div>
+
+            <div class="vendas-carrinho-footer">
+              <div class="vendas-opcoes">
+                <div class="form-group">
+                  <label>Pagamento</label>
+                  <div class="payment-options">
+                    <div class="payment-option active" id="label-dinheiro" onclick="selectPayment('dinheiro')">
+                      <i class="ti ti-cash"></i><span>Dinheiro</span>
+                    </div>
+                    <div class="payment-option" id="label-cartao" onclick="selectPayment('cartao')">
+                      <i class="ti ti-credit-card"></i><span>Cartão</span>
+                    </div>
+                    <div class="payment-option" id="label-pix" onclick="selectPayment('pix')">
+                      <i class="ti ti-qrcode"></i><span>Pix</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="v-pagamento-hidden" value="dinheiro">
+                </div>
+                <div class="form-group">
+                  <label>Entrega</label>
+                  <div class="sale-type-options">
+                    <div class="sale-type-option active" id="label-balcao" onclick="selectSaleType('balcao')">
+                      <i class="ti ti-shopping-bag"></i><span>Balcão</span>
+                    </div>
+                    <div class="sale-type-option" id="label-delivery" onclick="selectSaleType('delivery')">
+                      <i class="ti ti-delivery"></i><span>Delivery</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="v-tipo-venda-hidden" value="balcao">
+                </div>
+              </div>
+
+              <div class="form-group" id="v-plataforma-container" style="display:none">
+                <label>Plataforma</label>
+                <select id="v-plataforma">
+                  <option value="">Selecione</option>
+                  <option value="99">99</option>
+                  <option value="ifood">iFood</option>
+                </select>
+              </div>
+
+              <div class="form-group vendas-obs">
+                <label>Observação</label>
+                <input type="text" id="v-obs" placeholder="Ex: Sem cebola...">
+              </div>
+
+              <div class="total-section vendas-total">
+                <div class="total-label">Total</div>
+                <div class="total-value" id="v-total-preview">R$ 0,00</div>
+              </div>
+
+              <div class="vendas-troco-row" id="v-troco-row" style="display:none">
+                <div class="form-group" style="flex:1;margin:0">
+                  <label>Valor recebido</label>
+                  <input type="number" id="v-valor-recebido" placeholder="0,00" step="0.01" min="0" oninput="calcTroco()">
+                </div>
+                <div class="vendas-troco-info">
+                  <span class="vendas-troco-label">Troco</span>
+                  <span class="vendas-troco-valor" id="v-troco-valor">R$ 0,00</span>
+                </div>
+              </div>
+
+              <button class="btn btn-primary vendas-finalizar" onclick="addVenda()">
+                <i class="ti ti-check"></i> Registrar Venda
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modais compartilhados (Pastel / Salgados / Açaí) — fora das telas -->
+      <div id="pastel-modal" class="modal-overlay" onclick="closePastelModal(event)">
+        <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><span>🥟</span> Escolha o recheio</h3>
+            <button type="button" class="modal-close" onclick="closePastelModal()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="pastel-toggle-row">
+            <button type="button" class="pastel-toggle-btn active" id="pastel-btn-salgado" onclick="setPastelModoRecheio('salgado')">Salgados</button>
+            <button type="button" class="pastel-toggle-btn" id="pastel-btn-doce" onclick="setPastelModoRecheio('doce')">Doces</button>
+          </div>
+          <p class="pastel-modal-preco" id="pastel-preco-texto">Preço fixo: <strong>R$ 14,00</strong> — escolha até <strong>3 sabores</strong></p>
+          <div class="pastel-recheios-grid" id="pastel-recheios-grid"></div>
+          <div class="pastel-modal-footer">
+            <div class="pastel-modal-selecao">
+              <span>Seleção:</span>
+              <strong id="pastel-selecao-texto">Nenhum sabor</strong>
+            </div>
+            <button type="button" class="btn btn-primary" id="pastel-add-btn" onclick="confirmPastelAdd()" disabled>
+              <i class="ti ti-check"></i> Adicionar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="salgados-modal" class="modal-overlay" onclick="closeSalgadosModal(event)">
+        <div class="modal-content pastel-modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><span>🍡</span> Escolha o salgado</h3>
+            <button type="button" class="modal-close" onclick="closeSalgadosModal()"><i class="ti ti-x"></i></button>
+          </div>
+          <p class="pastel-modal-preco">A partir de <strong>R$ 4,00</strong></p>
+          <div class="pastel-recheios-grid" id="salgados-grid"></div>
+        </div>
+      </div>
+
+      <div id="acai-modal" class="modal-overlay" onclick="closeAcaiModal(event)">
+        <div class="modal-content acai-modal" onclick="event.stopPropagation()">
+          <div class="modal-header acai-header">
+            <div class="acai-header-info">
+              <h3><span>🍧</span> Monte seu açaí</h3>
+              <p class="acai-header-sub">Escolha o tamanho e personalize com seus complementos</p>
+            </div>
+            <button type="button" class="modal-close" onclick="closeAcaiModal()"><i class="ti ti-x"></i></button>
+          </div>
+
+          <div class="acai-section">
+            <div class="acai-section-title"><i class="ti ti-cup"></i> Escolha o tamanho</div>
+            <div class="acai-tamanhos" id="acai-tamanhos"></div>
+          </div>
+
+          <div class="acai-section">
+            <div class="acai-section-title"><i class="ti ti-plus"></i> Complementos <span class="acai-section-count" id="acai-comp-count">(opcional)</span></div>
+            <div class="acai-complementos" id="acai-complementos"></div>
+          </div>
+
+          <div class="acai-footer">
+            <div class="acai-footer-selecao">
+              <span>Seleção</span>
+              <strong id="acai-selecao-texto">Nenhum tamanho</strong>
+            </div>
+            <div class="acai-footer-total">
+              <span>Total</span>
+              <strong id="acai-total-preview">R$ 0,00</strong>
+            </div>
+            <button type="button" class="btn btn-primary" id="acai-add-btn" onclick="addAcaiToVenda()" disabled>
+              <i class="ti ti-check"></i> Adicionar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN (dono): Usuários + Consumo -->
+      <div class="screen" id="screen-admin">
+        <div class="card admin-backup-card">
+          <div class="section-header">
+            <h2><i class="ti ti-database"></i> Backup do banco</h2>
+            <button class="btn btn-primary" id="btn-backup" onclick="baixarBackup()">
+              <i class="ti ti-download"></i> Baixar backup SQL
+            </button>
+          </div>
+          <p class="admin-backup-desc">Gera um arquivo .sql completo (schema + dados) para restaurar o banco de dados.</p>
+        </div>
+
+        <div class="reg-toggle">
+          <button class="reg-toggle-btn active" id="admin-btn-usuarios" onclick="selectAdminTipo('usuarios')">
+            <i class="ti ti-users"></i> Usuários
+          </button>
+          <button class="reg-toggle-btn" id="admin-btn-consumo" onclick="selectAdminTipo('consumo')">
+            <i class="ti ti-wallet"></i> Consumo
+          </button>
+          <button class="reg-toggle-btn" id="admin-btn-atividade" onclick="selectAdminTipo('atividade')">
+            <i class="ti ti-clipboard-list"></i> Atividade
+          </button>
+          <button class="reg-toggle-btn" id="admin-btn-receitas" onclick="selectAdminTipo('receitas')">
+            <i class="ti ti-book-2"></i> Receitas
+          </button>
+          <button class="reg-toggle-btn" id="admin-btn-contagem" onclick="selectAdminTipo('contagem')">
+            <i class="ti ti-clipboard-check"></i> Contagens
+          </button>
+          <button class="reg-toggle-btn" id="admin-btn-cardapio" onclick="selectAdminTipo('cardapio')">
+            <i class="ti ti-menu-2"></i> Cardápio
+          </button>
+        </div>
+
+        <div id="admin-view-usuarios">
+          <div class="card">
+            <div class="section-header">
+              <h2>Usuários do sistema</h2>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span id="u-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <button class="btn btn-primary" onclick="toggleFormUsuario()" id="btn-toggle-form-usuario">
+                  <i class="ti ti-plus"></i> Novo usuário
+                </button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Nome</th><th>Usuário</th><th>Role</th><th></th></tr></thead>
+              <tbody id="tabela-usuarios"></tbody>
+            </table>
+            </div>
+            <div id="usuarios-empty" class="empty" style="display:none"><i class="ti ti-users"></i>Nenhum usuário cadastrado.</div>
+          </div>
+
+          <!-- Formulário de Novo Usuário -->
+          <div class="card" style="margin-top:1.25rem;display:none" id="card-form-usuario">
+            <div class="card-title"><i class="ti ti-plus"></i> Novo usuário</div>
+            <div class="form-row-2">
+              <div class="form-group"><label>Nome</label><input type="text" id="u-nome" placeholder="Nome completo"></div>
+              <div class="form-group"><label>Usuário</label><input type="text" id="u-email" placeholder="nome_de_usuario"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Senha</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" id="u-senha" placeholder="********" style="flex: 1;">
+                  <button class="btn" onclick="toggleUsuarioSenha('u-senha', 'u-icone-senha')">
+                    <i class="ti ti-eye" id="u-icone-senha"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group"><label>Role</label><select id="u-role">
+                <option value="funcionario">Funcionário</option>
+                <option value="dono">Dono</option>
+              </select></div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="addUsuario()"><i class="ti ti-check"></i> Cadastrar usuário</button>
+              <button class="btn" onclick="toggleFormUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Formulário de Edição de Usuário -->
+          <div class="card" style="margin-top:1.25rem;display:none" id="card-form-editar-usuario">
+            <div class="card-title"><i class="ti ti-edit"></i> Editar usuário</div>
+            <input type="hidden" id="editar-u-id">
+            <div class="form-row-2">
+              <div class="form-group"><label>Nome</label><input type="text" id="editar-u-nome" placeholder="Nome completo"></div>
+              <div class="form-group"><label>Usuário</label><input type="text" id="editar-u-usuario" placeholder="nome_de_usuario"></div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Senha</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" id="editar-u-senha" placeholder="Deixe vazio para manter a mesma senha" style="flex: 1;">
+                  <button class="btn" onclick="toggleUsuarioSenha('editar-u-senha', 'editar-u-icone-senha')">
+                    <i class="ti ti-eye" id="editar-u-icone-senha"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group"><label>Role</label><select id="editar-u-role">
+                <option value="funcionario">Funcionário</option>
+                <option value="dono">Dono</option>
+              </select></div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="editarUsuario()"><i class="ti ti-check"></i> Salvar alterações</button>
+              <button class="btn" onclick="cancelarEdicaoUsuario()"><i class="ti ti-x"></i> Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-view-consumo" style="display:none">
+
+          <div class="reg-toggle">
+            <button class="reg-toggle-btn active" id="ac-btn-visao" onclick="selectAdminConsumo('visao')">
+              <i class="ti ti-chart-bar"></i> Visão geral
+            </button>
+            <button class="reg-toggle-btn" id="ac-btn-gerenciar" onclick="selectAdminConsumo('gerenciar')">
+              <i class="ti ti-user-cog"></i> Gerenciar consumo
+            </button>
+          </div>
+
+          <!-- ===== VISÃO GERAL ===== -->
+          <div id="ac-visao-view">
+            <div class="dash-kpi-grid">
+              <div class="dash-kpi dash-kpi--blue">
+                <div class="dash-kpi-icon"><i class="ti ti-users"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Usuários</span>
+                  <span class="dash-kpi-value" id="cd-count">0</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-user"></i> funcionários e donos</span>
+                </div>
+              </div>
+              <div class="dash-kpi dash-kpi--indigo">
+                <div class="dash-kpi-icon"><i class="ti ti-wallet"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Consumido no mês</span>
+                  <span class="dash-kpi-value" id="cd-total">R$ 0,00</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Total de todos</span>
+                </div>
+              </div>
+              <div class="dash-kpi dash-kpi--violet">
+                <div class="dash-kpi-icon"><i class="ti ti-chart-bar"></i></div>
+                <div class="dash-kpi-body">
+                  <span class="dash-kpi-label">Média por usuário</span>
+                  <span class="dash-kpi-value" id="cd-media">R$ 0,00</span>
+                  <span class="dash-kpi-sub"><i class="ti ti-trending-up"></i> Por pessoa</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title"><i class="ti ti-receipt"></i> Consumo do mês atual (funcionários e donos)</div>
+              <div class="cd-grid" id="cd-grid"></div>
+            </div>
+          </div>
+
+          <!-- ===== GERENCIAR CONSUMO ===== -->
+          <div id="ac-gerenciar-view" style="display:none">
+            <div class="card ac-gerenciar-card">
+              <div class="card-title"><i class="ti ti-user-cog"></i> Gerenciar consumo dos usuários</div>
+              <p class="ac-gerenciar-sub">Selecione um usuário para adicionar ou remover consumos do mês.</p>
+              <div class="ac-user-picker" id="ac-user-picker"></div>
+            </div>
+            <div id="ac-manage-panel"></div>
+          </div>
+        </div>
+
+        <!-- ===== ATIVIDADE (log de movimentações) ===== -->
+        <div id="admin-view-atividade" style="display:none">
+          <div class="card">
+            <div class="section-header">
+              <h2><i class="ti ti-clipboard-list"></i> Atividade de movimentações</h2>
+              <span id="at-count" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Funcionário</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Observação</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-atividade"></tbody>
+            </table>
+            </div>
+            <div id="atividade-empty" class="empty" style="display:none">
+              <i class="ti ti-clipboard-off"></i>Nenhuma movimentação registrada.
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== RECEITAS (Admin) ===== -->
+        <div id="admin-view-receitas" style="display:none">
+          <div class="card">
+            <div class="section-header" style="flex-wrap:wrap">
+              <h2><i class="ti ti-book-2"></i> Receitas de pastéis</h2>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span id="rec-count" style="font-size:12px;color:var(--text-secondary)"></span>
+                <button class="btn" onclick="recFazerAbrir()"><i class="ti ti-chef-hat"></i> Fazer receita</button>
+                <button class="btn btn-primary" onclick="recAbrirCriar()"><i class="ti ti-plus"></i> Nova receita</button>
+              </div>
+            </div>
+            <div class="rec-grid" id="rec-grid"></div>
+            <div id="receitas-empty" class="empty" style="display:none"><i class="ti ti-book-off"></i>Nenhuma receita cadastrada ainda.<br>Clique em "Nova receita" para começar.</div>
+          </div>
+        </div>
+
+        <!-- ===== CONTAGENS (admin) ===== -->
+        <div id="admin-view-contagem" style="display:none">
+        <div class="card">
+            <div class="section-header">
+              <h2><i class="ti ti-clipboard-list"></i> Histórico de contagens</h2>
+            </div>
+            <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Funcionário</th>
+                  <th>Produtos contados</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabela-ach"></tbody>
+            </table>
+            </div>
+            <div id="ach-empty" class="empty" style="display:none">
+              <i class="ti ti-clipboard-off"></i>Nenhuma contagem registrada ainda. Faça a primeira contagem em "Contagem" no menu lateral.
+            </div>
+            <div id="ach-sessao-detalhe" style="display:none"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VIEW CARDÁPIO -->
+      <div id="admin-view-cardapio" style="display:none">
+        <div class="card">
+          <div class="section-header">
+            <h2><i class="ti ti-menu-2"></i> Itens do Cardápio</h2>
+            <button class="btn btn-primary" onclick="abrirModalCardapio()">
+              <i class="ti ti-plus"></i> Novo item
+            </button>
+          </div>
+
+          <div class="form-row-2" style="margin-bottom:1rem">
+            <div class="form-group">
+              <label>Filtrar por categoria</label>
+              <select id="cardapio-filtro-cat" onchange="renderAdminCardapio()">
+                <option value="">Todas</option>
+                <option value="espetinhos">Espetinhos</option>
+                <option value="pasteis-sal">Pastéis</option>
+                <option value="pasteis-doc">Doces</option>
+                <option value="salgados">Salgados</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Img</th>
+                  <th>Nome</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th>Preço</th>
+                  <th>Tag</th>
+                  <th>Ordem</th>
+                  <th>Ativo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabela-cardapio"></tbody>
+            </table>
+          </div>
+          <div id="cardapio-empty" class="empty" style="display:none">
+            <i class="ti ti-salad"></i> Nenhum item cadastrado.
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL CARDÁPIO -->
+      <div class="modal-overlay" id="modal-cardapio" style="display:none" onclick="fecharModalCardapio(event)">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+          <div class="modal-header">
+            <h3 id="modal-cardapio-titulo"><i class="ti ti-plus"></i> Novo item</h3>
+            <button class="btn-icon" onclick="fecharModalCardapio()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="cardapio-id">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Nome *</label>
+                <input type="text" id="cardapio-nome" placeholder="Ex: Carne Moída">
+              </div>
+              <div class="form-group">
+                <label>Categoria *</label>
+                <select id="cardapio-categoria">
+                  <option value="espetinhos">Espetinhos</option>
+                  <option value="pasteis-sal">Pastéis</option>
+                  <option value="pasteis-doc">Doces</option>
+                  <option value="salgados">Salgados</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="cardapio-descricao" placeholder="Descrição exibida no cardápio">
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Preço (R$) *</label>
+                <input type="number" id="cardapio-preco" placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-group">
+                <label>Ordem</label>
+                <input type="number" id="cardapio-ordem" placeholder="0" min="0">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Tag <small style="opacity:.6">(ex: Mais Pedido)</small></label>
+                <input type="text" id="cardapio-tag" placeholder="Opcional">
+              </div>
+              <div class="form-group" style="justify-content:flex-end;padding-top:1.5rem">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="cardapio-ativo" checked style="width:18px;height:18px;accent-color:var(--blue-500)">
+                  Ativo no cardápio
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>URL da imagem</label>
+              <input type="text" id="cardapio-img" placeholder="https://... ou caminho relativo imgspasteis/...">
+              <small style="opacity:.5">Deixe em branco para usar gradiente colorido</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="fecharModalCardapio()"><i class="ti ti-x"></i> Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarCardapio()"><i class="ti ti-check"></i> Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTAGEM DE ESTOQUE -->
+      <div class="screen" id="screen-contagem">
+        <div class="card">
+          <div class="section-header">
+            <h2><i class="ti ti-clipboard-check"></i> Contagem de Estoque</h2>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span id="contagem-count" style="font-size:12px;color:var(--text-secondary)"></span>
+              <span id="contagem-last" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+          </div>
+          <div class="estoque-busca-wrap" style="margin-bottom:1rem">
+            <i class="ti ti-search estoque-busca-icon"></i>
+            <input type="text" id="contagem-busca" class="estoque-busca-input" placeholder="Buscar produto..." oninput="renderContagem()">
+          </div>
+          <div id="contagem-lista"></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap">
+            <button class="btn" onclick="limparContagem()"><i class="ti ti-trash"></i> Limpar</button>
+            <button class="btn btn-primary" onclick="confirmarContagem()"><i class="ti ti-check"></i> Confirmar</button>
+            <button class="btn btn-primary" id="contagem-sql-btn" style="display:none" onclick="salvarContagemSQL()"><i class="ti ti-download"></i> Salvar como SQL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GASTOS -->
+      <div class="screen" id="screen-gastos">
+
+        <!-- KPIs -->
+        <div class="dash-kpi-grid" style="margin-bottom:1.25rem">
+          <div class="dash-kpi dash-kpi--red">
+            <div class="dash-kpi-icon"><i class="ti ti-receipt-off"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Gastos Fixos / Mês</span>
+              <span class="dash-kpi-value" id="gastos-fixos-total">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-repeat"></i> Mensal</span>
+            </div>
+          </div>
+          <div class="dash-kpi dash-kpi--amber">
+            <div class="dash-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Gastos Variáveis / Mês</span>
+              <span class="dash-kpi-value" id="gastos-variaveis-total">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-calendar-month"></i> Este mês</span>
+            </div>
+          </div>
+          <div class="dash-kpi dash-kpi--violet">
+            <div class="dash-kpi-icon"><i class="ti ti-currency-dollar"></i></div>
+            <div class="dash-kpi-body">
+              <span class="dash-kpi-label">Total Mês</span>
+              <span class="dash-kpi-value" id="gastos-total-mes">R$ 0,00</span>
+              <span class="dash-kpi-sub"><i class="ti ti-chart-line"></i> Fixos + Variáveis</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+
+          <!-- Card: Gasto Fixo Mensal -->
+          <div class="card gastos-fixo-card">
+            <div class="gastos-fixo-header">
+              <i class="ti ti-repeat"></i>
+              <span>Gasto Fixo Mensal</span>
+            </div>
+            <p class="gastos-fixo-sub">Gastos que se repetem todo mês (aluguel, energia, internet...)</p>
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="gf-descricao" placeholder="Ex: Aluguel, Energia...">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="gf-categoria" list="gf-cat-list" placeholder="Ex: Aluguel..." autocomplete="off">
+                <datalist id="gf-cat-list">
+                  <option value="Aluguel">
+                  <option value="Energia">
+                  <option value="Água">
+                  <option value="Internet">
+                  <option value="Telefone">
+                  <option value="Funcionários">
+                  <option value="Impostos">
+                  <option value="Manutenção">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="gf-valor" placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Forma de pagamento</label>
+              <select id="gf-pagamento">
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="pix">Pix</option>
+                <option value="transferencia">Transferência</option>
+                <option value="boleto">Boleto</option>
+              </select>
+            </div>
+            <button class="btn btn-primary gastos-fixo-btn" onclick="addGastoFixo()">
+              <i class="ti ti-plus"></i> Adicionar fixo
+            </button>
+          </div>
+
+          <!-- Card: Novo gasto variável -->
+          <div class="card">
+            <div class="card-title"><i class="ti ti-shopping-cart" style="color:var(--amber)"></i> Novo gasto variável</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tipo</label>
+                <select id="g-tipo" onchange="toggleMercadoria()">
+                  <option value="outros">Outros</option>
+                  <option value="mercadoria">Mercadoria</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="g-descricao" placeholder="Ex: material de limpeza...">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="g-categoria" list="g-categoria-list" placeholder="Ex: Material..." autocomplete="off">
+                <datalist id="g-categoria-list">
+                  <option value="Aluguel">
+                  <option value="Energia">
+                  <option value="Água">
+                  <option value="Internet">
+                  <option value="Telefone">
+                  <option value="Funcionários">
+                  <option value="Impostos">
+                  <option value="Manutenção">
+                  <option value="Material">
+                  <option value="Combustível">
+                  <option value="Outros">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="g-valor" placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Forma de pagamento</label>
+                <select id="g-pagamento">
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">Pix</option>
+                  <option value="transferencia">Transferência</option>
+                  <option value="boleto">Boleto</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data</label>
+                <input type="date" id="g-data">
+              </div>
+            </div>
+
+            <!-- Sub-form mercadoria (oculto por padrão) -->
+            <div id="g-mercadoria-section" style="display:none">
+              <div class="mercadoria-divider"><span><i class="ti ti-package"></i> Itens da mercadoria</span></div>
+              <div class="mercadoria-add-row">
+                <input type="text" id="merc-nome" placeholder="Produto" style="flex:2">
+                <input type="number" id="merc-qtd" placeholder="Qtd" min="1" step="1" value="1" style="flex:.5">
+                <input type="number" id="merc-preco" placeholder="Preço un." min="0" step="0.01" style="flex:.7">
+                <button class="btn btn-sm btn-primary" onclick="addMercItem()" style="flex:0"><i class="ti ti-plus"></i></button>
+              </div>
+              <div id="merc-items-list"></div>
+              <div class="mercadoria-total" id="merc-total-display" style="display:none">
+                <span>Total:</span>
+                <span id="merc-total-value">R$ 0,00</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="addGasto()">
+              <i class="ti ti-check"></i> Adicionar gasto
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Botão toggle lista -->
+        <button class="btn gastos-toggle-btn" id="gastos-toggle-btn" onclick="toggleGastosLista()">
+          <i class="ti ti-list"></i>
+          <span>Ver lista de gastos</span>
+          <span class="gastos-toggle-count" id="gastos-toggle-count"></span>
+          <i class="ti ti-chevron-down" id="gastos-toggle-icon"></i>
+        </button>
+
+        <!-- Lista de gastos (oculta por padrão) -->
+        <div class="card gastos-lista-section" id="gastos-lista-section" style="display:none;margin-top:14px">
+          <div class="section-header">
+            <div class="card-title" style="margin:0"><i class="ti ti-list"></i> Lista de Gastos</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <label class="gastos-fixos-toggle" onclick="toggleFiltrosFixos()">
+                <input type="checkbox" id="g-show-fixos" onchange="renderGastos()">
+                <span class="gastos-fixos-toggle-slider"></span>
+                <span><i class="ti ti-repeat"></i> Fixos</span>
+              </label>
+              <select id="g-filtro-periodo" onchange="renderGastos()" style="padding:6px 10px;font-size:13px">
+                <option value="mes">Este mês</option>
+                <option value="semana">Esta semana</option>
+                <option value="tudo">Tudo</option>
+              </select>
+              <span id="g-count" style="font-size:12px;color:var(--text-secondary)"></span>
+            </div>
+          </div>
+          <div style="overflow-x:auto;max-height:480px;overflow-y:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Valor</th>
+                  <th>Pagamento</th>
+                  <th>Tipo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="gastos-tbody"></tbody>
+            </table>
+          </div>
+          <div id="gastos-empty" class="empty" style="display:none"><i class="ti ti-receipt-off"></i>Nenhum gasto registrado.</div>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR GASTO -->
+      <div class="modal-overlay" id="editar-gasto-modal" onclick="closeEditarGasto(event)">
+        <div class="modal-content" style="max-width:500px" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-edit"></i> Editar Gasto</h3>
+            <button class="modal-close" onclick="closeEditarGasto()"><i class="ti ti-x"></i></button>
+          </div>
+          <div style="padding:1.25rem">
+            <input type="hidden" id="eg-id">
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="eg-descricao" placeholder="Descrição do gasto">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="eg-categoria" list="eg-cat-list" placeholder="Categoria" autocomplete="off">
+                <datalist id="eg-cat-list">
+                  <option value="Aluguel"><option value="Energia"><option value="Água"><option value="Internet"><option value="Telefone"><option value="Funcionários"><option value="Impostos"><option value="Manutenção"><option value="Material"><option value="Combustível"><option value="Outros">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="eg-valor" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Forma de pagamento</label>
+                <select id="eg-pagamento">
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">Pix</option>
+                  <option value="transferencia">Transferência</option>
+                  <option value="boleto">Boleto</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Data</label>
+                <input type="date" id="eg-data">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="vl-switch" style="margin-top:4px">
+                <input type="checkbox" id="eg-fixo">
+                <span class="vl-switch-slider"></span>
+                <span class="vl-switch-label"><i class="ti ti-repeat"></i> Gasto fixo (mensal)</span>
+              </label>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:1rem">
+              <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="salvarEdicaoGasto()">
+                <i class="ti ti-check"></i> Salvar alterações
+              </button>
+              <button class="btn" onclick="closeEditarGasto()">
+                <i class="ti ti-x"></i> Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL NOTINHA DE MERCADORIA -->
+      <div class="modal-overlay" id="notinha-modal" onclick="closeNotinha(event)">
+        <div class="modal-content notinha-content" onclick="event.stopPropagation()">
+          <div class="notinha-paper" id="notinha-paper">
+            <div class="notinha-header">
+              <strong id="notinha-titulo">Mercadoria</strong>
+              <span id="notinha-data"></span>
+            </div>
+            <div class="notinha-desc" id="notinha-desc"></div>
+            <div class="notinha-divider"></div>
+            <table class="notinha-table">
+              <thead>
+                <tr><th>Produto</th><th style="text-align:center">Qtd</th><th style="text-align:right">Preço Un.</th><th style="text-align:right">Subtotal</th></tr>
+              </thead>
+              <tbody id="notinha-itens"></tbody>
+            </table>
+            <div class="notinha-divider"></div>
+            <div class="notinha-total">
+              <span>TOTAL</span>
+              <span id="notinha-total">R$ 0,00</span>
+            </div>
+            <div class="notinha-footer">
+              <span id="notinha-pagamento"></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;padding:1rem 1.25rem;justify-content:flex-end">
+            <button class="btn" onclick="closeNotinha()"><i class="ti ti-x"></i> Fechar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECEITAS (funcionários) -->
+      <div class="screen" id="screen-receitas">
+        <div class="card">
+          <div class="section-header">
+            <h2><i class="ti ti-book-2"></i> Receitas de pastéis</h2>
+            <span id="rec-count" style="font-size:12px;color:var(--text-secondary)"></span>
+          </div>
+          <div class="rec-grid" id="rec-grid-pub"></div>
+          <div id="receitas-empty-pub" class="empty" style="display:none"><i class="ti ti-book-off"></i>Nenhuma receita cadastrada ainda.</div>
+        </div>
+      </div>
+
+      <!-- CONSUMO (funcionários) -->
+      <div class="screen" id="screen-consumo">
+
+        <!-- ===== VISÃO DO FUNCIONÁRIO (compra) ===== -->
+        <div id="consumo-funcionario-view">
+
+          <div class="vendas-layout">
+
+            <!-- Coluna: produtos -->
+            <div class="card vendas-picker">
+              <div class="vendas-picker-header">
+                <div class="search-wrapper vendas-search">
+                  <i class="ti ti-search vendas-search-icon"></i>
+                  <input type="text" id="c-busca" placeholder="Buscar produto..." oninput="renderConsumoGrid()">
+                </div>
+                <div class="vendas-categorias" id="c-categorias"></div>
+              </div>
+
+              <!-- Botões de atalho: Pastel e Salgados -->
+              <div class="vendas-atalhos">
+                <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal('consumo')">
+                  <span class="vendas-atalho-emoji">🥟</span>
+                  <span class="vendas-atalho-info">
+                    <strong>Pastel</strong>
+                    <small>Escolher recheio · R$ 14,00</small>
+                  </span>
+                  <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+                </button>
+
+                <button type="button" class="vendas-atalho-btn vendas-atalho-pastel" onclick="openPastelModal('consumo', 'mini')">
+                  <span class="vendas-atalho-emoji">🥟</span>
+                  <span class="vendas-atalho-info">
+                    <strong>Mini Pastéis</strong>
+                    <small>Escolher recheio · R$ 5,00</small>
+                  </span>
+                  <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+                </button>
+
+                <button type="button" class="vendas-atalho-btn vendas-atalho-salgados" onclick="openSalgadosModal('consumo')">
+                  <span class="vendas-atalho-emoji">🍡</span>
+                  <span class="vendas-atalho-info">
+                    <strong>Salgados</strong>
+                    <small id="c-salgados-sub">Ver opções</small>
+                  </span>
+                  <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+                </button>
+
+                <button type="button" class="vendas-atalho-btn vendas-atalho-acai" onclick="openAcaiModal('consumo')">
+                  <span class="vendas-atalho-emoji">🍧</span>
+                  <span class="vendas-atalho-info">
+                    <strong>Açaí</strong>
+                    <small>Tamanho + complementos</small>
+                  </span>
+                  <i class="ti ti-chevron-right vendas-atalho-arrow"></i>
+                </button>
+
+              </div>
+
+              <div class="vendas-produtos-grid" id="c-produtos-grid"></div>
+            </div>
+
+            <!-- Coluna: consumo -->
+            <div class="card vendas-carrinho">
+              <div class="vendas-carrinho-header">
+                <h3><i class="ti ti-wallet"></i> Consumo</h3>
+                <span class="vendas-carrinho-count" id="c-carrinho-count">0 itens</span>
+              </div>
+
+              <div class="vendas-carrinho-body">
+                <div id="c-itens-empty" class="empty vendas-empty">Toque nos produtos para adicionar</div>
+                <div id="c-itens-container" class="vendas-itens-list"></div>
+              </div>
+
+              <div class="vendas-carrinho-footer">
+                <button type="button" class="consumo-quem-btn" onclick="openConsumoQuem()">
+                  <i class="ti ti-user"></i>
+                  <span id="c-quem-label">Selecionar quem consumiu</span>
+                  <i class="ti ti-chevron-down"></i>
+                </button>
+
+                <div class="form-group vendas-obs">
+                  <label>Observação (opcional)</label>
+                  <input type="text" id="c-obs" placeholder="Ex: Almoço de hoje...">
+                </div>
+
+                <div class="total-section vendas-total">
+                  <div class="total-label">Total</div>
+                  <div class="total-value" id="c-total-preview">R$ 0,00</div>
+                </div>
+
+                <div class="vendas-limite-warn" id="c-limite-warn" style="display:none">
+                  <i class="ti ti-alert-triangle"></i> Atenção: você está passando do seu limite de R$ 50,00 do mês
+                </div>
+
+                <button class="btn btn-primary vendas-finalizar" onclick="addConsumo()">
+                  <i class="ti ti-check"></i> Registrar Consumo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal detalhe do consumo (dono) -->
+      <div class="modal-overlay" id="consumo-detalhe-modal" onclick="closeConsumoDonoDetalhe(event)">
+        <div class="modal-content consumo-detalhe-content" onclick="event.stopPropagation()">
+          <div class="cd-strip">
+            <button class="vd-close" onclick="closeConsumoDonoDetalhe()"><i class="ti ti-x"></i></button>
+            <div class="vd-strip-top">
+              <div class="vd-strip-num"><i class="ti ti-wallet"></i> Consumo de <span id="cd-detalhe-nome">—</span></div>
+            </div>
+            <div class="cd-strip-total">
+              <span>Total no mês</span>
+              <strong id="cd-detalhe-total">R$ 0,00</strong>
+            </div>
+          </div>
+          <div class="cd-detalhe-body" id="consumo-detalhe-body"></div>
+        </div>
+      </div>
+
+      <!-- Modal: quem consumiu (funcionário) -->
+      <div class="modal-overlay" id="consumo-quem-modal" onclick="closeConsumoQuem(event)">
+        <div class="modal-content consumo-quem-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3><i class="ti ti-users"></i> Quem consumiu?</h3>
+            <button class="modal-close" onclick="closeConsumoQuem()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="consumo-quem-body" id="consumo-quem-body"></div>
+        </div>
+      </div>
+
+      <!-- CAIXA -->
+      <div class="screen" id="screen-caixa">
+
+        <!-- ===== CAIXA ABERTO ===== -->
+        <div id="caixa-aberto" style="display:none">
+
+          <!-- KPIs -->
+          <div class="caixa-kpi-grid">
+            <div class="dash-kpi dash-kpi--green">
+              <div class="dash-kpi-icon"><i class="ti ti-moneybag"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Troco Inicial</span>
+                <span class="dash-kpi-value" id="caixa-troco-inicial">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-lock-open"></i> Na abertura</span>
+              </div>
+            </div>
+            <div class="dash-kpi dash-kpi--red">
+              <div class="dash-kpi-icon"><i class="ti ti-arrow-bar-up"></i></div>
+              <div class="dash-kpi-body">
+                <span class="dash-kpi-label">Total Retirado</span>
+                <span class="dash-kpi-value" id="caixa-total-retiradas">R$ 0,00</span>
+                <span class="dash-kpi-sub"><i class="ti ti-receipt"></i> No período</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ações: Retirada + Fechar -->
+          <div class="caixa-acoes-grid">
+
+            <!-- Registrar Retirada -->
+            <div class="card">
+              <div class="card-title"><i class="ti ti-arrow-bar-up" style="color:var(--red)"></i> Registrar Retirada</div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Valor (R$)</label>
+                  <input type="number" id="retirada-valor" placeholder="Ex: 50.00" step="0.01" min="0.01">
+                </div>
+                <div class="form-group">
+                  <label>Motivo</label>
+                  <input type="text" id="retirada-motivo" placeholder="Ex: Compra de troco, pagamento fornecedor...">
+                </div>
+              </div>
+              <button class="btn btn-saida" onclick="registrarRetirada()">
+                <i class="ti ti-check"></i> Registrar Retirada
+              </button>
+            </div>
+
+            <!-- Fechar Caixa -->
+            <div class="card">
+              <div class="card-title"><i class="ti ti-lock" style="color:var(--amber)"></i> Fechar Caixa</div>
+              <div class="form-group">
+                <label>Valor contado no caixa (R$)</label>
+                <input type="number" id="caixa-valor-final" placeholder="Ex: 500.00" step="0.01">
+              </div>
+              <button class="btn btn-danger" onclick="fecharCaixa()" style="width:100%">
+                <i class="ti ti-lock"></i> Fechar Caixa
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Lista de retiradas do período -->
+          <div class="card" id="caixa-retiradas-card">
+            <div class="card-title"><i class="ti ti-list"></i> Retiradas do Caixa Atual</div>
+            <div id="caixa-retiradas-lista">
+              <div class="empty"><i class="ti ti-receipt-off"></i>Nenhuma retirada registrada.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===== CAIXA FECHADO ===== -->
+        <div id="caixa-fechado">
+          <div class="card">
+            <div class="empty" style="padding:2rem 1rem">
+              <i class="ti ti-lock" style="color:var(--amber)"></i>
+              <p style="margin-top:8px;font-size:15px;font-weight:600">Caixa fechado</p>
+              <p style="font-size:13px;color:var(--text-muted);margin-top:4px">Abra o caixa para começar a registrar vendas</p>
+            </div>
+            <div class="form-group" style="max-width:320px;margin:0 auto 1rem">
+              <label>Troco inicial (R$)</label>
+              <input type="number" id="caixa-troco" placeholder="Ex: 100.00" step="0.01">
+            </div>
+            <div style="max-width:320px;margin:0 auto">
+              <button class="btn btn-primary" onclick="abrirCaixa()" style="width:100%">
+                <i class="ti ti-lock-open"></i> Abrir Caixa
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+      <div class="modal-overlay" id="confirm-modal" onclick="closeConfirmModal(event)">
+        <div class="modal-content confirm-content" onclick="event.stopPropagation()">
+          <div class="confirm-icon" id="confirm-icon"><i class="ti ti-alert-triangle"></i></div>
+          <h3 id="confirm-title">Tem certeza?</h3>
+          <p id="confirm-message"></p>
+          <div class="confirm-actions">
+            <button class="btn" id="confirm-cancel-btn" onclick="closeConfirmModal()"><i class="ti ti-x"></i> Cancelar</button>
+            <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmOk()"><i class="ti ti-check"></i> Confirmar</button>
+          </div>
+        </div>
+      </div>
+
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-ic" id="toast-icon"><i class="ti ti-check"></i></span>
+  <span class="toast-msg" id="toast-msg"></span>
+</div>
+
+<!-- Modal editar produto -->
+<div class="modal-overlay" id="editar-produto-modal" onclick="closeEditarProduto(event)">
+  <div class="modal-content" style="max-width:500px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="ti ti-edit"></i> Editar Produto</h3>
+      <button class="modal-close" onclick="closeEditarProduto()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <input type="hidden" id="edit-id">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="edit-nome" placeholder="Nome do produto">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <input type="text" id="edit-cat" list="p-cat-list" placeholder="Ex: Bebidas" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Qtd atual</label>
+          <input type="number" id="edit-qty" min="0" step="0.001">
+        </div>
+        <div class="form-group">
+          <label>Qtd mínima</label>
+          <input type="number" id="edit-min" min="0">
+        </div>
+        <div class="form-group">
+          <label>Preço (R$)</label>
+          <input type="number" id="edit-preco" min="0" step="0.01">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:.5rem">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="salvarEdicaoProduto()">
+          <i class="ti ti-check"></i> Salvar alterações
+        </button>
+        <button class="btn" onclick="closeEditarProduto()">
+          <i class="ti ti-x"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nova receita -->
+<div class="modal-overlay" id="modal-nova-receita" onclick="recFecharCriar(event)">
+  <div class="modal-content" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="ti ti-book-2"></i> Nova receita</h3>
+      <button class="modal-close" onclick="recFecharCriar()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <div class="form-group">
+        <label>Nome da receita</label>
+        <input type="text" id="rec-nome" placeholder="Ex: Pastel de Carne">
+      </div>
+      <div class="form-group">
+        <label>Descrição (opcional)</label>
+        <input type="text" id="rec-desc" placeholder="Ex: Massa + recheio de carne">
+      </div>
+
+      <div class="card-title" style="margin-bottom:.75rem"><i class="ti ti-list"></i> Ingredientes</div>
+      <div id="rec-criar-itens" class="rec-items"></div>
+
+      <div class="form-group" style="margin-top:1rem">
+        <label>Adicionar produto</label>
+        <div class="rec-add-row">
+          <input type="text" id="rec-criar-nome" list="rec-produto-list" placeholder="Pesquisar produto..." autocomplete="off">
+          <select id="rec-criar-medida" class="qty-unit-select" style="width:92px" title="Unidade de medida"></select>
+          <input type="number" id="rec-criar-qtd" placeholder="Qtd" min="0" step="0.001" style="width:90px">
+          <button class="btn btn-primary" onclick="recCriarAddItem()" title="Adicionar"><i class="ti ti-plus"></i></button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem">
+        <button class="btn" onclick="recFecharCriar()"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn btn-primary" onclick="recSalvarCriar()"><i class="ti ti-check"></i> Criar receita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalhes / editar receita -->
+<div class="modal-overlay" id="modal-rec-detalhes" onclick="recFecharDetalhes(event)">
+  <div class="modal-content" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="rec-modal-titulo"><i class="ti ti-book-2"></i> Receita</h3>
+      <button class="modal-close" onclick="recFecharDetalhes()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <p id="rec-modal-desc" style="color:var(--text-secondary);margin-bottom:1rem;font-size:13px"></p>
+      <input type="hidden" id="rec-modal-id">
+      <input type="hidden" id="rec-modal-modo">
+
+      <div class="card-title" style="margin-bottom:.75rem"><i class="ti ti-list"></i> Ingredientes</div>
+      <div id="rec-modal-itens"></div>
+
+      <div class="form-group" id="rec-add-row-wrap" style="margin-top:1rem">
+        <label>Adicionar produto</label>
+        <div class="rec-add-row">
+          <input type="text" id="rec-add-nome" list="rec-produto-list" placeholder="Pesquisar produto..." autocomplete="off">
+          <datalist id="rec-produto-list"></datalist>
+          <select id="rec-add-medida" class="qty-unit-select" style="width:92px" title="Unidade de medida"></select>
+          <input type="number" id="rec-add-qtd" placeholder="Qtd" min="0" step="0.001" style="width:90px">
+          <button class="btn btn-primary" onclick="recAddItem()" title="Adicionar"><i class="ti ti-plus"></i></button>
+        </div>
+      </div>
+
+      <div id="rec-del-row" style="display:flex;gap:10px;justify-content:space-between;margin-top:1.25rem">
+        <button class="btn btn-danger" onclick="recExcluirReceita()"><i class="ti ti-trash"></i> Excluir receita</button>
+        <button class="btn" onclick="recFecharDetalhes()"><i class="ti ti-x"></i> Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal fazer receita -->
+<div class="modal-overlay" id="modal-fazer-receita" onclick="recFazerFechar(event)">
+  <div class="modal-content" style="max-width:520px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="ti ti-chef-hat"></i> Fazer receita</h3>
+      <button class="modal-close" onclick="recFazerFechar()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.25rem">
+      <div class="form-group">
+        <label>Receita</label>
+        <select id="fr-receita" onchange="recFazerSelecionar()"></select>
+      </div>
+
+      <div class="card-title" style="margin:.25rem 0 .75rem"><i class="ti ti-list"></i> Ingredientes da receita</div>
+      <div id="fr-itens" class="rec-items" style="margin-bottom:1rem"></div>
+
+      <div class="form-group">
+        <label>Quantidade produzida</label>
+        <input type="number" id="fr-qtd" min="0" step="0.001" value="1" placeholder="Ex: 1 ou 0,5">
+      </div>
+      <div class="form-group">
+        <label>Observação (opcional)</label>
+        <input type="text" id="fr-obs" placeholder="Ex: massa + recheio">
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem">
+        <button class="btn" onclick="recFazerFechar()"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn btn-primary" onclick="recFazerRegistrar()"><i class="ti ti-check"></i> Registrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -23,13 +23,16 @@ app.use(bodyParser.json());
 // NÃO usar express.static para evitar cache do CDN do Vercel
 // Servir arquivos estáticos manualmente com no-cache
 
-// Serve the HTML file as the default route — sem cache
+// Serve o app principal
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'app.html'));
 });
+
+// Redirect /index.html → /
+app.get('/index.html', (req, res) => res.redirect(301, '/'));
 
 // Arquivos estáticos da pasta public com cache curto
 app.get('/style.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'style.css')));
