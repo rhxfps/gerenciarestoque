@@ -19,15 +19,25 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve the HTML file as the default route — sem cache para sempre pegar versão atual
+// NÃO usar express.static para evitar cache do CDN do Vercel
+// Servir arquivos estáticos manualmente com no-cache
+
+// Serve the HTML file as the default route — sem cache
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Arquivos estáticos da pasta public com cache curto
+app.get('/style.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'style.css')));
+app.get('/style-hamburguer.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'style-hamburguer.css')));
+app.get('/style-modern.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'style-modern.css')));
+app.get('/script.js', (req, res) => res.sendFile(path.join(__dirname, 'public', 'script.js')));
+app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'logo.png')));
+app.get('/images/:file', (req, res) => res.sendFile(path.join(__dirname, 'public', 'images', req.params.file)));
 
 // ==================== USUÁRIOS / AUTENTICAÇÃO ====================
 app.post('/api/auth/login', async (req, res) => {
