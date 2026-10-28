@@ -2033,6 +2033,83 @@ const criarUsuarioPadrao = async () => {
   }
 };
 
+// ==================== CARDÁPIO PÚBLICO ====================
+// GET público — sem autenticação, usado pelo site do cardápio
+app.get('/api/cardapio', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('cardapio_items')
+      .select('*')
+      .eq('ativo', true)
+      .order('categoria')
+      .order('ordem');
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// CRUD autenticado — gerenciado pelo admin
+app.get('/api/cardapio/admin', autenticar, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('cardapio_items')
+      .select('*')
+      .order('categoria')
+      .order('ordem');
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/cardapio', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { nome, descricao, preco, categoria, img_url, tag, ordem, ativo } = req.body;
+  if (!nome || !preco || !categoria) return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios' });
+  try {
+    const { data, error } = await supabase
+      .from('cardapio_items')
+      .insert([{ nome, descricao: descricao || '', preco, categoria, img_url: img_url || '', tag: tag || '', ordem: ordem || 0, ativo: ativo !== false }])
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/cardapio/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  const { nome, descricao, preco, categoria, img_url, tag, ordem, ativo } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('cardapio_items')
+      .update({ nome, descricao, preco, categoria, img_url, tag, ordem, ativo })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/cardapio/:id', autenticar, async (req, res) => {
+  if (req.usuario.role !== 'dono') return res.status(403).json({ error: 'Acesso negado' });
+  try {
+    const { error } = await supabase.from('cardapio_items').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ deleted: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 criarUsuarioPadrao();
 
 app.listen(PORT, () => {

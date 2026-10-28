@@ -4185,16 +4185,19 @@ function selectAdminTipo(tipo) {
   document.getElementById('admin-btn-atividade').classList.toggle('active', tipo === 'atividade');
   document.getElementById('admin-btn-receitas').classList.toggle('active', tipo === 'receitas');
   document.getElementById('admin-btn-contagem').classList.toggle('active', tipo === 'contagem');
+  document.getElementById('admin-btn-cardapio').classList.toggle('active', tipo === 'cardapio');
   document.getElementById('admin-view-usuarios').style.display = tipo === 'usuarios' ? 'block' : 'none';
   document.getElementById('admin-view-consumo').style.display = tipo === 'consumo' ? 'block' : 'none';
   document.getElementById('admin-view-atividade').style.display = tipo === 'atividade' ? 'block' : 'none';
   document.getElementById('admin-view-receitas').style.display = tipo === 'receitas' ? 'block' : 'none';
   document.getElementById('admin-view-contagem').style.display = tipo === 'contagem' ? 'block' : 'none';
+  document.getElementById('admin-view-cardapio').style.display = tipo === 'cardapio' ? 'block' : 'none';
   if (tipo === 'usuarios') renderUsuarios();
   if (tipo === 'consumo') selectAdminConsumo(adminConsumoAtivo);
   if (tipo === 'atividade') renderAtividade();
   if (tipo === 'receitas') renderReceitas();
   if (tipo === 'contagem') renderAdminContagem();
+  if (tipo === 'cardapio') renderAdminCardapio();
 }
 
 async function renderAtividade() {
@@ -6436,3 +6439,149 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-container').style.display = 'flex';
   }
 });
+
+// ==================== CARDÁPIO ADMIN ====================
+let cardapioItems = [];
+
+const CAT_LABELS = {
+  'espetinhos':  'Espetinhos',
+  'pasteis-sal': 'Pastéis',
+  'pasteis-doc': 'Doces',
+  'salgados':    'Salgados',
+};
+
+async function renderAdminCardapio() {
+  try {
+    cardapioItems = await apiRequest('/cardapio/admin');
+  } catch (e) {
+    toast('Erro ao carregar cardápio: ' + e.message, false);
+    cardapioItems = [];
+  }
+  _renderTabelaCardapio();
+}
+
+function _renderTabelaCardapio() {
+  const tb  = document.getElementById('tabela-cardapio');
+  const em  = document.getElementById('cardapio-empty');
+  const cat = document.getElementById('cardapio-filtro-cat').value;
+
+  const filtrado = cat ? cardapioItems.filter(i => i.categoria === cat) : cardapioItems;
+
+  if (!filtrado.length) {
+    tb.innerHTML = '';
+    em.style.display = 'flex';
+    return;
+  }
+  em.style.display = 'none';
+
+  tb.innerHTML = filtrado.map(item => `
+    <tr>
+      <td>
+        ${item.img_url
+          ? `<img src="${item.img_url}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">`
+          : `<div style="width:44px;height:44px;border-radius:8px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;"><i class="ti ti-photo-off" style="opacity:.4"></i></div>`}
+      </td>
+      <td><strong>${esc(item.nome)}</strong></td>
+      <td><span class="badge badge-blue">${CAT_LABELS[item.categoria] || item.categoria}</span></td>
+      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.descricao || '—')}</td>
+      <td><strong>R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}</strong></td>
+      <td>${item.tag ? `<span class="badge badge-yellow">${esc(item.tag)}</span>` : '—'}</td>
+      <td style="text-align:center">${item.ordem ?? 0}</td>
+      <td>
+        <span class="badge ${item.ativo ? 'badge-green' : 'badge-red'}">
+          ${item.ativo ? 'Sim' : 'Não'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="editarCardapio(${item.id})" title="Editar">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deletarCardapio(${item.id}, '${esc(item.nome)}')" title="Excluir">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function abrirModalCardapio(item = null) {
+  document.getElementById('cardapio-id').value       = item ? item.id : '';
+  document.getElementById('cardapio-nome').value     = item ? item.nome : '';
+  document.getElementById('cardapio-descricao').value= item ? (item.descricao || '') : '';
+  document.getElementById('cardapio-preco').value    = item ? item.preco : '';
+  document.getElementById('cardapio-categoria').value= item ? item.categoria : 'pasteis-sal';
+  document.getElementById('cardapio-tag').value      = item ? (item.tag || '') : '';
+  document.getElementById('cardapio-ordem').value    = item ? (item.ordem ?? 0) : 0;
+  document.getElementById('cardapio-img').value      = item ? (item.img_url || '') : '';
+  document.getElementById('cardapio-ativo').checked  = item ? item.ativo : true;
+  document.getElementById('modal-cardapio-titulo').innerHTML =
+    item ? '<i class="ti ti-pencil"></i> Editar item' : '<i class="ti ti-plus"></i> Novo item';
+  document.getElementById('modal-cardapio').style.display = 'flex';
+}
+
+function fecharModalCardapio(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modal-cardapio').style.display = 'none';
+}
+
+function editarCardapio(id) {
+  const item = cardapioItems.find(i => i.id === id);
+  if (item) abrirModalCardapio(item);
+}
+
+async function salvarCardapio() {
+  const id       = document.getElementById('cardapio-id').value;
+  const nome     = document.getElementById('cardapio-nome').value.trim();
+  const preco    = parseFloat(document.getElementById('cardapio-preco').value);
+  const categoria= document.getElementById('cardapio-categoria').value;
+
+  if (!nome || isNaN(preco) || !categoria) {
+    toast('Preencha nome, preço e categoria.', false);
+    return;
+  }
+
+  const payload = {
+    nome,
+    descricao: document.getElementById('cardapio-descricao').value.trim(),
+    preco,
+    categoria,
+    tag:     document.getElementById('cardapio-tag').value.trim(),
+    ordem:   parseInt(document.getElementById('cardapio-ordem').value) || 0,
+    img_url: document.getElementById('cardapio-img').value.trim(),
+    ativo:   document.getElementById('cardapio-ativo').checked,
+  };
+
+  try {
+    if (id) {
+      await apiRequest(`/cardapio/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      toast('Item atualizado com sucesso!');
+    } else {
+      await apiRequest('/cardapio', { method: 'POST', body: JSON.stringify(payload) });
+      toast('Item adicionado ao cardápio!');
+    }
+    fecharModalCardapio();
+    renderAdminCardapio();
+  } catch (e) {
+    toast('Erro ao salvar: ' + e.message, false);
+  }
+}
+
+async function deletarCardapio(id, nome) {
+  showConfirm({
+    title: 'Excluir item',
+    message: `Tem certeza que deseja remover "${nome}" do cardápio?`,
+    confirmText: 'Excluir',
+    danger: true,
+    onConfirm: async () => {
+      try {
+        await apiRequest(`/cardapio/${id}`, { method: 'DELETE' });
+        toast('Item removido do cardápio!');
+        renderAdminCardapio();
+      } catch (e) {
+        toast('Erro ao excluir: ' + e.message, false);
+      }
+    }
+  });
+}

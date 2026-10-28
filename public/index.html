@@ -1769,6 +1769,9 @@
           <button class="reg-toggle-btn" id="admin-btn-contagem" onclick="selectAdminTipo('contagem')">
             <i class="ti ti-clipboard-check"></i> Contagens
           </button>
+          <button class="reg-toggle-btn" id="admin-btn-cardapio" onclick="selectAdminTipo('cardapio')">
+            <i class="ti ti-menu-2"></i> Cardápio
+          </button>
         </div>
 
         <div id="admin-view-usuarios">
@@ -1976,6 +1979,116 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- VIEW CARDÁPIO -->
+      <div id="admin-view-cardapio" style="display:none">
+        <div class="card">
+          <div class="section-header">
+            <h2><i class="ti ti-menu-2"></i> Itens do Cardápio</h2>
+            <button class="btn btn-primary" onclick="abrirModalCardapio()">
+              <i class="ti ti-plus"></i> Novo item
+            </button>
+          </div>
+
+          <div class="form-row-2" style="margin-bottom:1rem">
+            <div class="form-group">
+              <label>Filtrar por categoria</label>
+              <select id="cardapio-filtro-cat" onchange="renderAdminCardapio()">
+                <option value="">Todas</option>
+                <option value="espetinhos">Espetinhos</option>
+                <option value="pasteis-sal">Pastéis</option>
+                <option value="pasteis-doc">Doces</option>
+                <option value="salgados">Salgados</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Img</th>
+                  <th>Nome</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th>Preço</th>
+                  <th>Tag</th>
+                  <th>Ordem</th>
+                  <th>Ativo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabela-cardapio"></tbody>
+            </table>
+          </div>
+          <div id="cardapio-empty" class="empty" style="display:none">
+            <i class="ti ti-salad"></i> Nenhum item cadastrado.
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL CARDÁPIO -->
+      <div class="modal-overlay" id="modal-cardapio" style="display:none" onclick="fecharModalCardapio(event)">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+          <div class="modal-header">
+            <h3 id="modal-cardapio-titulo"><i class="ti ti-plus"></i> Novo item</h3>
+            <button class="btn-icon" onclick="fecharModalCardapio()"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="cardapio-id">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Nome *</label>
+                <input type="text" id="cardapio-nome" placeholder="Ex: Carne Moída">
+              </div>
+              <div class="form-group">
+                <label>Categoria *</label>
+                <select id="cardapio-categoria">
+                  <option value="espetinhos">Espetinhos</option>
+                  <option value="pasteis-sal">Pastéis</option>
+                  <option value="pasteis-doc">Doces</option>
+                  <option value="salgados">Salgados</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descrição</label>
+              <input type="text" id="cardapio-descricao" placeholder="Descrição exibida no cardápio">
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Preço (R$) *</label>
+                <input type="number" id="cardapio-preco" placeholder="0.00" step="0.01" min="0">
+              </div>
+              <div class="form-group">
+                <label>Ordem</label>
+                <input type="number" id="cardapio-ordem" placeholder="0" min="0">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Tag <small style="opacity:.6">(ex: Mais Pedido)</small></label>
+                <input type="text" id="cardapio-tag" placeholder="Opcional">
+              </div>
+              <div class="form-group" style="justify-content:flex-end;padding-top:1.5rem">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="cardapio-ativo" checked style="width:18px;height:18px;accent-color:var(--blue-500)">
+                  Ativo no cardápio
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>URL da imagem</label>
+              <input type="text" id="cardapio-img" placeholder="https://... ou caminho relativo imgspasteis/...">
+              <small style="opacity:.5">Deixe em branco para usar gradiente colorido</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="fecharModalCardapio()"><i class="ti ti-x"></i> Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarCardapio()"><i class="ti ti-check"></i> Salvar</button>
+          </div>
+        </div>
       </div>
 
       <!-- CONTAGEM DE ESTOQUE -->
